@@ -187,6 +187,7 @@ class ObservationScreenController {
       MyDateController nowDate, List<EndBasedController> endBasedList) {
     List<Widget> againDeadlineDisplayList = [];
     int i = 0;
+    if (endBasedList.isEmpty) return againDeadlineDisplayList;
     if (endBasedList.first.left == -1) {
       //-1 to also show yesterday
       i--;

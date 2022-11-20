@@ -152,7 +152,7 @@ abstract class EndBasedController<t extends BasicButton>
         }
       }
     }
-    if (result.startsWith('\n')) result = result.replaceFirst('\n', '');
+    if (result.startsWith('\n\n')) result = result.replaceFirst('\n', '');
     return result;
   }
 
