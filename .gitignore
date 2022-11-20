@@ -5,6 +5,7 @@
 *.swp
 *.lock
 *.bin
+*.properties
 *.probe
 .DS_Store
 .atom/
