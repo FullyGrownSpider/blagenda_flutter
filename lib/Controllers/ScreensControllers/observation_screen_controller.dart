@@ -69,7 +69,7 @@ class ObservationScreenController {
 
   List<Widget> getWidgetListEndBased(void Function() setStateMethod) {
     List<EndBasedController> overviewList = [];
-    List<Widget> againDeadlineDisplayList = [smallBlankSplit];
+    List<Widget> againDeadlineDisplayList = [];
     for (var e in _allLists.entries) {
       if (e.value is List<EndBasedController>) {
         overviewList.addAll(_goesInList(

@@ -29,7 +29,7 @@ const TextStyle bigTextStyleYesterday = TextStyle(
     fontSize: 22.0,
     height: 1.7,
     fontWeight: FontWeight.bold,
-    color: Colors.grey);
+    color: Colors.white30);
 const TextStyle normalTextStyle = TextStyle(
     fontSize: 14.0,
     height: 1.4,

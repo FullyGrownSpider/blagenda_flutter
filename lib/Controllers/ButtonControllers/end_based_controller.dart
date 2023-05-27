@@ -1,5 +1,6 @@
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 
+import 'package:flutter/material.dart';
 import '../../Commons/Models/Buttons/skippable_button.dart';
 import '../my_date_controller.dart';
 import 'basic_button_controller.dart';
@@ -21,6 +22,14 @@ abstract class EndBasedController<t extends BasicButton>
   int timeOfDay = -1;
   int left = -1;
   late MyDateController dateController;
+
+  @override
+  Color get color {
+    if (left != -1) {
+      return button.color;
+    }
+    return Color.lerp(button.color, Colors.black38, 0.3) as Color;
+  }
 
   bool wasJustAdded(MyDateController now) {
     return _notNewTime?.isAfter(now) == true;
@@ -167,6 +176,7 @@ abstract class EndBasedController<t extends BasicButton>
 
 abstract class SkippableEndBasedController<t extends SkippableButton>
     extends EndBasedController<t> {
+
   SkippableEndBasedController(super.button);
 
   SkippableEndBasedController createNew(MyDateController displayDate) {
@@ -196,7 +206,6 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   String displayJob() {
-    if (altLeft == -1) altLeft = left;
     if (altLeft < EndBasedController.showDayTime || _notNewTime != null) {
       return displayWithTimeJob();
     }
@@ -214,4 +223,13 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
       button.dateToSkip != null &&
       calc == left &&
       skipCheck(button, DateTime.now().add(Duration(days: calc)));
+
+  @override
+  Color get color {
+    if (altLeft != -1) {
+      return button.color;
+    }
+    return Color.lerp(button.color, Colors.black38, 0.3) as Color;
+  }
+
 }

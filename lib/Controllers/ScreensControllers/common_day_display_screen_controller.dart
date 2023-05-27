@@ -74,6 +74,7 @@ List<Widget> createADay(
               mainAxisAlignment: MainAxisAlignment.center, children: list),
           width: double.infinity,
           decoration: const BoxDecoration(
+              color: Colors.black26,
               border: Border(
                   bottom: BorderSide(color: Colors.black38, width: 20))));
       list = <Widget>[];
@@ -96,7 +97,8 @@ List<Widget> createADay(
     ], mainAxisAlignment: MainAxisAlignment.center));
     list.add(Row(children: [
       calcDayColor,
-      Text('In ' + (fromNow).toString() + ' days', style: secondaryBigTextStyle),
+      Text('In ' + (fromNow).toString() + ' days',
+          style: secondaryBigTextStyle),
       calcDayColor
     ], mainAxisAlignment: MainAxisAlignment.center));
     for (int i = 0; i < listWithEverything.length; i++) {
