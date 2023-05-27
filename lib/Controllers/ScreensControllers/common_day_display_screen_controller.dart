@@ -18,7 +18,7 @@ List<Widget> createADay(
     void Function() setStateMethod,
     Widget Function(EndBasedController, void Function()) addEndBasedButton,
     bool _showNamesOnly,
-    [bool showSkips = false]) {
+    [bool hideSkips = false]) {
   List<Widget> list = [];
   bool added = false;
   var calcDay = nowDate.addOrRemoveDays(fromNow);
@@ -29,6 +29,16 @@ List<Widget> createADay(
           height: bigTextStyle.height,
           fontWeight: bigTextStyle.fontWeight));
   Text toAdd;
+  var sortableList = listWithEverything
+      .where((e) => e.isInLeft(fromNow))
+      .toList(growable: false);
+  for (int i = 0; i < sortableList.length; i++) {
+    if (sortableList[i] is SkippableEndBasedController) {
+      sortableList[i] = (sortableList[i] as SkippableEndBasedController)
+          .createNew(MyDateController.fromDaysFromNow(fromNow));
+    }
+  }
+  sortableList.sort();
   if (_showNamesOnly) {
     if (fromNow == -1) {
       toAdd = const Text('Yesterday', style: bigTextStyleYesterday);
@@ -43,33 +53,23 @@ List<Widget> createADay(
       toAdd,
       calcDayColor,
     ], mainAxisAlignment: MainAxisAlignment.center));
-    for (int i = 0; i < listWithEverything.length; i++) {
-      if (listWithEverything[i].isInLeft(fromNow)) {
-        if (listWithEverything[i] is SkippableEndBasedController) {
-          if (showSkips &&
-              fromNow == listWithEverything[i].left &&
-              (listWithEverything[i] as SkippableEndBasedController)
-                  .skipCheckNotSure(fromNow, (listWithEverything[i].left))) {
-            continue;
-          }
-          list.add(smallerBlankSplit);
-          list.add(addEndBasedButton(
-              (listWithEverything[i] as SkippableEndBasedController)
-                  .createNew(MyDateController.fromDaysFromNow(fromNow)),
-              setStateMethod));
-        } else {
-          list.add(smallerBlankSplit);
-          list.add(addEndBasedButton(listWithEverything[i], setStateMethod));
-        }
-        added = true;
+    for (int i = 0; i < sortableList.length; i++) {
+      if (sortableList[i] is SkippableEndBasedController &&
+          hideSkips &&
+          fromNow == sortableList[i].left &&
+          (sortableList[i] as SkippableEndBasedController)
+              .skipCheckNotSure(fromNow, (sortableList[i].left))) {
+        continue;
       }
+      list.add(smallerBlankSplit);
+      list.add(addEndBasedButton(sortableList[i], setStateMethod));
+      added = true;
     }
-    //yesterday gets a gray box around it
-    if (fromNow == -1) {
-      list.add(smallBlankSplit);
-      list.add(smallBlankSplit);
-      list.add(smallBlankSplit);
-      Container container = Container(
+    //yesterday gets a gray box around it and today a green one
+    if (fromNow < 1) {
+      Container container;
+      if (fromNow == -1) {
+        container = Container(
           child: Column(
               mainAxisAlignment: MainAxisAlignment.center, children: list),
           width: double.infinity,
@@ -77,9 +77,28 @@ List<Widget> createADay(
               color: Colors.black26,
               border: Border(
                   bottom: BorderSide(color: Colors.black38, width: 20))));
+      } else {
+        if(!added) {
+          list.add(smallBlankSplit);
+          list.add(smallBlankSplit);
+          list.add(smallBlankSplit);
+          list.add(smallBlankSplit);
+          list.add(smallBlankSplit);
+          list.add(smallBlankSplit);
+        }
+        list = addAdded(list, added);
+        container = Container(
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center, children: list),
+            width: double.infinity,
+            decoration: const BoxDecoration(
+                color: Colors.white10,
+                border: Border(
+                    top:BorderSide(color: Colors.green, width: 6),
+                    bottom: BorderSide(color: Colors.green, width: 4))));
+      }
       list = <Widget>[];
       list.add(container);
-      list.add(smallBlankSplit);
     }
   } else {
     var newDate = nowDate.addOrRemoveDays(fromNow);
@@ -89,7 +108,6 @@ List<Widget> createADay(
       toAdd =
           Text(formatDate(newDate, bigDateFormatWithYear), style: bigTextStyle);
     }
-
     list.add(Row(children: [
       calcDayColor,
       toAdd,
@@ -101,38 +119,34 @@ List<Widget> createADay(
           style: secondaryBigTextStyle),
       calcDayColor
     ], mainAxisAlignment: MainAxisAlignment.center));
-    for (int i = 0; i < listWithEverything.length; i++) {
-      if (listWithEverything[i].isInLeft(fromNow)) {
-        if (listWithEverything[i] is SkippableEndBasedController) {
-          if (showSkips &&
-              fromNow == listWithEverything[i].left &&
-              (listWithEverything[i] as SkippableEndBasedController)
-                  .skipCheckNotSure(fromNow, (listWithEverything[i].left))) {
-            continue;
-          }
-          list.add(smallerBlankSplit);
-          list.add(addEndBasedButton(
-              (listWithEverything[i] as SkippableEndBasedController)
-                  .createNew(MyDateController.fromDaysFromNow(fromNow)),
-              setStateMethod));
-        } else {
-          list.add(smallerBlankSplit);
-          list.add(addEndBasedButton(listWithEverything[i], setStateMethod));
-        }
-        added = true;
+    for (int i = 0; i < sortableList.length; i++) {
+      if (sortableList[i] is SkippableEndBasedController &&
+          hideSkips &&
+          fromNow == sortableList[i].left &&
+          (sortableList[i] as SkippableEndBasedController)
+              .skipCheckNotSure(fromNow, (sortableList[i].left))) {
+        continue;
       }
+      list.add(smallerBlankSplit);
+      list.add(addEndBasedButton(sortableList[i], setStateMethod));
+      added = true;
     }
   }
-  if (fromNow != -1 && added) {
+  if (fromNow < 1) return list;
+  list = addAdded(list,added);
+  return list;
+}
+
+addAdded(List<Widget> list, bool added){
+  if (added) {
     list.add(Container(
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [smallBlankSplit]),
         decoration: const BoxDecoration(
             border:
-                Border(bottom: BorderSide(color: Colors.green, width: 4)))));
-  }
-  if (!added) {
+            Border(bottom: BorderSide(color: Colors.green, width: 4)))));
+  } else {
     list.add(Container(
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -144,7 +158,7 @@ List<Widget> createADay(
             ]),
         decoration: const BoxDecoration(
             border:
-                Border(bottom: BorderSide(color: Colors.green, width: 4)))));
+            Border(bottom: BorderSide(color: Colors.green, width: 4)))));
   }
   return list;
 }

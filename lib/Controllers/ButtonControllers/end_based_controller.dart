@@ -1,4 +1,5 @@
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
+import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/deadline_controller.dart';
 
 import 'package:flutter/material.dart';
 import '../../Commons/Models/Buttons/skippable_button.dart';
@@ -138,7 +139,11 @@ abstract class EndBasedController<t extends BasicButton>
 
   @override
   String gettingTheStringSelected() =>
-       gettingTheStringShortWithTime() + todosToString();
+      gettingTheStringShortWithTime() + todosToString();
+
+  String gettingTheStringShortWithDate() =>
+      dateController.fullDisplayWithCal() + '\n' +
+      gettingTheStringShortWithTime() ;
 
   @override
   String todosToString() {
@@ -152,7 +157,7 @@ abstract class EndBasedController<t extends BasicButton>
           if (results[i].trim().isEmpty) {
             results.removeAt(i);
             if (results.length < i && results[i + 1].isEmpty) {
-              results.removeAt(i+1);
+              results.removeAt(i + 1);
             }
             result = results.join('\n');
             if (result.trim().isEmpty) result = writeEmpty();
@@ -167,16 +172,30 @@ abstract class EndBasedController<t extends BasicButton>
 
   @override
   int compareTo(EndBasedController b) {
-    if (left == b.left) {
+    var thisLeft = this is SkippableEndBasedController
+        ? (this as SkippableEndBasedController).altLeft
+        : left;
+    var bLeft = b is SkippableEndBasedController ? b.altLeft : b.left;
+    if (thisLeft == bLeft) {
+      //same time then i want deadlines first
+      if (timeOfDay == b.timeOfDay) {
+        var value = 0;
+        if (this is DeadlineController) value--;
+        if (b is DeadlineController) value++;
+        return value;
+      }
+      //if either one doesn't have a time it needs to be at the bottom
+      if (timeOfDay == -1) return 1;
+      if (b.timeOfDay == -1) return -1;
+      //and then things that come first at the top
       return timeOfDay.compareTo(b.timeOfDay);
     }
-    return left.compareTo(b.left);
+    return thisLeft.compareTo(bLeft);
   }
 }
 
 abstract class SkippableEndBasedController<t extends SkippableButton>
     extends EndBasedController<t> {
-
   SkippableEndBasedController(super.button);
 
   SkippableEndBasedController createNew(MyDateController displayDate) {
@@ -185,6 +204,17 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
     clone.altLeft = clone.howMuchLeft();
     clone.dateController = dateController;
     return clone;
+  }
+
+@override
+  String gettingTheStringShortWithDate() =>
+      dateController.fullDisplayWithCal() + '\n' +
+          gettingTheStringShortWithTime() + '\n(Repeats)';
+
+  @override
+  void rebuild() {
+    super.rebuild();
+    if (altLeft == -1) altLeft = left;
   }
 
   @override
@@ -231,5 +261,4 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
     }
     return Color.lerp(button.color, Colors.black38, 0.3) as Color;
   }
-
 }

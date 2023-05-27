@@ -444,7 +444,7 @@ class ObservationScreenController {
           e.color,
           (idSelected == e.id && _typeOfSelected == e.runtimeType)
               ? e.gettingTheStringSelected()
-              : e.gettingTheStringShort(), () {
+              : e.gettingTheStringShortWithDate(), () {
         if (idSelected != e.id || _typeOfSelected != e.runtimeType) {
           idSelected = e.id;
           _typeOfSelected = e.runtimeType;
