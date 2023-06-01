@@ -41,6 +41,7 @@ List<Widget> createADay(
   sortableList.sort();
   if (_showNamesOnly) {
     if (fromNow == -1) {
+      if (_yesterdayShouldShow(listWithEverything)) return list;
       toAdd = const Text('Yesterday', style: bigTextStyleYesterday);
     } else if (fromNow == 0) {
       var dayShort = formatDate(calcDay, smallDateFormat).substring(0, 2);
@@ -135,6 +136,10 @@ List<Widget> createADay(
   if (fromNow < 1) return list;
   list = addAdded(list,added);
   return list;
+}
+
+bool _yesterdayShouldShow(List<EndBasedController> list) {
+  return list.any((e) => !(e is SkippableEndBasedController && e.inTheNextDays(7)));
 }
 
 addAdded(List<Widget> list, bool added){

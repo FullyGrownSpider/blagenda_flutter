@@ -69,19 +69,6 @@ class AgainWeekController extends SkippableEndBasedController<AgainWeekDay> {
   bool isInLeft(int calculatedDay) => (calculatedDay - left) % 7 == 0;
 
   @override
-  String gettingTheStringMed() {
-    String calc;
-    if (left == 0) {
-      calc = "\nToday ";
-    } else if (left == 1) {
-      calc = "\nTomorrow ";
-    } else {
-      calc = '\nevery ' + dateController.dayDisplay();
-    }
-    return displayJob() + calc;
-  }
-
-  @override
   void newSkip(MyDateController dateController) => button =
       AgainWeekDay(button.job, button.toDos, button.id, button.color, button.day, dateController);
 }

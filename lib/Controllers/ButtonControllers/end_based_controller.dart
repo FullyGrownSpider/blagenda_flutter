@@ -106,6 +106,10 @@ abstract class EndBasedController<t extends BasicButton>
         if (result <= 720) result += 720;
       }
       if (result < 0 || result > 1440) return;
+      //if time is 2.00 its not 2am its 2 pm. 7 is the earliest
+      if (result < 420 && but.toDos[j].contains('m')){
+        result += 720;
+      }
       timeOfDay = result;
       return;
     }
@@ -233,6 +237,13 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   MyDateController? skipDate() => button.dateToSkip;
   late int altLeft = -1;
+
+  bool inTheNextDays(int days){
+    for(int i = 0;i <= days;i++) {
+      if (isInLeft(i)) return true;
+    }
+    return false;
+  }
 
   @override
   String displayJob() {
