@@ -107,7 +107,7 @@ abstract class EndBasedController<t extends BasicButton>
       }
       if (result < 0 || result > 1440) return;
       //if time is 2.00 its not 2am its 2 pm. 7 is the earliest
-      if (result < 420 && but.toDos[j].contains('m')){
+      if (result < 420 && !but.toDos[j].contains(_replaceAPm)){
         result += 720;
       }
       timeOfDay = result;
