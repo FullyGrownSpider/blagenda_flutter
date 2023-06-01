@@ -1,3 +1,5 @@
+import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/again_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/deadline_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/end_based_controller.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
@@ -22,12 +24,8 @@ List<Widget> createADay(
   List<Widget> list = [];
   bool added = false;
   var calcDay = nowDate.addOrRemoveDays(fromNow);
-  var calcDayColor = Text('▲',
-      style: TextStyle(
-          color: usedColors[calcDay.weekday % 7],
-          fontSize: bigTextStyle.fontSize,
-          height: bigTextStyle.height,
-          fontWeight: bigTextStyle.fontWeight));
+  var left = _createCalcDayColor(listWithEverything.any((e) => e is DeadlineController && e.left == fromNow + 7), '◮', calcDay);
+  var right = _createCalcDayColor(listWithEverything.any((e) => e is AgainYearController && e.isInLeft(fromNow + 7)), '◭', calcDay);
   Text toAdd;
   var sortableList = listWithEverything
       .where((e) => e.isInLeft(fromNow))
@@ -50,9 +48,9 @@ List<Widget> createADay(
       toAdd = Text(formatDate(calcDay, smallDateFormat), style: bigTextStyle);
     }
     list.add(Row(children: [
-      calcDayColor,
+      left,
       toAdd,
-      calcDayColor,
+      right
     ], mainAxisAlignment: MainAxisAlignment.center));
     for (int i = 0; i < sortableList.length; i++) {
       if (sortableList[i] is SkippableEndBasedController &&
@@ -110,15 +108,15 @@ List<Widget> createADay(
           Text(formatDate(newDate, bigDateFormatWithYear), style: bigTextStyle);
     }
     list.add(Row(children: [
-      calcDayColor,
+      left,
       toAdd,
-      calcDayColor,
+      right
     ], mainAxisAlignment: MainAxisAlignment.center));
     list.add(Row(children: [
-      calcDayColor,
+      left,
       Text('In ' + (fromNow).toString() + ' days',
           style: secondaryBigTextStyle),
-      calcDayColor
+      right,
     ], mainAxisAlignment: MainAxisAlignment.center));
     for (int i = 0; i < sortableList.length; i++) {
       if (sortableList[i] is SkippableEndBasedController &&
@@ -136,6 +134,15 @@ List<Widget> createADay(
   if (fromNow < 1) return list;
   list = addAdded(list,added);
   return list;
+}
+
+_createCalcDayColor(bool any, String s, MyDateController calcDay) {
+  return Text(any ? s : '▲',
+      style: TextStyle(
+          color: usedColors[calcDay.weekday % 7],
+          fontSize: bigTextStyle.fontSize,
+          height: bigTextStyle.height,
+          fontWeight: bigTextStyle.fontWeight));
 }
 
 bool _yesterdayShouldShow(List<EndBasedController> list) {
