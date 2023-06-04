@@ -32,9 +32,8 @@ class DropboxClient {
       }
       var client = http.Client();
       var response = await client.get(downloadURL, headers: {
-        HttpHeaders.authorizationHeader: 'Bearer ' + _authorization,
-        "Dropbox-API-Arg":
-            "{\"path\": \"/" + _folder + "/" + filename + ".txt\"}"
+        HttpHeaders.authorizationHeader: 'Bearer $_authorization',
+        "Dropbox-API-Arg": "{\"path\": \"/$_folder/$filename.txt\"}"
       });
       file.writeAsBytesSync(response.bodyBytes);
     } catch (e) {
@@ -50,13 +49,10 @@ class DropboxClient {
       var valueC = utf8.encoder.convert(value);
       var client = http.Client();
       await client.post(uploadURL, body: valueC, headers: {
-        HttpHeaders.authorizationHeader: 'Bearer ' + _authorization,
+        HttpHeaders.authorizationHeader: 'Bearer $_authorization',
         "Content-Type": "application/octet-stream",
-        "Dropbox-API-Arg": "{\"path\": \"/" +
-            _folder +
-            "/" +
-            filename +
-            ".txt\", \"mode\": \"overwrite\"}"
+        "Dropbox-API-Arg":
+            "{\"path\": \"/$_folder/$filename.txt\", \"mode\": \"overwrite\"}"
       });
       return true;
     } catch (e) {
@@ -69,10 +65,10 @@ class DropboxClient {
         Uri.parse('https://api.dropboxapi.com/2/files/create_folder_v2');
     try {
       var client = http.Client();
-      var body = json.encode({'path': '/' + _folder});
+      var body = json.encode({'path': '/$_folder'});
       await client.post(folderURL,
           headers: {
-            HttpHeaders.authorizationHeader: 'Bearer ' + _authorization,
+            HttpHeaders.authorizationHeader: 'Bearer $_authorization',
             'Content-Type': 'application/json'
           },
           body: body);

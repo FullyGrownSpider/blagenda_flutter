@@ -18,7 +18,8 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  late final SearchScreenController _controller = SearchScreenController(_setStateMethod, _openEdit);
+  late final SearchScreenController _controller =
+      SearchScreenController(_setStateMethod, _openEdit);
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +39,15 @@ class _SearchScreenState extends State<SearchScreen> {
         ));
   }
 
-  void _openEdit(EndBasedController it){
+  void _openEdit(EndBasedController it) {
     Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => AddingScreen(
-                it, widget.addOrUpdateButton, widget.getNewId)))
+            context,
+            MaterialPageRoute(
+                builder: (context) => AddingScreen(
+                    it, widget.addOrUpdateButton, widget.getNewId)))
         .then((v) => Navigator.pop(context));
   }
+
   void _setStateMethod() {
     if (!mounted) return;
     setState(() {});

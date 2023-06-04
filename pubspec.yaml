@@ -3,26 +3,31 @@ description: Blagenda But Simple
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.18.1 <3.0.0'
+  sdk: '3.0.3'
 
 dependencies:
   flutter:
     sdk: flutter
 
   #https://pub.dev/packages/http/install
-  http: ^0.13.4
+  http: ^1.0.0
   # https://pub.dev/packages/date_format/example
-  date_format: ^2.0.4
+  date_format: ^2.0.7
   # https://pub.dev/packages/path_provider
-  path_provider: ^2.0.7
+  path_provider: ^2.0.15
 
-  cupertino_icons: ^1.0.2
+
+  # https://github.com/svprdga/Text-Recognition-Flutter/blob/master/pubspec.yaml
+  camera: ^0.10.5+2
+  google_mlkit_text_recognition: ^0.8.1
+  permission_handler: ^10.2.0
+
+  cupertino_icons: ^1.0.5
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^1.0.0
-
+  flutter_lints: ^2.0.1
 flutter:
   assets:
     - icons/

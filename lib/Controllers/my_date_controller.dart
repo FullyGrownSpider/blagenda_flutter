@@ -6,7 +6,9 @@ class MyDateController extends DateTime {
   static MyDateController today =
       MyDateController(lookTime.year, lookTime.month, lookTime.day, 2);
 
-  static MyDateController yesterday = _dateTimeToMyDateController(MyDateController(lookTime.year, lookTime.month, lookTime.day, 2).subtract(const Duration(days: 1)));
+  static MyDateController yesterday = _dateTimeToMyDateController(
+      MyDateController(lookTime.year, lookTime.month, lookTime.day, 2)
+          .subtract(const Duration(days: 1)));
 
   MyDateController(super.year,
       [super.month = 1, super.day = 1, super.hour = 0, super.minute]);
@@ -23,13 +25,14 @@ class MyDateController extends DateTime {
   static MyDateController fromDaysFromNow(int fromNow) =>
       MyDateController.today.addOrRemoveDays(fromNow);
 
-  static int monthCalc(int fromNow){
+  static int monthCalc(int fromNow) {
     var month = fromDaysFromNow(fromNow).month;
     return DateTimeRange(
-        start: DateTime(today.year, month),
-        end: DateTime(today.year, month + 1))
-        .duration
-        .inDays - 1;
+                start: DateTime(today.year, month),
+                end: DateTime(today.year, month + 1))
+            .duration
+            .inDays -
+        1;
   }
 
   @override
@@ -46,8 +49,7 @@ class MyDateController extends DateTime {
     today = MyDateController(lookTime.year, lookTime.month, lookTime.day, 2);
   }
 
-  static void resetLookTime() =>
-    lookTime = MyDateController.now();
+  static void resetLookTime() => lookTime = MyDateController.now();
 
   static MyDateController get nowDate => today;
 
@@ -66,12 +68,9 @@ class MyDateController extends DateTime {
     var monthValue = month.toRadixString(16);
     var dayValue = day.toString();
     if (dayValue.length == 1) {
-      dayValue = '' + dayValue;
+      dayValue = '0$dayValue';
     }
-    return dayValue +
-        ' - ' +
-        monthValue +
-        (showYear ? ' - ' + year.toString() : '');
+    return '$dayValue - $monthValue ${(showYear ? ' - ${year.toString()}' : '')}';
   }
 
   String fullDisplayWithCal([bool withYear = true]) => formatDate(this, [
@@ -186,7 +185,8 @@ class MyDateController extends DateTime {
       return nowDate.add(Duration(days: daysUntilDay));
     }
     for (int i = 0; i < 12; i++) {
-      if (word.startsWith(months[i].toLowerCase()) || word.startsWith(monthsNL[i].toLowerCase())) {
+      if (word.startsWith(months[i].toLowerCase()) ||
+          word.startsWith(monthsNL[i].toLowerCase())) {
         var d = MyDateController(nowDate.year, i + 1);
         if (d.isBefore(MyDateController.today)) {
           d = MyDateController(nowDate.year + 1, i + 1);

@@ -73,14 +73,14 @@ class Loading {
     }
     uploader.add(t);
     await Future.delayed(const Duration(milliseconds: 1));
-    await _client.uploadFile(t.toString() + '.byd');
+    await _client.uploadFile('${t.toString()}.byd');
     uploader.remove(t);
   }
 
   Future<void> downloadDatabaseFiles() async {
     List<Future> results = [];
     for (int i = 0; i < typeList.length; i++) {
-      results.add(_client.downloadFile(typeList[i].toString() + '.byd'));
+      results.add(_client.downloadFile('${typeList[i].toString()}.byd'));
     }
     for (int i = 0; i < results.length; i++) {
       await results[i];

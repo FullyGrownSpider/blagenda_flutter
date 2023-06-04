@@ -513,14 +513,14 @@ class AddingScreenController {
 
   Container _addEndBasedButton(EndBasedController controller) {
     return Container(
-        child: Text(' ' + controller.displayWithTimeJob() + ' ',
-            style: normalTextStyle),
         decoration: BoxDecoration(
             border: Border.all(
               color: Colors.black,
             ),
             color: controller.color,
-            borderRadius: const BorderRadius.all(Radius.circular(5))));
+            borderRadius: const BorderRadius.all(Radius.circular(5))),
+        child: Text(' ${controller.displayWithTimeJob()} ',
+            style: normalTextStyle));
   }
 
   String titleGenerator(String title) => title.isEmpty ? 'No title' : title;

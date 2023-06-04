@@ -83,7 +83,7 @@ abstract class EndBasedController<t extends BasicButton>
         }
       }
       if (correctReg == '') {
-        return;
+        continue;
       }
       //remove all items that are found in the correct reg
       var items = correctReg;
@@ -107,7 +107,7 @@ abstract class EndBasedController<t extends BasicButton>
       }
       if (result < 0 || result > 1440) return;
       //if time is 2.00 its not 2am its 2 pm. 7 is the earliest
-      if (result < 420 && indexOfAPm == -1){
+      if (result < 420 && indexOfAPm == -1) {
         result += 720;
       }
       timeOfDay = result;
@@ -126,8 +126,8 @@ abstract class EndBasedController<t extends BasicButton>
     if (timeOfDay == -1) return job;
     var dur = Duration(minutes: timeOfDay);
     String minutes = (timeOfDay % 60).toString();
-    if (minutes.length == 1) minutes = '0' + minutes;
-    return dur.inHours.toString() + _splitString + minutes + ' - ' + job;
+    if (minutes.length == 1) minutes = '0$minutes';
+    return '${dur.inHours.toString()}$_splitString$minutes - $job';
   }
 
   @override
@@ -146,8 +146,7 @@ abstract class EndBasedController<t extends BasicButton>
       gettingTheStringShortWithTime() + todosToString();
 
   String gettingTheStringShortWithDate() =>
-      dateController.fullDisplayWithCal() + '\n' +
-      gettingTheStringShortWithTime() ;
+      '${dateController.fullDisplayWithCal()}\n${gettingTheStringShortWithTime()}';
 
   @override
   String todosToString() {
@@ -210,10 +209,9 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
     return clone;
   }
 
-@override
+  @override
   String gettingTheStringShortWithDate() =>
-      dateController.fullDisplayWithCal() + '\n' +
-          gettingTheStringShortWithTime() + '\n(Repeats)';
+      '${dateController.fullDisplayWithCal()}\n${gettingTheStringShortWithTime()}\n(Repeats)';
 
   @override
   void rebuild() {
@@ -223,13 +221,7 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   String writeEmpty() =>
-      "\n" +
-      emogjiList[(job +
-                  MyDateController.fromDaysFromNow(altLeft)
-                      .microsecondsSinceEpoch
-                      .toString())
-              .hashCode %
-          emogjiList.length];
+      '\n${emogjiList[(job + MyDateController.fromDaysFromNow(altLeft).microsecondsSinceEpoch.toString()).hashCode % emogjiList.length]}';
 
   SkippableEndBasedController callConstructor(button);
 
@@ -238,8 +230,8 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
   MyDateController? skipDate() => button.dateToSkip;
   late int altLeft = -1;
 
-  bool inTheNextDays(int days){
-    for(int i = 0;i <= days;i++) {
+  bool inTheNextDays(int days) {
+    for (int i = 0; i <= days; i++) {
       if (isInLeft(i)) return true;
     }
     return false;

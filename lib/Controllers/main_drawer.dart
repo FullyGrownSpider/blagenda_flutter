@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/basic_button_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/photo_deadline.dart';
 import 'package:blagenda_flutter_simple/Screens/adding_screen.dart';
 import 'package:blagenda_flutter_simple/Screens/search_screen.dart';
 import 'package:date_format/date_format.dart';
@@ -41,19 +42,27 @@ class MainDrawer {
       children: <Widget>[
         DrawerHeader(
           padding: const EdgeInsets.all(0.0),
+          decoration: const BoxDecoration(
+            color: Colors.black,
+          ),
           child: Center(
               child: Column(children: [
             Text(
               formatDate(MyDateController.today, bigDateFormat),
               style: textStyle,
             ),
-            Text(formatDate(MyDateController.today,['W:', WW]) + " - N:" + (Random(MyDateController.today.hashCode).nextInt(100) + 1).toString(),style: textStyle)
+            Text(
+                "${formatDate(MyDateController.today, [
+                      'W:',
+                      WW
+                    ])} - N:${Random(MyDateController.today.hashCode).nextInt(100) + 1}",
+                style: textStyle)
           ])),
-          decoration: const BoxDecoration(
-            color: Colors.black,
-          ),
         ),
         Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: sepColor, width: 7))),
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -89,11 +98,20 @@ class MainDrawer {
                       deleteButton();
                       Navigator.pop(context);
                     },
-                  )
-                ]),
-            width: double.infinity,
-            decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: sepColor, width: 7)))),
+                  ),
+                  ListTile(
+                      title: const Text('Camera Add', style: normalTextStyle),
+                      trailing:
+                          const Icon(Icons.camera_alt, color: Colors.black),
+                      onTap: () {
+                        Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => PhotoScreen(
+                                        addOrUpdateButton, getNewId)))
+                            .then((v) => Navigator.pop(context));
+                      }),
+                ])),
         ListTile(
           title: const Text('Reset Display', style: normalTextStyle),
           trailing: const Icon(Icons.restart_alt_rounded, color: Colors.black),
@@ -103,6 +121,11 @@ class MainDrawer {
           },
         ),
         Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+                border: Border(
+                    bottom: BorderSide(color: sepColor, width: 11),
+                    top: BorderSide(color: sepColor, width: 9))),
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -119,12 +142,7 @@ class MainDrawer {
                           .then((v) => Navigator.pop(context));
                     },
                   ),
-                ]),
-            width: double.infinity,
-            decoration: const BoxDecoration(
-                border: Border(
-                    bottom: BorderSide(color: sepColor, width: 11),
-                    top: BorderSide(color: sepColor, width: 9)))),
+                ])),
         ListTile(
           title: const Text('Skip this time', style: normalTextStyle),
           trailing: const Icon(Icons.next_plan_outlined, color: Colors.black),
@@ -134,6 +152,9 @@ class MainDrawer {
           },
         ),
         Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: sepColor, width: 13))),
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -145,10 +166,7 @@ class MainDrawer {
                       syncAction!();
                     },
                   )
-                ]),
-            width: double.infinity,
-            decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: sepColor, width: 13)))),
+                ])),
       ],
     ));
   }

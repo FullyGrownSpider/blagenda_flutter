@@ -49,17 +49,20 @@ class SearchScreenController {
           .toSet()
           .toList();
       for (int i = 0; i < counter.length; i++) {
-        var list = _searchDay(counter[i], everything!.toList()
-          ..removeWhere((e) => _stringSearch(e, text)));
-        list.insert(2, Container(decoration: BoxDecoration(
-            color: Colors.green[200],
-            border: Border.all(
-              width: 2,
-              color: Colors.transparent,
-            ),
-            // Make rounded corners
-            borderRadius: BorderRadius.circular(30)
-        ), child: buttonCreator(everythingForRealThough[i])));
+        var list = _searchDay(counter[i],
+            everything!.toList()..removeWhere((e) => _stringSearch(e, text)));
+        list.insert(
+            2,
+            Container(
+                decoration: BoxDecoration(
+                    color: Colors.green[200],
+                    border: Border.all(
+                      width: 2,
+                      color: Colors.transparent,
+                    ),
+                    // Make rounded corners
+                    borderRadius: BorderRadius.circular(30)),
+                child: buttonCreator(everythingForRealThough[i])));
         a.addAll(list);
       }
     } else if (extraTime == 0) {
@@ -150,11 +153,9 @@ class SearchScreenController {
     var extraTime = awns == null
         ? 0
         : extraDatesController.text.toLowerCase().contains('m')
-        ? MyDateController.monthCalc(awns)
-        : int.parse(extraDatesController.text);
-    timerCheck(
-        () =>
-            searchAll(awns, stringController.text, extraTime),
+            ? MyDateController.monthCalc(awns)
+            : int.parse(extraDatesController.text);
+    timerCheck(() => searchAll(awns, stringController.text, extraTime),
         _getCorrectString(date, extraTime));
   }
 
@@ -187,8 +188,8 @@ class SearchScreenController {
   List<Widget> getFilling() {
     List<Widget> widgets = [
       Row(children: [
-        Expanded(child: dateFinder(), flex: 2),
-        Expanded(child: extraDatesFinder(), flex: 1)
+        Expanded(flex: 2, child: dateFinder()),
+        Expanded(flex: 1, child: extraDatesFinder())
       ]),
       textFinder(),
       const Text(' ')

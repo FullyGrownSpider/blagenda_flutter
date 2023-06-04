@@ -23,7 +23,7 @@ abstract class BasicButtonController<t extends BasicButton> {
   int get id => _button.id;
 
   static String displayGenericJob(String job, int max) =>
-      job.length > max ? job.substring(0, max) + '...' : job;
+      job.length > max ? '${job.substring(0, max)}...' : job;
 
   Color get color => _button.color;
 
@@ -50,7 +50,7 @@ abstract class BasicButtonController<t extends BasicButton> {
     return buf.toString();
   }
 
-  String writeEmpty() => "\n" + emogjiList[job.hashCode % emogjiList.length];
+  String writeEmpty() => "\n${emogjiList[job.hashCode % emogjiList.length]}";
 
   bool colorCheck(Color c) => color.value == c.value;
 
@@ -68,8 +68,8 @@ abstract class BasicButtonController<t extends BasicButton> {
         if (data[i].length > _maxLengthTodos) {
           //tried to add the word but its the first word of a sentence and
           //longer than the max
-          buf.write(data[i].substring(0, _maxLengthTodos - 3) + '...');
-          buf.write(data[i] + '\n');
+          buf.write('${data[i].substring(0, _maxLengthTodos - 3)}...');
+          buf.write('$data[i]\n');
         } else {
           //add item to todos string
           buf.write(data[i]);
@@ -79,7 +79,7 @@ abstract class BasicButtonController<t extends BasicButton> {
       } else {
         if (data[i].length + sentenceLength < _maxLengthTodos) {
           //add it to the sentence
-          buf.write(' ' + data[i]);
+          buf.write(' $data[i]');
           sentenceLength += data[i].length + 1;
         } else {
           buf.write('\n');

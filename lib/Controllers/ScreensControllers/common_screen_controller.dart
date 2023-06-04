@@ -56,6 +56,8 @@ Widget blagendaUniformButton(
         bool b, Color c, String s, void Function() pressed) =>
     ElevatedButton(
         onPressed: pressed,
+        style: ElevatedButton.styleFrom(
+            backgroundColor: b ? getSelectedVersionOfColor(c) : c),
         child: s.contains('\n')
             ? Column(children: [
                 Text(s.substring(0, s.indexOf('\n')),
@@ -69,9 +71,7 @@ Widget blagendaUniformButton(
                   style: smallStyle,
                 )
               ])
-            : Text(s, style: normalTextStyle, textAlign: TextAlign.center),
-        style: ElevatedButton.styleFrom(
-            backgroundColor: b ? getSelectedVersionOfColor(c) : c));
+            : Text(s, style: normalTextStyle, textAlign: TextAlign.center));
 
 Widget _createColorButton(int index, void Function() setStateMethod,
         void Function(int) onPressed, int chosenIndex) =>

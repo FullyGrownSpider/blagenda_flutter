@@ -21,11 +21,11 @@ Map<String, String> lineConversion(String line) {
 t buttonImportGenerator<t extends BasicButton>(String line) {
   var list = lineConversion(line);
   dynamic but = BasicButton(
-      dataImportGenerator<String>(list[basicValuesToString(_BasicValues.job)]),
-      dataImportGenerator<List>(list[basicValuesToString(_BasicValues.td)])
+      dataImportGenerator<String>(list[_basicValuesToString(_BasicValues.job)]),
+      dataImportGenerator<List>(list[_basicValuesToString(_BasicValues.td)])
           as List<String>,
-      dataImportGenerator<int>(list[basicValuesToString(_BasicValues.id)]),
-      dataImportGenerator<Color>(list[basicValuesToString(_BasicValues.col)]));
+      dataImportGenerator<int>(list[_basicValuesToString(_BasicValues.id)]),
+      dataImportGenerator<Color>(list[_basicValuesToString(_BasicValues.col)]));
   if (buttonCreatingMap.containsKey(t)) {
     but = buttonCreatingMap[t]!(but, list);
   }
@@ -36,39 +36,40 @@ Map<Type, BasicButton Function(BasicButton, Map<String, String>)>
     buttonCreatingMap = {
   AgainMonthDay: (but, list) => AgainMonthDay.fromButton(
       but,
-      dataImportGenerator<int>(list[basicValuesToString(_BasicValues.fV)]),
-      dataImportDateGenerator(list[basicValuesToString(_BasicValues.sS)])),
+      dataImportGenerator<int>(list[_basicValuesToString(_BasicValues.fV)]),
+      dataImportDateGenerator(list[_basicValuesToString(_BasicValues.sS)])),
   AgainWeekDay: (but, list) => AgainWeekDay.fromButton(
       but,
-      dataImportGenerator<int>(list[basicValuesToString(_BasicValues.fV)]),
-      dataImportDateGenerator(list[basicValuesToString(_BasicValues.sS)])),
+      dataImportGenerator<int>(list[_basicValuesToString(_BasicValues.fV)]),
+      dataImportDateGenerator(list[_basicValuesToString(_BasicValues.sS)])),
   AgainAmountDay: (but, list) => AgainAmountDay.fromButton(
       but,
       dataImportGenerator<MyDateController>(
-          list[basicValuesToString(_BasicValues.fV)]),
-      dataImportGenerator<int>(list[basicValuesToString(_BasicValues.sV)]),
-      dataImportDateGenerator(list[basicValuesToString(_BasicValues.sS)])),
+          list[_basicValuesToString(_BasicValues.fV)]),
+      dataImportGenerator<int>(list[_basicValuesToString(_BasicValues.sV)]),
+      dataImportDateGenerator(list[_basicValuesToString(_BasicValues.sS)])),
   AgainYearDay: (but, list) => AgainYearDay.fromButton(
       but,
-      dataImportGenerator<int>(list[basicValuesToString(_BasicValues.fV)]),
-      dataImportGenerator<int>(list[basicValuesToString(_BasicValues.sV)]),
-      dataImportDateGenerator(list[basicValuesToString(_BasicValues.sS)])),
+      dataImportGenerator<int>(list[_basicValuesToString(_BasicValues.fV)]),
+      dataImportGenerator<int>(list[_basicValuesToString(_BasicValues.sV)]),
+      dataImportDateGenerator(list[_basicValuesToString(_BasicValues.sS)])),
   Deadline: (but, list) => Deadline.fromButton(
       but,
       dataImportGenerator<MyDateController>(
-          list[basicValuesToString(_BasicValues.fV)]),
-      dataImportGenerator<String>(list[basicValuesToString(_BasicValues.sV)])),
+          list[_basicValuesToString(_BasicValues.fV)]),
+      dataImportGenerator<String>(list[_basicValuesToString(_BasicValues.sV)])),
 };
 
 String buttonExportGenerator(BasicButton line) {
   var buf = StringBuffer();
   buf.write(
-      dataExportGenerator(line.job, basicValuesToString(_BasicValues.job)));
-  buf.write(dataExportGenerator(line.id, basicValuesToString(_BasicValues.id)));
+      dataExportGenerator(line.job, _basicValuesToString(_BasicValues.job)));
   buf.write(
-      dataExportGenerator(line.toDos, basicValuesToString(_BasicValues.td)));
+      dataExportGenerator(line.id, _basicValuesToString(_BasicValues.id)));
   buf.write(
-      dataExportGenerator(line.color, basicValuesToString(_BasicValues.col)));
+      dataExportGenerator(line.toDos, _basicValuesToString(_BasicValues.td)));
+  buf.write(
+      dataExportGenerator(line.color, _basicValuesToString(_BasicValues.col)));
   if (_dataExportMap.containsKey(line.runtimeType)) {
     _dataExportMap[line.runtimeType]!(line, buf);
   }
@@ -76,10 +77,11 @@ String buttonExportGenerator(BasicButton line) {
   return buf.toString();
 }
 
-basicValuesToString(_BasicValues val) => val.toString().split('.').last;
+_basicValuesToString(_BasicValues val) => val.toString().split('.').last;
 
-String uniquePart<t extends BasicButton>(t line) => dataExportGenerator(
-    line.id, basicValuesToString(_BasicValues.id)) + storageSep;
+String uniquePart<t extends BasicButton>(t line) =>
+    dataExportGenerator(line.id, _basicValuesToString(_BasicValues.id)) +
+    storageSep;
 
 ///enumeration used to give data names in map structure
 enum _BasicValues { job, td, id, col, fV, sV, sS }
@@ -164,37 +166,37 @@ final Map<Type, void Function(dynamic, StringBuffer)> _dataExportMap = {
   bool: (value, buf) => buf.write(value ? 't' : ''),
   Deadline: (value, buf) {
     buf.write(
-        dataExportGenerator(value.date, basicValuesToString(_BasicValues.fV)));
+        dataExportGenerator(value.date, _basicValuesToString(_BasicValues.fV)));
     buf.write(dataExportGenerator(
-        value.calendar, basicValuesToString(_BasicValues.sV)));
+        value.calendar, _basicValuesToString(_BasicValues.sV)));
   },
   AgainMonthDay: (value, buf) {
     buf.write(
-        dataExportGenerator(value.day, basicValuesToString(_BasicValues.fV)));
+        dataExportGenerator(value.day, _basicValuesToString(_BasicValues.fV)));
     buf.write(dataExportGenerator(
-        value.dateToSkip, basicValuesToString(_BasicValues.sS)));
+        value.dateToSkip, _basicValuesToString(_BasicValues.sS)));
   },
   AgainYearDay: (value, buf) {
     buf.write(
-        dataExportGenerator(value.day, basicValuesToString(_BasicValues.fV)));
-    buf.write(
-        dataExportGenerator(value.month, basicValuesToString(_BasicValues.sV)));
+        dataExportGenerator(value.day, _basicValuesToString(_BasicValues.fV)));
     buf.write(dataExportGenerator(
-        value.dateToSkip, basicValuesToString(_BasicValues.sS)));
+        value.month, _basicValuesToString(_BasicValues.sV)));
+    buf.write(dataExportGenerator(
+        value.dateToSkip, _basicValuesToString(_BasicValues.sS)));
   },
   AgainWeekDay: (value, buf) {
     buf.write(
-        dataExportGenerator(value.day, basicValuesToString(_BasicValues.fV)));
+        dataExportGenerator(value.day, _basicValuesToString(_BasicValues.fV)));
     buf.write(dataExportGenerator(
-        value.dateToSkip, basicValuesToString(_BasicValues.sS)));
+        value.dateToSkip, _basicValuesToString(_BasicValues.sS)));
   },
   AgainAmountDay: (value, buf) {
     buf.write(
-        dataExportGenerator(value.date, basicValuesToString(_BasicValues.fV)));
+        dataExportGenerator(value.date, _basicValuesToString(_BasicValues.fV)));
     buf.write(
-        dataExportGenerator(value.day, basicValuesToString(_BasicValues.sV)));
+        dataExportGenerator(value.day, _basicValuesToString(_BasicValues.sV)));
     buf.write(dataExportGenerator(
-        value.dateToSkip, basicValuesToString(_BasicValues.sS)));
+        value.dateToSkip, _basicValuesToString(_BasicValues.sS)));
   }
 };
 

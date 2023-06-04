@@ -38,8 +38,8 @@ class _AddingScreenState extends State<AddingScreen> {
         ]),
         body: SingleChildScrollView(
             child: Column(
-          children: _itemList,
           mainAxisAlignment: MainAxisAlignment.center,
+          children: _itemList,
         )));
   }
 

@@ -19,13 +19,21 @@ List<Widget> createADay(
     int fromNow,
     void Function() setStateMethod,
     Widget Function(EndBasedController, void Function()) addEndBasedButton,
-    bool _showNamesOnly,
+    bool showNamesOnly,
     [bool hideSkips = false]) {
   List<Widget> list = [];
   bool added = false;
   var calcDay = nowDate.addOrRemoveDays(fromNow);
-  var left = _createCalcDayColor(listWithEverything.any((e) => e is DeadlineController && e.left == fromNow + 7), '◮', calcDay);
-  var right = _createCalcDayColor(listWithEverything.any((e) => e is AgainYearController && e.isInLeft(fromNow + 7)), '◭', calcDay);
+  var left = _createCalcDayColor(
+      listWithEverything
+          .any((e) => e is DeadlineController && e.left == fromNow + 7),
+      '◮',
+      calcDay);
+  var right = _createCalcDayColor(
+      listWithEverything
+          .any((e) => e is AgainYearController && e.isInLeft(fromNow + 7)),
+      '◭',
+      calcDay);
   Text toAdd;
   var sortableList = listWithEverything
       .where((e) => e.isInLeft(fromNow))
@@ -37,22 +45,21 @@ List<Widget> createADay(
     }
   }
   sortableList.sort();
-  if (_showNamesOnly) {
+  if (showNamesOnly) {
     if (fromNow == -1) {
       if (_yesterdayShouldShow(listWithEverything
-          .where((e) => e.left == -1).toList(growable: false))) return list;
+          .where((e) => e.left == -1)
+          .toList(growable: false))) return list;
       toAdd = const Text('Yesterday', style: bigTextStyleYesterday);
     } else if (fromNow == 0) {
       var dayShort = formatDate(calcDay, smallDateFormat).substring(0, 2);
-      toAdd = Text('Today (' + dayShort + ')', style: bigTextStyle);
+      toAdd = Text('Today ($dayShort)', style: bigTextStyle);
     } else {
       toAdd = Text(formatDate(calcDay, smallDateFormat), style: bigTextStyle);
     }
-    list.add(Row(children: [
-      left,
-      toAdd,
-      right
-    ], mainAxisAlignment: MainAxisAlignment.center));
+    list.add(Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [left, toAdd, right]));
     for (int i = 0; i < sortableList.length; i++) {
       if (sortableList[i] is SkippableEndBasedController &&
           hideSkips &&
@@ -70,15 +77,15 @@ List<Widget> createADay(
       Container container;
       if (fromNow == -1) {
         container = Container(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, children: list),
-          width: double.infinity,
-          decoration: const BoxDecoration(
-              color: Colors.black26,
-              border: Border(
-                  bottom: BorderSide(color: Colors.black38, width: 20))));
+            width: double.infinity,
+            decoration: const BoxDecoration(
+                color: Colors.black26,
+                border: Border(
+                    bottom: BorderSide(color: Colors.black38, width: 20))),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center, children: list));
       } else {
-        if(!added) {
+        if (!added) {
           list.add(smallBlankSplit);
           list.add(smallBlankSplit);
           list.add(smallBlankSplit);
@@ -88,14 +95,14 @@ List<Widget> createADay(
         }
         list = addAdded(list, added);
         container = Container(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center, children: list),
             width: double.infinity,
             decoration: const BoxDecoration(
                 color: Colors.white10,
                 border: Border(
-                    top:BorderSide(color: Colors.green, width: 6),
-                    bottom: BorderSide(color: Colors.green, width: 4))));
+                    top: BorderSide(color: Colors.green, width: 6),
+                    bottom: BorderSide(color: Colors.green, width: 4))),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center, children: list));
       }
       list = <Widget>[];
       list.add(container);
@@ -108,17 +115,14 @@ List<Widget> createADay(
       toAdd =
           Text(formatDate(newDate, bigDateFormatWithYear), style: bigTextStyle);
     }
-    list.add(Row(children: [
+    list.add(Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [left, toAdd, right]));
+    list.add(Row(mainAxisAlignment: MainAxisAlignment.center, children: [
       left,
-      toAdd,
-      right
-    ], mainAxisAlignment: MainAxisAlignment.center));
-    list.add(Row(children: [
-      left,
-      Text('In ' + (fromNow).toString() + ' days',
-          style: secondaryBigTextStyle),
+      Text('In ${(fromNow).toString()} days', style: secondaryBigTextStyle),
       right,
-    ], mainAxisAlignment: MainAxisAlignment.center));
+    ]));
     for (int i = 0; i < sortableList.length; i++) {
       if (sortableList[i] is SkippableEndBasedController &&
           hideSkips &&
@@ -133,7 +137,7 @@ List<Widget> createADay(
     }
   }
   if (fromNow < 1) return list;
-  list = addAdded(list,added);
+  list = addAdded(list, added);
   return list;
 }
 
@@ -147,31 +151,30 @@ _createCalcDayColor(bool any, String s, MyDateController calcDay) {
 }
 
 bool _yesterdayShouldShow(List<EndBasedController> list) {
-  return !list.any((e) => !(e is SkippableEndBasedController && e.inTheNextDays(7)));
+  return !list
+      .any((e) => !(e is SkippableEndBasedController && e.inTheNextDays(7)));
 }
 
-addAdded(List<Widget> list, bool added){
+addAdded(List<Widget> list, bool added) {
   if (added) {
     list.add(Container(
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [smallBlankSplit]),
         decoration: const BoxDecoration(
-            border:
-            Border(bottom: BorderSide(color: Colors.green, width: 4)))));
+            border: Border(bottom: BorderSide(color: Colors.green, width: 4))),
+        child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [smallBlankSplit])));
   } else {
     list.add(Container(
-        child: Column(
+        decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: Colors.green, width: 4))),
+        child: const Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               smallBlankSplit,
               smallBlankSplit,
               smallBlankSplit,
               smallBlankSplit
-            ]),
-        decoration: const BoxDecoration(
-            border:
-            Border(bottom: BorderSide(color: Colors.green, width: 4)))));
+            ])));
   }
   return list;
 }

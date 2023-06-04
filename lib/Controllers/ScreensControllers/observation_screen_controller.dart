@@ -93,9 +93,7 @@ class ObservationScreenController {
       againDeadlineDisplayList.addAll(_createNewEndBasedWasJustAddedDay(
           setStateMethod, MyDateController.lookTime, newList));
       againDeadlineDisplayList.addAll(_createEndBasedDayList(
-          setStateMethod,
-          MyDateController.lookTime,
-          overviewList));
+          setStateMethod, MyDateController.lookTime, overviewList));
     }
     againDeadlineDisplayList.add(bigSplitterTextField);
     return againDeadlineDisplayList;
@@ -170,7 +168,7 @@ class ObservationScreenController {
       blagendaUniformButton(
           daysToShowNow == _possibleExtraDays[index],
           usedColors.first,
-          'Show next ' + _possibleExtraDays[index].toString() + ' days', () {
+          'Show next ${_possibleExtraDays[index].toString()} days', () {
         chosenColor = -1;
         if (daysToShowNow == _possibleExtraDays[index]) {
           daysToShowNow = _daysToShow;
@@ -312,7 +310,8 @@ class ObservationScreenController {
       return (list).where((e) => e.colorCheck(c)).toList();
     }
     if (list.first is EndBasedController) {
-      var newList = list.where((e) => _shouldGoIn(e as EndBasedController, now));
+      var newList =
+          list.where((e) => _shouldGoIn(e as EndBasedController, now));
       if (daysToShowNow != _daysToShow) {
         //if you select 14 you want to see something 14 days away too not just
         //13
@@ -331,7 +330,7 @@ class ObservationScreenController {
     if (it is EndBasedController) {
       return clicked == index
           ? it.gettingTheStringSelected()
-              : it.gettingTheStringShort();
+          : it.gettingTheStringShort();
     } else {
       return clicked == index
           ? it.gettingTheStringSelected()
@@ -393,7 +392,7 @@ class ObservationScreenController {
       BasicButtonController controller, void Function() setStateMethod) {
     hasJustAdded++;
     if (_getCorrectList(controller.runtimeType)
-            .any((e) => e.id == controller.id)) {
+        .any((e) => e.id == controller.id)) {
       _updateButton(controller, setStateMethod);
     } else {
       _addButton(controller, setStateMethod);
