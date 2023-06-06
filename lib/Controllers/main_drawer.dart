@@ -35,6 +35,8 @@ class MainDrawer {
   final void Function() resetScreen;
   final int Function(Type) getNewId;
   static const Color sepColor = Colors.black54;
+  final int funnyNumber =
+      Random(MyDateController.today.hashCode).nextInt(100) + 1;
 
   Drawer createDrawer(BuildContext context) {
     return Drawer(
@@ -55,7 +57,7 @@ class MainDrawer {
                 "${formatDate(MyDateController.today, [
                       'W:',
                       WW
-                    ])} - N:${Random(MyDateController.today.hashCode).nextInt(100) + 1}",
+                    ])} - N:$funnyNumber",
                 style: textStyle)
           ])),
         ),
@@ -67,7 +69,7 @@ class MainDrawer {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   ListTile(
-                    title: const Text('Add Button', style: normalTextStyle),
+                    title: _dumbJoke('Add Button'),
                     trailing: const Icon(Icons.add, color: Colors.black),
                     onTap: () => Navigator.push(
                             context,
@@ -77,8 +79,7 @@ class MainDrawer {
                         .then((v) => Navigator.pop(context)),
                   ),
                   ListTile(
-                      title:
-                          const Text('Update Button', style: normalTextStyle),
+                      title: _dumbJoke('Update Button'),
                       trailing: const Icon(Icons.edit, color: Colors.black),
                       onTap: () {
                         var button = getSelectedButton();
@@ -92,7 +93,7 @@ class MainDrawer {
                         }
                       }),
                   ListTile(
-                    title: const Text('Delete Button', style: normalTextStyle),
+                    title: _dumbJoke('Delete Button'),
                     trailing: const Icon(Icons.delete, color: Colors.black),
                     onTap: () {
                       deleteButton();
@@ -100,7 +101,7 @@ class MainDrawer {
                     },
                   ),
                   ListTile(
-                      title: const Text('Camera Add', style: normalTextStyle),
+                      title: _dumbJoke('Camera Add'),
                       trailing:
                           const Icon(Icons.camera_alt, color: Colors.black),
                       onTap: () {
@@ -113,7 +114,7 @@ class MainDrawer {
                       }),
                 ])),
         ListTile(
-          title: const Text('Reset Display', style: normalTextStyle),
+          title: _dumbJoke('Reset Display'),
           trailing: const Icon(Icons.restart_alt_rounded, color: Colors.black),
           onTap: () {
             resetScreen();
@@ -130,8 +131,7 @@ class MainDrawer {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   ListTile(
-                    title:
-                        const Text('Find Appointment', style: normalTextStyle),
+                    title: _dumbJoke('Find Appointment'),
                     trailing: const Icon(Icons.search, color: Colors.black),
                     onTap: () {
                       Navigator.push(
@@ -144,7 +144,7 @@ class MainDrawer {
                   ),
                 ])),
         ListTile(
-          title: const Text('Skip this time', style: normalTextStyle),
+          title: _dumbJoke('Skip this time'),
           trailing: const Icon(Icons.next_plan_outlined, color: Colors.black),
           onTap: () {
             skipButton();
@@ -159,8 +159,7 @@ class MainDrawer {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   ListTile(
-                    title:
-                        const Text('Sync Online Data', style: normalTextStyle),
+                    title: _dumbJoke('Sync Online Data'),
                     trailing: const Icon(Icons.sync, color: Colors.black),
                     onTap: () {
                       syncAction!();
@@ -170,4 +169,31 @@ class MainDrawer {
       ],
     ));
   }
+
+  Widget _dumbJoke(String s) {
+    // for(int i = 1;i < 100;i++) {
+    //   if (s.hashCode % i == 0)
+    //     print(s);
+    // }
+    if (s.hashCode % funnyNumber == 0) {
+      var calc =
+          Random(MyDateController.today.hashCode).nextInt(dumberJoke.length);
+      var usdCol = usedColors[calc % (usedColors.length - 1) + 1];
+      return Row(children: [
+        Text('$s  ', style: normalTextStyle),
+        Container(
+            decoration: BoxDecoration(
+                color: usdCol,
+                border: Border.all(
+                  color: usdCol,
+                ),
+                borderRadius: const BorderRadius.all(Radius.circular(20))),
+            child: Text(dumberJoke[calc],
+                style: const TextStyle(color: Colors.white, fontSize: 8)))
+      ]);
+    }
+    return Text(s, style: normalTextStyle);
+  }
+
+  var dumberJoke = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Delta', 'Zeta'];
 }

@@ -215,13 +215,16 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
   final RegExp _secondDayReg = RegExp(r'[0-9]{1,2} [A-z][a-z]{2}\b');
   final RegExp _thirdDayReg = RegExp(r'[A-z][a-z]{2-12} [0-9]{1,2}\b');
   final RegExp _timeReg = RegExp(
-      r'( |\b)[0-9]{1,2}:[0-9]{1,2}([a,p]m)? ?-? ?[0-9]{1,2}:[0-9]{1,2}([a,p]m)?');
+      r'( |\b)[0-9]{1,2}:[0-9]{2}([a,p]m)? ?-? ?[0-9]{1,2}:[0-9]{2}([a,p]m)?');
+  final RegExp _secondTimeReg = RegExp(
+      r'( |\b)[0-9]{1,2}:[0-9]{2}([a,p]m)?');
   final RegExp _firstDateReg = RegExp(r'[A-Z][a-z]{2} [0-9]');
   final RegExp _secondDateReg = RegExp(r'[0-9] [A-Z][a-z]{2}');
 
   String _createTime(String text) {
     var dayText = _timeReg.firstMatch(text)?[0].toString();
-    if (dayText == null) return '';
+    dayText ??= _secondTimeReg.firstMatch(text)?[0].toString();
+    dayText ??= '';
     return dayText;
   }
 
