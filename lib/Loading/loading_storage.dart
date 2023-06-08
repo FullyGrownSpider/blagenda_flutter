@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
+import 'package:date_format/date_format.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'button_conversion.dart';
@@ -48,11 +49,24 @@ class LoadingFromStorage {
     }
     return items;
   }
+
+  ///returns true if first file is kept
+  Future<bool> pickWhatToDo(String fileOne, String fileTwo) async {
+    var one = SuperStorage(fileOne);
+    var two = SuperStorage(fileTwo);
+    if ((await one.lastUpdate()).isBefore(await two.lastUpdate())){
+      var path = ('${await one._localPath}/${one._fileName}');
+      (await two._localFile).copy(path).then((value) async => (await two._localFile).deleteSync());
+      return false;
+    }
+    (await two._localFile).delete();
+    return true;
+  }
 }
 
 class SuperStorage {
   final String _fileName;
-  static const String _startLine = 'Byrd';
+  String _startLine = 'Byrd';
   bool working = false;
 
   SuperStorage(this._fileName);
@@ -67,12 +81,23 @@ class SuperStorage {
     return File('$path/$_fileName.byd');
   }
 
+  Future<DateTime> _lastUpdate() async {
+    try {
+      final file = await _localFile;
+      if (!await file.exists()) return DateTime.now().subtract(const Duration(days: 300));
+      // Read the date
+      var dateText = (await file.readAsLines()).first;
+      return DateTime.parse(dateText.replaceFirst('Byrd', ''));
+    } catch (e) {
+      return DateTime.now().subtract(const Duration(days: 300));
+    }
+  }
+  Future<DateTime> lastUpdate() async {
+    return await _doAction(() => _lastUpdate());
+  }
+
   Future<List<String>> readAllData() async {
-    await waitTurn();
-    working = true;
-    var value = await _readAllData();
-    working = false;
-    return value;
+    return await _doAction(() => _readAllData());
   }
 
   Future<List<String>> _readAllData() async {
@@ -90,16 +115,14 @@ class SuperStorage {
   }
 
   Future<void> _writeStrings(List<String> items) async {
+    _startLine = 'Byrd${formatDate(DateTime.now(), [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn, ':', ss])}';
     final file = await _localFile;
     items.insert(0, _startLine);
     await file.writeAsString(items.join('\n'));
   }
 
   Future<void> addItem(String string) async {
-    await waitTurn();
-    working = true;
-    await _addItem(string);
-    working = false;
+    await _doAction(() => _addItem(string));
   }
 
   Future<void> _addItem(String string) async {
@@ -109,12 +132,15 @@ class SuperStorage {
   }
 
   Future<void> update(String newItem, String uniquePart) async {
+    await _doAction(() => _update(newItem, uniquePart));
+  }
+  Future _doAction(Future Function() method) async {
     await waitTurn();
     working = true;
-    await _update(newItem, uniquePart);
+    var value = await method();
     working = false;
+    return value;
   }
-
   Future<void> _update(String newItem, String uniquePart) async {
     var values = await _readAllData();
     for (int i = 0; i < values.length; i++) {
@@ -128,10 +154,7 @@ class SuperStorage {
   }
 
   Future<void> updateAll(List<String> newItem, List<String> uniquePart) async {
-    await waitTurn();
-    working = true;
-    await _updateAll(newItem, uniquePart);
-    working = false;
+    await _doAction(() => _updateAll(newItem, uniquePart));
   }
 
   Future<void> _updateAll(List<String> newItem, List<String> uniquePart) async {
@@ -148,17 +171,11 @@ class SuperStorage {
   }
 
   Future<void> delete(String uniquePart) async {
-    await waitTurn();
-    working = true;
-    await _delete(uniquePart);
-    working = false;
+    await _doAction(() => _delete(uniquePart));
   }
 
   Future<void> deleteAll(List<String> uniquePart) async {
-    await waitTurn();
-    working = true;
-    await _deleteAll(uniquePart);
-    working = false;
+    await _doAction(() => _deleteAll(uniquePart));
   }
 
   Future<void> _deleteAll(List<String> uniquePart) async {

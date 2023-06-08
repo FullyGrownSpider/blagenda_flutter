@@ -114,4 +114,22 @@ class Loading {
     DeadlineController: (button) => DeadlineController(button as Deadline),
     NoteController: (button) => NoteController(button),
   };
+
+  Future<bool> downloadDatabaseFilesCarefully() async {
+    List<Future> results = [];
+    bool update = true;
+    for (int i = 0; i < typeList.length; i++) {
+      results.add(_client
+          .downloadFileCarefully('${typeList[i].toString()}.byd',
+              '${typeList[i].toString()}.backup.byd')
+          .then((value) => {
+                results.add(_local.pickWhatToDo('${typeList[i].toString()}.byd',
+                    '${typeList[i].toString()}.backup').then((value) => value ? update = false : update = update))
+              }));
+    }
+    for (int i = 0; i < results.length; i++) {
+      await results[i];
+    }
+    return update;
+  }
 }

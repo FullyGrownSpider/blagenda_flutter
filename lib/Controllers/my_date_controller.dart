@@ -22,6 +22,15 @@ class MyDateController extends DateTime {
     }
   }
 
+  static bool hourPassed(int lastHour) {
+    if (lookTime.hour != lastHour) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+
   static MyDateController fromDaysFromNow(int fromNow) =>
       MyDateController.today.addOrRemoveDays(fromNow);
 
@@ -48,8 +57,6 @@ class MyDateController extends DateTime {
     lookTime = MyDateController.now();
     today = MyDateController(lookTime.year, lookTime.month, lookTime.day, 2);
   }
-
-  static void resetLookTime() => lookTime = MyDateController.now();
 
   static MyDateController get nowDate => today;
 

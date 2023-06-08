@@ -6,6 +6,8 @@ import 'package:blagenda_flutter_simple/Controllers/main_drawer.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:flutter/material.dart';
 
+import '../common_items.dart';
+
 class OverviewScreen extends StatefulWidget {
   const OverviewScreen({Key? key}) : super(key: key);
 
@@ -14,6 +16,8 @@ class OverviewScreen extends StatefulWidget {
 }
 
 class _OverviewScreenState extends State<OverviewScreen> {
+  int lastHour = 0;
+
   _OverviewScreenState() {
     _controller = ObservationScreenController();
     _drawer = MainDrawer(getButton, addOrUpdate, delete, skipButton,
@@ -31,17 +35,21 @@ class _OverviewScreenState extends State<OverviewScreen> {
   }
 
   void _timerTick() {
-    bool awns = false;
-    if (_controller.justAddedCheck() || (awns = MyDateController.requiresResetDate())) {
+    bool awns = MyDateController.requiresResetDate();
+    //requiresResetDate also resets last look time its semi important that its run
+    if (_controller.justAddedCheck() || awns) {
       if (awns) {
         MyDateController.resetDate();
         _controller.resetLists();
         _resetScreen();
-      }
-      else {
-        MyDateController.resetLookTime();
+        lastHour = MyDateController.lookTime.hour;
+        syncActionLowKey!(_resetScreen);
+      } else {
         _resetScreen();
       }
+    } else if (MyDateController.hourPassed(lastHour)) {
+      lastHour = MyDateController.lookTime.hour;
+      syncActionLowKey!(_resetScreen);
     }
   }
 
@@ -77,7 +85,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
     _resetScreen();
   }
 
-  void _fullReset(){
+  void _fullReset() {
     _resetButtons();
     _resetScreen();
   }

@@ -2,13 +2,13 @@ import 'package:blagenda_flutter_simple/Screens/observation_screen.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter/material.dart';
 
-void main() => {runApp(const TabBarInsideAppBarPage())};
+void main() => runApp(const TabBarInsideAppBarPage());
 
 class TabBarInsideAppBarPage extends StatefulWidget {
   const TabBarInsideAppBarPage({Key? key}) : super(key: key);
 
   @override
-  _TabBarInsideAppBarPageState createState() => _TabBarInsideAppBarPageState();
+  State<TabBarInsideAppBarPage> createState() => _TabBarInsideAppBarPageState();
 }
 
 class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
@@ -20,6 +20,8 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
   void initState() {
     super.initState();
     syncAction = syncData;
+
+    syncActionLowKey = syncDataLowKey;
   }
 
   bool done = true; //false for sync possiblity true for testing mode
@@ -32,6 +34,14 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
       setState(() {
         done = true;
       });
+    });
+  }
+
+  void syncDataLowKey(Function() setState) {
+    loading.downloadDatabaseFilesCarefully().then((x) {
+      if (!x) {
+        setState();
+      }
     });
   }
 

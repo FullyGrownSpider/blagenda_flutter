@@ -76,4 +76,24 @@ class DropboxClient {
       //if folder can't be created then that's an issue but there is nothing we can do
     }
   }
+
+  Future<bool> downloadFileCarefully(String actualFileName, String fileName) async {
+    var downloadURL =
+        Uri.parse('https://content.dropboxapi.com/2/files/download');
+    try {
+      var file = File(await pathEr(fileName));
+      if (file.existsSync()) {
+        file.deleteSync();
+      }
+      var client = http.Client();
+      var response = await client.get(downloadURL, headers: {
+        HttpHeaders.authorizationHeader: 'Bearer $_authorization',
+        "Dropbox-API-Arg": "{\"path\": \"/$_folder/$actualFileName.txt\"}"
+      });
+      file.writeAsBytesSync(response.bodyBytes);
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
 }
