@@ -22,7 +22,11 @@ class AgainYearController extends SkippableEndBasedController<AgainYearDay> {
       dateController = MyDateController.fromDM(button.month, button.day);
     }
     buttonCheck(button, dateController);
-    if (buttonCheck(button, dateController)) requiresChange = true;
+    if (buttonCheck(button, dateController)){
+      requiresChange = true;
+      button = AgainYearDay(button.job, button.toDos, button.id, button.color,
+          button.day, button.month, null);
+    }
   }
 
   @override
@@ -68,7 +72,11 @@ class AgainWeekController extends SkippableEndBasedController<AgainWeekDay> {
     if (nowDate.weekday > weekdaysForCalc) weekdaysForCalc += 7;
     dateController =
         nowDate.add(Duration(days: weekdaysForCalc - nowDate.weekday));
-    if (buttonCheck(button, dateController)) requiresChange = true;
+    if (buttonCheck(button, dateController)){
+      requiresChange = true;
+      button = AgainWeekDay(button.job, button.toDos, button.id, button.color,
+          button.day, null);
+    }
   }
 
   @override
@@ -95,18 +103,20 @@ class AgainAmountController
   @override
   void create() {
     var date = button.date.add(const Duration(hours: 4));
-    if (date.isBefore(MyDateController.yesterday)) {
-      dateController = date;
-      while (dateController.isBefore(MyDateController.yesterday)) {
-        dateController = dateController.addOrRemoveDays(button.day);
-        requiresChange = true;
-      }
+    dateController = date;
+    if (buttonCheck(button, dateController)){
+      requiresChange = true;
       button = AgainAmountDay(button.job, button.toDos, button.id, button.color,
-          dateController, button.day, dateController);
-      if (buttonCheck(button, dateController)) requiresChange = true;
-    } else {
-      dateController = date;
+          dateController, button.day, null);
     }
+    if (dateController.isBefore(MyDateController.yesterday)) return;
+    while (dateController.isBefore(MyDateController.yesterday)) {
+      dateController = dateController.addOrRemoveDays(button.day);
+    }
+    requiresChange = true;
+    button = AgainAmountDay(button.job, button.toDos, button.id, button.color,
+        dateController, button.day, button.dateToSkip);
+
   }
 
   @override
@@ -142,7 +152,11 @@ class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
       newLeft = MyDateController(nowDate.year, nowDate.month + 1, button.day);
     }
     dateController = newLeft;
-    if (buttonCheck(button, dateController)) requiresChange = true;
+    if (buttonCheck(button, dateController)){
+      requiresChange = true;
+      button = AgainMonthDay(button.job, button.toDos, button.id, button.color,
+          button.day, null);
+    }
   }
 
   @override

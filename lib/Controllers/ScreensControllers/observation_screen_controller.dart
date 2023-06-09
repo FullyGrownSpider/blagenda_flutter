@@ -286,8 +286,7 @@ class ObservationScreenController {
                     (e) => (e as EndBasedController).requiresChange);
               } else {
                 loading.updateButtons(
-                    (_getCorrectList(AgainAmountController)
-                        as List<EndBasedController>),
+                    itemsToUpdate,
                     AgainAmountController);
               }
             }
