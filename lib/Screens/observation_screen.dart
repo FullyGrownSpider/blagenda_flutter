@@ -43,13 +43,13 @@ class _OverviewScreenState extends State<OverviewScreen> {
         _controller.resetLists();
         _resetScreen();
         lastHour = MyDateController.lookTime.hour;
-        syncActionLowKey!(_resetScreen);
+        syncActionLowKey!(_reloadData);
       } else {
         _resetScreen();
       }
     } else if (MyDateController.hourPassed(lastHour)) {
       lastHour = MyDateController.lookTime.hour;
-      syncActionLowKey!(_resetScreen);
+      syncActionLowKey!(_reloadData);
     }
   }
 
@@ -75,6 +75,11 @@ class _OverviewScreenState extends State<OverviewScreen> {
             children: _centerChildren,
           ),
         ));
+  }
+
+  void _reloadData(){
+    _controller.loadListsFromStorage();
+    _fill();
   }
 
   void _fill() async {

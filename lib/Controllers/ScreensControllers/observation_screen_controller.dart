@@ -64,7 +64,7 @@ class ObservationScreenController {
 
   ///needs to load first use doneLoading to check if done
   ObservationScreenController() {
-    _fillLists();
+    loadListsFromStorage();
   }
 
   List<Widget> getWidgetListEndBased(void Function() setStateMethod) {
@@ -265,7 +265,7 @@ class ObservationScreenController {
     }
   }
 
-  void _fillLists() {
+  void loadListsFromStorage() {
     for (var list in _allLists.entries) {
       list.value.clear();
     }

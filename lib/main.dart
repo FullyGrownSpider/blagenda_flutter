@@ -37,9 +37,9 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
     });
   }
 
-  void syncDataLowKey(Function() setState) {
+  void syncDataLowKey(setState) {
     loading.downloadDatabaseFilesCarefully().then((x) {
-      if (!x) {
+      if (x) {
         setState();
       }
     });
