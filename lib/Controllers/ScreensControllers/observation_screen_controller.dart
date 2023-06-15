@@ -298,7 +298,7 @@ class ObservationScreenController {
   }
 
   bool _shouldGoIn(EndBasedController eb, MyDateController now) =>
-      eb.left < daysToShowNow && eb.left >= -1 || eb.wasJustAdded(now);
+      eb.left < daysToShowNow + 7 && eb.left >= -1 || eb.wasJustAdded(now);
 
   List<BasicButtonController> _goesInList(
       List<BasicButtonController> list, MyDateController now) {
