@@ -32,6 +32,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
     Timer.periodic(const Duration(seconds: 10), (Timer t) {
       _timerTick();
     });
+    _timerTick();
   }
 
   void _timerTick() {
