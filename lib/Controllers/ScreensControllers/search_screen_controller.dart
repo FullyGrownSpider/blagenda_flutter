@@ -116,7 +116,7 @@ class SearchScreenController {
           onConfirmed();
         },
         decoration: const InputDecoration(
-            hintText: 'date', border: OutlineInputBorder(gapPadding: 2)));
+            hintText: 'date to look up', border: OutlineInputBorder(gapPadding: 2)));
   }
 
   Widget textFinder() {
@@ -143,7 +143,7 @@ class SearchScreenController {
           onConfirmed();
         },
         decoration: const InputDecoration(
-            hintText: 'extra Time', border: OutlineInputBorder(gapPadding: 2)));
+            hintText: '+ numb or m', border: OutlineInputBorder(gapPadding: 3)));
   }
 
   void onConfirmed() {
@@ -154,8 +154,9 @@ class SearchScreenController {
         ? 0
         : extraDatesController.text.toLowerCase().contains('m')
             ? MyDateController.monthCalc(awns)
-            : int.parse(extraDatesController.text);
-    timerCheck(() => searchAll(awns, stringController.text, extraTime),
+            : int.tryParse(extraDatesController.text);
+    extraTime ??= 1;
+    timerCheck(() => searchAll(awns, stringController.text, extraTime!),
         _getCorrectString(date, extraTime));
   }
 
@@ -188,8 +189,8 @@ class SearchScreenController {
   List<Widget> getFilling() {
     List<Widget> widgets = [
       Row(children: [
-        Expanded(flex: 2, child: dateFinder()),
-        Expanded(flex: 1, child: extraDatesFinder())
+        Expanded(flex: 3, child: dateFinder()),
+        Expanded(flex: 2, child: extraDatesFinder())
       ]),
       textFinder(),
       const Text(' ')

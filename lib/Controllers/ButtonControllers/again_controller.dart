@@ -109,7 +109,7 @@ class AgainAmountController
       button = AgainAmountDay(button.job, button.toDos, button.id, button.color,
           dateController, button.day, null);
     }
-    if (dateController.isBefore(MyDateController.yesterday)) return;
+    if (dateController.isAfter(MyDateController.yesterday)) return;
     while (dateController.isBefore(MyDateController.yesterday)) {
       dateController = dateController.addOrRemoveDays(button.day);
     }
