@@ -28,9 +28,10 @@ class Loading {
     await _upload(but.button.runtimeType);
   }
 
-  Future<void> deleteButtons(List<BasicButtonController> buts, Type t) async {
+  Future<void> deleteButtons(List<BasicButtonController> buts) async {
+    if (buts.isEmpty) return;
     await _local.deleteButtons(buts.map((e) => e.button).toList());
-    await _upload(t);
+    await _upload(buts.first.button.runtimeType);
   }
 
   Future<void> updateButton(BasicButtonController but) async {
@@ -38,9 +39,10 @@ class Loading {
     await _upload(but.button.runtimeType);
   }
 
-  Future<void> updateButtons(List<BasicButtonController> buts, Type t) async {
+  Future<void> updateButtons(List<BasicButtonController> buts) async {
+    if (buts.isEmpty) return;
     await _local.updateButtons(buts.map((e) => e.button).toList());
-    await _upload(t);
+    await _upload(buts.first.button.runtimeType);
   }
 
   Future<void> addButton(BasicButtonController but) async {
@@ -72,7 +74,7 @@ class Loading {
       return;
     }
     uploader.add(t);
-    await Future.delayed(const Duration(milliseconds: 1));
+    await Future.delayed(const Duration(milliseconds: 10));
     await _client.uploadFile('${t.toString()}.byd');
     uploader.remove(t);
   }

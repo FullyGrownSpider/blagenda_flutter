@@ -102,14 +102,15 @@ class AgainAmountController
 
   @override
   void create() {
-    var date = button.date.add(const Duration(hours: 4));
+    var date = button.date.add(const Duration(hours: 2));
     dateController = date;
     if (buttonCheck(button, dateController)){
       requiresChange = true;
       button = AgainAmountDay(button.job, button.toDos, button.id, button.color,
           dateController, button.day, null);
     }
-    if (dateController.isAfter(MyDateController.yesterday)) return;
+    if (dateController.isAfter(MyDateController.yesterday) ||
+        dateController.isAtSameMomentAs(MyDateController.yesterday)) return;
     while (dateController.isBefore(MyDateController.yesterday)) {
       dateController = dateController.addOrRemoveDays(button.day);
     }

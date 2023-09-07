@@ -10,6 +10,6 @@ class DeadlineController extends EndBasedController<Deadline> {
   void create() {
     dateController = button.date;
     requiresChange = button.date
-        .isBefore(MyDateController.nowDate.add(const Duration(days: -2)));
+        .isBefore(MyDateController.nowDate.add(const Duration(days: -3)));
   }
 }

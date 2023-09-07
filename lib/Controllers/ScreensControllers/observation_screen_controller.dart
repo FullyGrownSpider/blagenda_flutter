@@ -255,16 +255,35 @@ class ObservationScreenController {
     return againDeadlineDisplayList;
   }
 
+  void arrayRefresh(List<EndBasedController> array){
+    List<EndBasedController> itemsToUpdate =
+      _getCorrectList(array.firstOrNull.runtimeType)
+          .where((e) => e.requiresChange)
+          .toList() as List<EndBasedController>;
+    if (itemsToUpdate.isNotEmpty) {
+      if (array.firstOrNull is DeadlineController) {
+        loading.deleteButtons(itemsToUpdate);
+        _getCorrectList(DeadlineController)
+            .removeWhere((e) => e.requiresChange);
+      } else {
+        loading.updateButtons(itemsToUpdate);
+        for(int i = 0;i < array.length;i++){
+          array[i].requiresChange = false;
+        }
+      }
+    }
+  }
+
   void resetLists() {
     for (var e in _allLists.entries) {
       if (e.value.isNotEmpty && e.value.first is EndBasedController) {
         for (var element in e.value) {
           (element as EndBasedController).rebuild();
         }
+        arrayRefresh(e.value as List<EndBasedController>);
       }
     }
   }
-
   void loadListsFromStorage() {
     for (var list in _allLists.entries) {
       list.value.clear();
@@ -275,21 +294,7 @@ class ObservationScreenController {
         if (value.isNotEmpty) {
           _allLists[value.first.runtimeType]!.addAll(value);
           if (value.first is EndBasedController) {
-            List<EndBasedController> itemsToUpdate =
-                _getCorrectList(value.first.runtimeType)
-                    .where((e) => (e as EndBasedController).requiresChange)
-                    .toList() as List<EndBasedController>;
-            if (itemsToUpdate.isNotEmpty) {
-              if (value.first is DeadlineController) {
-                loading.deleteButtons(itemsToUpdate, DeadlineController);
-                _getCorrectList(DeadlineController).removeWhere(
-                    (e) => (e as EndBasedController).requiresChange);
-              } else {
-                loading.updateButtons(
-                    itemsToUpdate,
-                    AgainAmountController);
-              }
-            }
+            arrayRefresh(value as List<EndBasedController>);
           }
         }
         _loaded[i] = true;
