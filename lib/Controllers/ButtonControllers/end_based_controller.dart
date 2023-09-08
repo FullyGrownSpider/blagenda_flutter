@@ -18,49 +18,49 @@ abstract class EndBasedController<t extends BasicButton>
   static const String _splitString = ":";
   static const int showDayOfWeek = 6;
   static const int showDayTime = 4;
-  MyDateController? _notNewTime;
+  MyDateController? _timeWhenNotNewItemAnymore;
   bool requiresChange = false;
   int timeOfDay = -1;
-  int left = -1;
+  int daysLeft = -1;
   late MyDateController dateController;
+
+  EndBasedController(t button) : super(button) {
+    rebuild();
+  }
 
   @override
   Color get color {
-    if (left != -1) {
+    if (daysLeft != -1) {
       return button.color;
     }
     return Color.lerp(button.color, Colors.black38, 0.3) as Color;
   }
 
   bool wasJustAdded(MyDateController now) {
-    return _notNewTime?.isAfter(now) == true;
+    return _timeWhenNotNewItemAnymore?.isAfter(now) == true;
   }
 
   void setToMakeNew() {
-    _notNewTime = MyDateController.now().add(const Duration(minutes: 4));
-    setTimeOfDay(button);
-  }
-
-  EndBasedController(t button) : super(button) {
-    rebuild();
+    _timeWhenNotNewItemAnymore = MyDateController.now().add(const Duration(minutes: 4));
+    _setTimeOfDay();
   }
 
   void rebuild() {
     create();
-    left = howMuchLeft();
-    setTimeOfDay(button);
+    daysLeft = howMuchLeft();
+    _setTimeOfDay();
   }
 
   void create();
 
   int howMuchLeft() => dateController.timeLeftUntil();
 
-  bool isInLeft(int calculatedDay) => left == calculatedDay;
+  bool isInLeft(int calculatedDay) => daysLeft == calculatedDay;
 
-  void setTimeOfDay(BasicButton but) {
+  void _setTimeOfDay() {
     //turn it into a 12 hour clock
-    for (int j = 0; j < but.toDos.length; j++) {
-      var itemsList = but.toDos[j]
+    for (int j = 0; j < toDos.length; j++) {
+      var itemsList = toDos[j]
           .toLowerCase()
           .replaceAll(_regFix, _splitString)
           .split(' ');
@@ -116,7 +116,7 @@ abstract class EndBasedController<t extends BasicButton>
   }
 
   String displayJob() {
-    if (left < showDayTime || _notNewTime != null) {
+    if (daysLeft < showDayTime || _timeWhenNotNewItemAnymore != null) {
       return displayWithTimeJob();
     }
     return job;
@@ -125,8 +125,7 @@ abstract class EndBasedController<t extends BasicButton>
   String displayWithTimeJob() {
     if (timeOfDay == -1) return job;
     var dur = Duration(minutes: timeOfDay);
-    String minutes = (timeOfDay % 60).toString();
-    if (minutes.length == 1) minutes = '0$minutes';
+    String minutes = (timeOfDay % 60).toString().padLeft(2, '0');
     return '${dur.inHours.toString()}$_splitString$minutes - $job';
   }
 
@@ -151,7 +150,7 @@ abstract class EndBasedController<t extends BasicButton>
   @override
   String todosToString() {
     var result = super.todosToString();
-    if (timeOfDay != -1 || _notNewTime != null) {
+    if (timeOfDay != -1 || _timeWhenNotNewItemAnymore != null) {
       var results = result.split('\n');
       for (int i = 0; i < results.length; i++) {
         //it equals the complete reg
@@ -177,8 +176,8 @@ abstract class EndBasedController<t extends BasicButton>
   int compareTo(EndBasedController b) {
     var thisLeft = this is SkippableEndBasedController
         ? (this as SkippableEndBasedController).altLeft
-        : left;
-    var bLeft = b is SkippableEndBasedController ? b.altLeft : b.left;
+        : daysLeft;
+    var bLeft = b is SkippableEndBasedController ? b.altLeft : b.daysLeft;
     if (thisLeft == bLeft) {
       //same time then i want deadlines first
       if (timeOfDay == b.timeOfDay) {
@@ -216,7 +215,7 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
   @override
   void rebuild() {
     super.rebuild();
-    if (altLeft == -1) altLeft = left;
+    if (altLeft == -1) altLeft = daysLeft;
   }
 
   @override
@@ -239,7 +238,7 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   String displayJob() {
-    if (altLeft < EndBasedController.showDayTime || _notNewTime != null) {
+    if (altLeft < EndBasedController.showDayTime || _timeWhenNotNewItemAnymore != null) {
       return displayWithTimeJob();
     }
     return job;
@@ -251,7 +250,7 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
       button.dateToSkip!.month == date.month &&
       button.dateToSkip!.year == date.year;
 
-//returns true if you should skip
+//returns true if you should skip the copy
   bool skipCheckNotSure(int calc, int left) =>
       button.dateToSkip != null &&
       calc == left &&
@@ -264,4 +263,8 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
     }
     return Color.lerp(button.color, Colors.black38, 0.3) as Color;
   }
+
+  int get day => button.day;
+
+  MyDateController? get dateToSkip => button.dateToSkip;
 }

@@ -2,8 +2,8 @@ import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart
 import 'package:flutter/material.dart';
 
 abstract class BasicButtonController<t extends BasicButton> {
-  t _button;
   static const int maxValueCheck = 38;
+  t _button;
 
   int gettingTheStringLongLength = 1;
 
@@ -34,13 +34,13 @@ abstract class BasicButtonController<t extends BasicButton> {
 
   String todosToString() {
     StringBuffer buf = StringBuffer();
-    for (int i = 0; i < button.toDos.length; i++) {
-      if (button.toDos[i].isEmpty && i == 0) continue;
+    for (int i = 0; i < toDos.length; i++) {
+      if (toDos[i].isEmpty && i == 0) continue;
       buf.write('\n');
-      if (button.toDos[i].length < _maxLengthTodos) {
-        buf.write(button.toDos[i]);
+      if (toDos[i].length < _maxLengthTodos) {
+        buf.write(toDos[i]);
       } else {
-        buf.write(splitByLength(button.toDos[i]));
+        buf.write(splitByLength(toDos[i]));
       }
     }
     if (buf.toString().trim().isEmpty) {
@@ -69,7 +69,7 @@ abstract class BasicButtonController<t extends BasicButton> {
           //tried to add the word but its the first word of a sentence and
           //longer than the max
           buf.write('${data[i].substring(0, _maxLengthTodos - 3)}...');
-          buf.write('$data[i]\n');
+          buf.write('${data[i]}\n');
         } else {
           //add item to todos string
           buf.write(data[i]);
@@ -79,7 +79,7 @@ abstract class BasicButtonController<t extends BasicButton> {
       } else {
         if (data[i].length + sentenceLength < _maxLengthTodos) {
           //add it to the sentence
-          buf.write(' $data[i]');
+          buf.write(' ${data[i]}');
           sentenceLength += data[i].length + 1;
         } else {
           buf.write('\n');

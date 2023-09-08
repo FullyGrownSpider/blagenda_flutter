@@ -171,8 +171,8 @@ class SearchScreenController {
         dateController.text = extraDatesController.text = '';
     itemList.clear();
     itemList.add(_createTextButton(s));
-    for (int i = 0; i < calcList.length; i++) {
-      itemList.add(calcList[i]);
+    for (var itemToAdd in calcList) {
+      itemList.add(itemToAdd);
     }
     setStateMethod();
   }

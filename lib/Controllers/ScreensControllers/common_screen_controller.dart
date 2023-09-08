@@ -100,10 +100,10 @@ List<Row> addAsRow(Widget Function(int index) addWidget, int size,
       counter = getLength!(i) + 1;
       row.add(const Spacer());
       items.add(Row(children: row));
-      row = [];
-      row.add(const Spacer());
-      row.add(addWidget(i));
-      row.add(smallBlankSplit);
+      row = [
+        const Spacer(),
+        addWidget(i),
+        smallBlankSplit];
       continue;
     }
     row.add(addWidget(i));
@@ -111,8 +111,7 @@ List<Row> addAsRow(Widget Function(int index) addWidget, int size,
       counter = 0;
       row.add(const Spacer());
       items.add(Row(children: row));
-      row = [];
-      row.add(const Spacer());
+      row = [const Spacer()];
     } else {
       row.add(smallBlankSplit);
     }

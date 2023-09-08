@@ -26,7 +26,7 @@ List<Widget> createADay(
   var calcDay = nowDate.addOrRemoveDays(fromNow);
   var left = _createCalcDayColor(
       listWithEverything
-          .any((e) => e is DeadlineController && e.left == fromNow + 7),
+          .any((e) => e is DeadlineController && e.daysLeft == fromNow + 7),
       '◮',
       calcDay);
   var right = _createCalcDayColor(
@@ -38,9 +38,9 @@ List<Widget> createADay(
   var sortableList = listWithEverything
       .where((e) => e.isInLeft(fromNow))
       .toList(growable: false);
-  for (int i = 0; i < sortableList.length; i++) {
-    if (sortableList[i] is SkippableEndBasedController) {
-      sortableList[i] = (sortableList[i] as SkippableEndBasedController)
+  for (var item in sortableList) {
+    if (item is SkippableEndBasedController) {
+      item = item
           .createNew(MyDateController.fromDaysFromNow(fromNow));
     }
   }
@@ -48,7 +48,7 @@ List<Widget> createADay(
   if (showNamesOnly) {
     if (fromNow == -1) {
       if (_yesterdayShouldShow(listWithEverything
-          .where((e) => e.left == -1)
+          .where((e) => e.daysLeft == -1)
           .toList(growable: false))) return list;
       toAdd = const Text('Yesterday', style: bigTextStyleYesterday);
     } else if (fromNow == 0) {
@@ -60,16 +60,16 @@ List<Widget> createADay(
     list.add(Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [left, toAdd, right]));
-    for (int i = 0; i < sortableList.length; i++) {
-      if (sortableList[i] is SkippableEndBasedController &&
+    for (var item in sortableList) {
+      if (item is SkippableEndBasedController &&
           hideSkips &&
-          fromNow == sortableList[i].left &&
-          (sortableList[i] as SkippableEndBasedController)
-              .skipCheckNotSure(fromNow, (sortableList[i].left))) {
+          fromNow == item.daysLeft &&
+          item
+              .skipCheckNotSure(fromNow, (item.daysLeft))) {
         continue;
       }
       list.add(smallerBlankSplit);
-      list.add(addEndBasedButton(sortableList[i], setStateMethod));
+      list.add(addEndBasedButton(item, setStateMethod));
       added = true;
     }
     //yesterday gets a gray box around it and today a green one
@@ -123,16 +123,16 @@ List<Widget> createADay(
       Text('In ${(fromNow).toString()} days', style: secondaryBigTextStyle),
       right,
     ]));
-    for (int i = 0; i < sortableList.length; i++) {
-      if (sortableList[i] is SkippableEndBasedController &&
+    for (var item in sortableList) {
+      if (item is SkippableEndBasedController &&
           hideSkips &&
-          fromNow == sortableList[i].left &&
-          (sortableList[i] as SkippableEndBasedController)
-              .skipCheckNotSure(fromNow, (sortableList[i].left))) {
+          fromNow == item.daysLeft &&
+          item
+              .skipCheckNotSure(fromNow, (item.daysLeft))) {
         continue;
       }
       list.add(smallerBlankSplit);
-      list.add(addEndBasedButton(sortableList[i], setStateMethod));
+      list.add(addEndBasedButton(item, setStateMethod));
       added = true;
     }
   }

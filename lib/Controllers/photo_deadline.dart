@@ -145,8 +145,8 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
 
     // Select the first rear camera.
     CameraDescription? camera;
-    for (var i = 0; i < cameras.length; i++) {
-      final CameraDescription current = cameras[i];
+    for (var desc in cameras) {
+      final CameraDescription current = desc;
       if (current.lensDirection == CameraLensDirection.back) {
         camera = current;
         break;

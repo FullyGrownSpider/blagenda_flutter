@@ -34,8 +34,8 @@ class AddingScreenController {
   };
 
   bool waitToAddDate = false;
-  bool typed = false;
-  bool sendAlready = false;
+  bool justTyped = false;
+  bool updateDateNow = false;
 
   final int Function(Type) _getNewId;
   final Map<ItemsIn, dynamic> storedValues = {};
@@ -337,9 +337,9 @@ class AddingScreenController {
         controller: stringController,
         onChanged: (s) {
           storedValues[itemsIn] = s;
-          typed = true;
+          justTyped = true;
         },
-        onTap: () => sendAlready = true,
+        onTap: () => updateDateNow = true,
         decoration: InputDecoration(
             hintText: hint, border: const OutlineInputBorder(gapPadding: 2)));
     return InputObject<String>.filled(displayWidget, () {
@@ -354,7 +354,7 @@ class AddingScreenController {
     var displayWidget = TextField(
         controller: stringController,
         onChanged: (s) {
-          typed = true;
+          justTyped = true;
           storedValues[itemsIn] = s;
           var date = MyDateController.translate(storedValues[itemsIn]);
           if (date != null) {
@@ -363,7 +363,7 @@ class AddingScreenController {
                 setStateMethod);
           }
         },
-        onTap: () => sendAlready = true,
+        onTap: () => updateDateNow = true,
         decoration: InputDecoration(
             hintText: hint, border: const OutlineInputBorder(gapPadding: 2)));
     return InputObject<MyDateController?>.filled(displayWidget, () {
@@ -378,7 +378,7 @@ class AddingScreenController {
         !preObject, usedColors.first, (!preObject ? "⬤" : "◯") + hint, () {
       storedValues[itemsIn] = preObject ? false : true;
       setStateMethod();
-      sendAlready = true;
+      updateDateNow = true;
     });
     return InputObject<bool>.filled(displayWidget, () {
       return storedValues[itemsIn];
@@ -404,9 +404,9 @@ class AddingScreenController {
         keyboardType: TextInputType.multiline,
         onChanged: (s) {
           storedValues[itemsIn] = s;
-          typed = true;
+          justTyped = true;
         },
-        onTap: () => sendAlready = true,
+        onTap: () => updateDateNow = true,
         maxLines: 5,
         decoration: InputDecoration(
             hintText: hint, border: const OutlineInputBorder(gapPadding: 2)));
@@ -421,9 +421,9 @@ class AddingScreenController {
         controller: stringController,
         onChanged: (s) {
           storedValues[itemsIn] = int.tryParse(s);
-          typed = true;
+          justTyped = true;
         },
-        onTap: () => sendAlready = true,
+        onTap: () => updateDateNow = true,
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
             hintText: hint, border: const OutlineInputBorder(gapPadding: 2)));
@@ -443,11 +443,11 @@ class AddingScreenController {
           );
         }).toList(),
         onChanged: (s) {
-          typed = true;
+          justTyped = true;
           storedValues[itemsIn] = s;
           setStateMethod();
         },
-        onTap: () => sendAlready = true);
+        onTap: () => updateDateNow = true);
     return InputObject<int>.filled(displayWidget, () {
       return listToShow.indexOf(storedValues[itemsIn]);
     });
@@ -471,21 +471,29 @@ class AddingScreenController {
 
   Future<void> makeDateView(MyDateController? Function() caller,
       void Function() setStateMethod) async {
-    sendAlready = false;
+    if (updateDateNow){
+      var date = caller();
+      if (date == null){
+        updateDateNow = false;
+      } else {
+        makeDateViewOverride(caller, setStateMethod);
+        updateDateNow = false;
+      }
+      waitToAddDate = false;
+      return;
+    }
     if (waitToAddDate) return;
     waitToAddDate = true;
-    while (typed) {
-      typed = false;
-      for (int i = 0; i < 5; i++) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (sendAlready) {
-          makeDateViewOverride(caller, setStateMethod);
-          sendAlready = false;
-          return;
-        }
+    while (justTyped) {
+      justTyped = false;
+      await Future.delayed(const Duration(seconds: 2));
+      if (justTyped) {
+        makeDateViewOverride(caller, setStateMethod);
+        return;
+      } else if (!waitToAddDate){
+        return;
       }
     }
-    makeDateViewOverride(caller, setStateMethod);
   }
 
   Future<void> makeDateViewOverride(MyDateController? Function() caller,

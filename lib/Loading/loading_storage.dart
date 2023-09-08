@@ -13,11 +13,8 @@ class LoadingFromStorage {
       await SuperStorage(but.runtimeType.toString()).delete(uniquePart(but));
 
   Future<void> deleteButtons(List<BasicButton> buts) async {
-    List<String> items = [];
     if (buts.isEmpty) return;
-    for (int i = 0; i < buts.length; i++) {
-      items.add(uniquePart(buts[i]));
-    }
+    List<String> items = buts.map((e) => uniquePart(e)).toList();
     await SuperStorage(buts.first.runtimeType.toString()).deleteAll(items);
   }
 
@@ -26,12 +23,12 @@ class LoadingFromStorage {
           .update(buttonExportGenerator(but), uniquePart(but));
 
   Future<void> updateButtons(List<BasicButton> buts) async {
+    if (buts.isEmpty) return;
     List<String> items = [];
     List<String> parts = [];
-    if (buts.isEmpty) return;
-    for (int i = 0; i < buts.length; i++) {
-      items.add(buttonExportGenerator(buts[i]));
-      parts.add(uniquePart(buts[i]));
+    for (var butt in buts) {
+      items.add(buttonExportGenerator(butt));
+      parts.add(uniquePart(butt));
     }
     await SuperStorage(buts.first.runtimeType.toString()).updateAll(items, parts);
   }
@@ -43,15 +40,10 @@ class LoadingFromStorage {
   Future<List<t>> getItems<t extends BasicButton>() async {
     var file = SuperStorage(t.toString());
     List<String> allData = await file.readAllData();
-    List<t> items = [];
-    for (int i = 0; i < allData.length; i++) {
-      items.add(buttonImportGenerator<t>(allData[i]));
-    }
-    return items;
+    return allData.map((e) => buttonImportGenerator<t>(e)).toList();
   }
 
-  ///returns true if first file is kept
-  Future<bool> pickWhatToDo(String fileOne, String fileTwo) async {
+  Future<bool> shouldKeepFirstFile(String fileOne, String fileTwo) async {
     var one = SuperStorage(fileOne);
     var two = SuperStorage(fileTwo);
     if ((await one.lastUpdate()).isBefore(await two.lastUpdate())){
@@ -105,9 +97,7 @@ class SuperStorage {
       final file = await _localFile;
       if (!await file.exists()) return [];
       // Read the file
-      var allData = await file.readAsLines();
-      allData.removeAt(0);
-      return allData;
+      return (await file.readAsLines()).sublist(1);
     } catch (e) {
       // If we encounter an error, return 0
       return [];
@@ -143,14 +133,13 @@ class SuperStorage {
   }
   Future<void> _update(String newItem, String uniquePart) async {
     var values = await _readAllData();
-    for (int i = 0; i < values.length; i++) {
-      if (values[i].contains(uniquePart)) {
-        values[i] = newItem;
-        await _writeStrings(values);
-        return;
-      }
+    var index = values.indexWhere((e) => e.contains(uniquePart));
+    if (index == -1) {
+      values[index] = newItem;
+      await _writeStrings(values);
+    } else {
+      _addItem(newItem);
     }
-    _addItem(newItem);
   }
 
   Future<void> updateAll(List<String> newItem, List<String> uniquePart) async {
@@ -159,13 +148,9 @@ class SuperStorage {
 
   Future<void> _updateAll(List<String> newItem, List<String> uniquePart) async {
     var values = await _readAllData();
-    for (int i = 0; i < values.length; i++) {
-      for (int ii = 0; ii < newItem.length; ii++) {
-        if (values[i].contains(uniquePart[ii])) {
-          values[i] = newItem[ii];
-          break;
-        }
-      }
+    for(int i = 0;i < newItem.length;i++){
+      var index = values.indexWhere((e) => e.contains(uniquePart[i]));
+      values[index] = newItem[i];
     }
     await _writeStrings(values);
   }
@@ -178,27 +163,17 @@ class SuperStorage {
     await _doAction(() => _deleteAll(uniquePart));
   }
 
-  Future<void> _deleteAll(List<String> uniquePart) async {
+  Future<void> _deleteAll(List<String> uniqueParts) async {
     var values = await _readAllData();
-    for (int ii = 0; ii < uniquePart.length; ii++) {
-      for (int i = 0; i < values.length; i++) {
-        if (values[i].contains(uniquePart[ii])) {
-          values.removeAt(i);
-          break;
-        }
-      }
+    for (var uniquePart in uniqueParts) {
+      values.removeAt(values.indexWhere((e) => e.contains(uniquePart)));
     }
     await _writeStrings(values);
   }
 
   Future<void> _delete(String uniquePart) async {
     var values = await _readAllData();
-    for (int i = 0; i < values.length; i++) {
-      if (values[i].contains(uniquePart)) {
-        values.removeAt(i);
-        break;
-      }
-    }
+    values.removeAt(values.indexWhere((e) => e.contains(uniquePart)));
     await _writeStrings(values);
   }
 

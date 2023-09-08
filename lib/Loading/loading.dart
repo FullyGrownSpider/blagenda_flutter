@@ -70,6 +70,9 @@ class Loading {
   }
 
   Future<void> _upload(Type t) async {
+    if (!typeList.contains(t)) {
+      throw FormatException('Type: ${t.toString()} is not found');
+    }
     if (uploader.contains(t)) {
       return;
     }
@@ -81,11 +84,11 @@ class Loading {
 
   Future<void> downloadDatabaseFiles() async {
     List<Future> results = [];
-    for (int i = 0; i < typeList.length; i++) {
-      results.add(_client.downloadFile('${typeList[i].toString()}.byd'));
+    for (var type in typeList) {
+      results.add(_client.downloadFile('${type.toString()}.byd'));
     }
-    for (int i = 0; i < results.length; i++) {
-      await results[i];
+    for (var download in results) {
+      await download;
     }
   }
 
@@ -97,8 +100,8 @@ class Loading {
     getButtonList.add(getButtons<AgainYearController>());
     getButtonList.add(getButtons<AgainWeekController>());
     getButtonList.add(getButtons<AgainMonthController>());
-    for (int i = 0; i < getButtonList.length; i++) {
-      results.addAll((await getButtonList[i]));
+    for (var toAwait in getButtonList) {
+      results.addAll((await toAwait));
     }
     return results;
   }
@@ -120,17 +123,17 @@ class Loading {
   Future<bool> downloadDatabaseFilesCarefully() async {
     List<Future> results = [];
     bool update = true;
-    for (int i = 0; i < typeList.length; i++) {
+    for (var type in typeList) {
       results.add(_client
-          .downloadFileCarefully('${typeList[i].toString()}.byd',
-              '${typeList[i].toString()}.backup.byd')
+          .downloadFileCarefully('${type.toString()}.byd',
+              '${type.toString()}.backup.byd')
           .then((value) => {
-                results.add(_local.pickWhatToDo('${typeList[i].toString()}.byd',
-                    '${typeList[i].toString()}.backup').then((value) => value ? update = false : update = update))
+                results.add(_local.shouldKeepFirstFile('${type.toString()}.byd',
+                    '${type.toString()}.backup').then((value) => value ? update = false : update = update))
               }));
     }
-    for (int i = 0; i < results.length; i++) {
-      await results[i];
+    for (var download in results) {
+      await download;
     }
     return update;
   }

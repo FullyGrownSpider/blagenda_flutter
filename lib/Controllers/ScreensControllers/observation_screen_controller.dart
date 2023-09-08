@@ -88,7 +88,7 @@ class ObservationScreenController {
     } else {
       List<EndBasedController> newList = overviewList
           .where((e) =>
-              e.wasJustAdded(MyDateController.lookTime) && e.left > _daysToShow)
+              e.wasJustAdded(MyDateController.lookTime) && e.daysLeft > _daysToShow)
           .toList();
       againDeadlineDisplayList.addAll(_createNewEndBasedWasJustAddedDay(
           setStateMethod, MyDateController.lookTime, newList));
@@ -186,7 +186,7 @@ class ObservationScreenController {
     List<Widget> againDeadlineDisplayList = [];
     int i = 0;
     if (endBasedList.isEmpty) return againDeadlineDisplayList;
-    if (endBasedList.first.left == -1) {
+    if (endBasedList.first.daysLeft == -1) {
       //-1 to also show yesterday
       i--;
     }
@@ -206,7 +206,7 @@ class ObservationScreenController {
     List<Widget> againDeadlineDisplayList = [];
     int index = 0;
 
-    if (endBasedList.isNotEmpty && endBasedList.first.left == -1) {
+    if (endBasedList.isNotEmpty && endBasedList.first.daysLeft == -1) {
       //memory intensive? maybe can be done better? like only checking first one?
       index--;
     }
@@ -215,20 +215,20 @@ class ObservationScreenController {
       againDeadlineDisplayList.addAll(createADay(nowDate, endBasedList, index,
           setStateMethod, _createButtonBase, true));
     }
-    if (endBasedList.any((e) => e.left >= _daysToShow)) {
+    if (endBasedList.any((e) => e.daysLeft >= _daysToShow)) {
       againDeadlineDisplayList.add(bigSplitterTextField);
       var lastLeft = 0;
-      for (int i = 0; i < endBasedList.length; i++) {
-        if (endBasedList[i].left >= _daysToShow) {
-          if (!endBasedList[i].isInLeft(lastLeft)) {
-            lastLeft = endBasedList[i].left;
+      for (var button in endBasedList) {
+        if (button.daysLeft >= _daysToShow) {
+          if (!button.isInLeft(lastLeft)) {
+            lastLeft = button.daysLeft;
             againDeadlineDisplayList.addAll(createADay(
                 nowDate,
                 endBasedList,
-                endBasedList[i].left,
+                lastLeft,
                 setStateMethod,
                 _createButtonBase,
-                endBasedList[i].left < _daysToShow));
+                lastLeft < _daysToShow));
           }
         }
       }
@@ -240,35 +240,35 @@ class ObservationScreenController {
       MyDateController nowDate, List<EndBasedController> endBasedList) {
     List<Widget> againDeadlineDisplayList = [];
     var lastLeft = -1;
-    for (int i = 0; i < endBasedList.length; i++) {
-      if (!endBasedList[i].isInLeft(lastLeft)) {
-        lastLeft = endBasedList[i].left;
+    for (var button in endBasedList) {
+      if (!button.isInLeft(lastLeft)) {
+        lastLeft = button.daysLeft;
         againDeadlineDisplayList.addAll(createADay(
             nowDate,
             endBasedList,
-            endBasedList[i].left,
+            lastLeft,
             setStateMethod,
             _createButtonBase,
-            endBasedList[i].left < _daysToShow));
+            lastLeft < _daysToShow));
       }
     }
     return againDeadlineDisplayList;
   }
 
-  void arrayRefresh(List<EndBasedController> array){
+  void _updateEndbasedToCurrentDay(List<EndBasedController> itemsToCheck){
     List<EndBasedController> itemsToUpdate =
-      _getCorrectList(array.firstOrNull.runtimeType)
+      _getCorrectList(itemsToCheck.firstOrNull.runtimeType)
           .where((e) => e.requiresChange)
           .toList() as List<EndBasedController>;
     if (itemsToUpdate.isNotEmpty) {
-      if (array.firstOrNull is DeadlineController) {
+      if (itemsToCheck.firstOrNull is DeadlineController) {
         loading.deleteButtons(itemsToUpdate);
         _getCorrectList(DeadlineController)
             .removeWhere((e) => e.requiresChange);
       } else {
         loading.updateButtons(itemsToUpdate);
-        for(int i = 0;i < array.length;i++){
-          array[i].requiresChange = false;
+        for(var toUpdateButton in itemsToCheck){
+          toUpdateButton.requiresChange = false;
         }
       }
     }
@@ -280,7 +280,7 @@ class ObservationScreenController {
         for (var element in e.value) {
           (element as EndBasedController).rebuild();
         }
-        arrayRefresh(e.value as List<EndBasedController>);
+        _updateEndbasedToCurrentDay(e.value as List<EndBasedController>);
       }
     }
   }
@@ -293,9 +293,6 @@ class ObservationScreenController {
       _buttonGet[i](loading).then((value) {
         if (value.isNotEmpty) {
           _allLists[value.first.runtimeType]!.addAll(value);
-          if (value.first is EndBasedController) {
-            arrayRefresh(value as List<EndBasedController>);
-          }
         }
         _loaded[i] = true;
       });
@@ -303,7 +300,7 @@ class ObservationScreenController {
   }
 
   bool _shouldGoIn(EndBasedController eb, MyDateController now) =>
-      eb.left < daysToShowNow + 7 && eb.left >= -1 || eb.wasJustAdded(now);
+      eb.daysLeft < daysToShowNow + 7 && eb.daysLeft >= -1 || eb.wasJustAdded(now);
 
   List<BasicButtonController> _goesInList(
       List<BasicButtonController> list, MyDateController now) {
@@ -320,7 +317,7 @@ class ObservationScreenController {
         //if you select 14 you want to see something 14 days away too not just
         //13
         return list
-            .where((e) => (e as EndBasedController).left == daysToShowNow)
+            .where((e) => (e as EndBasedController).daysLeft == daysToShowNow)
             .toList()
           ..addAll(newList);
       } else {
@@ -433,7 +430,7 @@ class ObservationScreenController {
 
   List<Widget> _createFullList(void Function() setStateMethod,
       MyDateController nowDate, List<EndBasedController> endBasedList) {
-    endBasedList.sort((e, b) => e.left.compareTo(b.left));
+    endBasedList.sort((e, b) => e.daysLeft.compareTo(b.daysLeft));
     return endBasedList
         .map((e) => _createListItemEverythingEndBased(e, setStateMethod))
         .toList();

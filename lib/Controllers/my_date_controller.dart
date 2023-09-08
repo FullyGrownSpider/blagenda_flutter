@@ -13,23 +13,14 @@ class MyDateController extends DateTime {
   MyDateController(super.year,
       [super.month = 1, super.day = 1, super.hour = 0, super.minute]);
 
-  static bool requiresResetDate() {
+  static bool didDayPass() {
     lookTime = MyDateController.now();
-    if (lookTime.day != today.day || lookTime.month != today.month) {
-      return true;
-    } else {
-      return false;
-    }
+    return lookTime.day != today.day || lookTime.month != today.month;
   }
 
-  static bool hourPassed(int lastHour) {
-    if (lookTime.hour != lastHour) {
-      return true;
-    } else {
-      return false;
-    }
+  static bool didHourPass(int lastHour) {
+    return lookTime.hour != lastHour || lookTime.day != today.day;
   }
-
 
   static MyDateController fromDaysFromNow(int fromNow) =>
       MyDateController.today.addOrRemoveDays(fromNow);
@@ -44,6 +35,9 @@ class MyDateController extends DateTime {
         1;
   }
 
+  bool isDayThisYear(int month, int day) => (month < nowDate.month ||
+      month == nowDate.month && day <= nowDate.day);
+
   @override
   MyDateController add(Duration duration) =>
       _dateTimeToMyDateController(super.add(duration));
@@ -53,7 +47,7 @@ class MyDateController extends DateTime {
   static _dateTimeToMyDateController(DateTime d) =>
       MyDateController(d.year, d.month, d.day, d.hour, d.minute);
 
-  static resetDate() {
+  static void resetDate() {
     lookTime = MyDateController.now();
     today = MyDateController(lookTime.year, lookTime.month, lookTime.day, 2);
   }
@@ -93,7 +87,7 @@ class MyDateController extends DateTime {
         withYear ? yy : ''
       ]);
 
-  String dayDisplay() => formatDate(this, [D]) + ': ';
+  String dayDisplay() => '${formatDate(this, [D])}: ';
 
   static MyDateController? translate(String myNumb) {
     myNumb = myNumb
