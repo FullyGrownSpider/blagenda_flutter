@@ -10,16 +10,16 @@ class LoadingFromStorage {
   const LoadingFromStorage();
 
   Future<void> deleteButton(BasicButton but) async =>
-      await SuperStorage(but.runtimeType.toString()).delete(uniquePart(but));
+      await SuperStorage(typeToFile(but.runtimeType)).delete(uniquePart(but));
 
   Future<void> deleteButtons(List<BasicButton> buts) async {
     if (buts.isEmpty) return;
     List<String> items = buts.map((e) => uniquePart(e)).toList();
-    await SuperStorage(buts.first.runtimeType.toString()).deleteAll(items);
+    await SuperStorage(typeToFile(buts.first.runtimeType)).deleteAll(items);
   }
 
   Future<void> updateButton(BasicButton but) async =>
-      await SuperStorage(but.runtimeType.toString())
+      await SuperStorage(typeToFile(but.runtimeType))
           .update(buttonExportGenerator(but), uniquePart(but));
 
   Future<void> updateButtons(List<BasicButton> buts) async {
@@ -30,29 +30,39 @@ class LoadingFromStorage {
       items.add(buttonExportGenerator(butt));
       parts.add(uniquePart(butt));
     }
-    await SuperStorage(buts.first.runtimeType.toString()).updateAll(items, parts);
+    await SuperStorage(typeToFile(buts.first.runtimeType)).updateAll(items, parts);
   }
 
   Future<void> addButton(BasicButton but) async =>
-      await SuperStorage(but.runtimeType.toString())
+      await SuperStorage(typeToFile(but.runtimeType))
           .addItem(buttonExportGenerator(but));
 
   Future<List<t>> getItems<t extends BasicButton>() async {
-    var file = SuperStorage(t.toString());
+    var file = SuperStorage(typeToFile(t));
     List<String> allData = await file.readAllData();
     return allData.map((e) => buttonImportGenerator<t>(e)).toList();
   }
 
   Future<bool> shouldKeepFirstFile(String fileOne, String fileTwo) async {
     var one = SuperStorage(fileOne);
+    if (!await one.exists()) {
+      var two = SuperStorage(fileTwo);
+      if (!await two.exists()) return false;
+      _copyAndDelete(one, two);
+      return false;
+    }
     var two = SuperStorage(fileTwo);
+    if (!await two.exists()) return true;
     if ((await one.lastUpdate()).isBefore(await two.lastUpdate())){
-      var path = ('${await one._localPath}/${one._fileName}');
-      (await two._localFile).copy(path).then((value) async => (await two._localFile).deleteSync());
+      _copyAndDelete(one, two);
       return false;
     }
     (await two._localFile).delete();
     return true;
+  }
+  Future<void> _copyAndDelete(SuperStorage one, SuperStorage two) async {
+    var path = ('${await one._localPath}/${one._fileName}');
+    (await two._localFile).copy(path).then((value) async => (await two._localFile).deleteSync());
   }
 }
 
@@ -68,9 +78,13 @@ class SuperStorage {
     return directory.path;
   }
 
+  Future<bool> exists() async {
+    return await (await _localFile).exists();
+  }
+
   Future<File> get _localFile async {
     final path = await _localPath;
-    return File('$path/$_fileName.byd');
+    return File('$path/$_fileName');
   }
 
   Future<DateTime> _lastUpdate() async {
@@ -134,7 +148,7 @@ class SuperStorage {
   Future<void> _update(String newItem, String uniquePart) async {
     var values = await _readAllData();
     var index = values.indexWhere((e) => e.contains(uniquePart));
-    if (index == -1) {
+    if (index != -1) {
       values[index] = newItem;
       await _writeStrings(values);
     } else {

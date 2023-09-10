@@ -11,19 +11,20 @@ class AgainYearController extends SkippableEndBasedController<AgainYearDay> {
   SkippableEndBasedController<SkippableButton> callConstructor(button) =>
       AgainYearController(button);
 
+  int get month => button.month!;
   @override
   void create() {
     var nowDate = MyDateController.nowDate;
-    if (nowDate.isDayThisYear(button.month, day)) {
-      dateController = MyDateController.fromDM(button.month, day);
+    if (nowDate.isDayThisYear(month, day)) {
+      dateController = MyDateController.fromDM(month, day);
     } else {
       dateController = MyDateController.fromDMY(
-          MyDateController.nowDate.year + 1, button.month, day);
+          MyDateController.nowDate.year + 1, month, day);
     }
     if (buttonCheck(dateToSkip, dateController)){
       requiresChange = true;
       button = AgainYearDay(job, toDos, id, color,
-          day, button.month, null);
+          day, month, null);
     }
   }
 
@@ -52,7 +53,7 @@ class AgainYearController extends SkippableEndBasedController<AgainYearDay> {
       id,
       color,
       day,
-      button.month,
+      month,
       dateController);
 }
 
@@ -96,19 +97,21 @@ class AgainAmountController
     extends SkippableEndBasedController<AgainAmountDay> {
   AgainAmountController(AgainAmountDay button) : super(button);
 
+  MyDateController get date => button.date!;
+
   @override
   SkippableEndBasedController<SkippableButton> callConstructor(button) =>
       AgainAmountController(button);
 
   @override
   void create() {
-    dateController = button.date;
+    dateController = button.date!;
     if (buttonCheck(dateToSkip, dateController)){
       requiresChange = true;
       button = AgainAmountDay(job, toDos, id, color,
           dateController, day, null);
     }
-    var date = button.date.add(const Duration(hours: 2));
+    var date = button.date!.add(const Duration(hours: 2));
     var toAdd = 0;
     while (date.isBefore(MyDateController.yesterday)) {
       date.addOrRemoveDays(day);
@@ -129,12 +132,12 @@ class AgainAmountController
   @override
   void newSkip(MyDateController dateController) {
     if (altLeft == daysLeft) {
-      var date = button.date.addOrRemoveDays(day);
+      var dateCalc = date.addOrRemoveDays(day);
       button = AgainAmountDay(job, toDos, id, color,
-          date, day, date);
+          dateCalc, day, dateCalc);
     } else {
       button = AgainAmountDay(job, toDos, id, color,
-          button.date, day, dateController);
+          date, day, dateController);
     }
   }
 }

@@ -31,7 +31,7 @@ abstract class EndBasedController<t extends BasicButton>
   @override
   Color get color {
     if (daysLeft != -1) {
-      return button.color;
+      return button.color!;
     }
     return Color.lerp(button.color, Colors.black38, 0.3) as Color;
   }
@@ -259,12 +259,12 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
   @override
   Color get color {
     if (altLeft != -1) {
-      return button.color;
+      return button.color!;
     }
     return Color.lerp(button.color, Colors.black38, 0.3) as Color;
   }
 
-  int get day => button.day;
+  int get day => button.day!;
 
   MyDateController? get dateToSkip => button.dateToSkip;
 }

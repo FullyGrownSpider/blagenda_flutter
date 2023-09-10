@@ -7,7 +7,8 @@ class AddingScreen extends StatefulWidget {
   final Function(BasicButtonController) addingFunction;
   final int Function(Type) getNewId;
 
-  const AddingScreen(this.button, this.addingFunction, this.getNewId, {Key? key})
+  const AddingScreen(this.button, this.addingFunction, this.getNewId,
+      {Key? key})
       : super(key: key);
 
   @override
@@ -15,14 +16,15 @@ class AddingScreen extends StatefulWidget {
 }
 
 class _AddingScreenState extends State<AddingScreen> {
-  late final AddingScreenController _screenController = AddingScreenController(widget.button?.button, widget.getNewId);
+  late final AddingScreenController _screenController = AddingScreenController(
+      widget.button?.button, widget.getNewId, _setStateMethod);
 
   late final List<Widget> _itemList = [];
 
   @override
   Widget build(BuildContext context) {
     _itemList.clear();
-    _itemList.addAll(_screenController.createButton(_setStateMethod));
+    _itemList.addAll(_screenController.createScreenWidgets());
 
     return Scaffold(
         backgroundColor: Colors.white24,
@@ -30,7 +32,8 @@ class _AddingScreenState extends State<AddingScreen> {
           IconButton(
               icon: const Icon(Icons.add),
               onPressed: () {
-                BasicButtonController? controller = _screenController.getButton!();
+                BasicButtonController? controller =
+                    _screenController.getButton!();
                 if (controller == null) return;
                 widget.addingFunction(controller);
                 Navigator.pop(context);

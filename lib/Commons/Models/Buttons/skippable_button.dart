@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'basic_button.dart';
 
 abstract class SkippableButton extends BasicButton {
-  const SkippableButton(String job, List<String> toDos, id, Color color, this.day,
-      this.dateToSkip)
+  SkippableButton([String? job, List<String>? toDos, int? id, Color? color, this.day,
+      this.dateToSkip])
       : super(job, toDos, id, color);
 
-  final int day;
-  final MyDateController? dateToSkip;
+  int? day = -1;
+  MyDateController? dateToSkip;
 }

@@ -16,16 +16,16 @@ abstract class BasicButtonController<t extends BasicButton> {
   @protected
   set button(t newButton) => _button = newButton;
 
-  String get job => _button.job;
+  String get job => _button.job!;
 
-  List<String> get toDos => _button.toDos;
+  List<String> get toDos => _button.toDos!;
 
-  int get id => _button.id;
+  int get id => _button.id!;
 
   static String displayGenericJob(String job, int max) =>
       job.length > max ? '${job.substring(0, max)}...' : job;
 
-  Color get color => _button.color;
+  Color get color => _button.color!;
 
   String gettingTheStringShort() => displayGenericJob(job, maxValueCheck);
 

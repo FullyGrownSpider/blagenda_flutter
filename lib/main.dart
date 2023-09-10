@@ -2,7 +2,10 @@ import 'package:blagenda_flutter_simple/Screens/observation_screen.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter/material.dart';
 
-void main() => runApp(const TabBarInsideAppBarPage());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const TabBarInsideAppBarPage());
+}
 
 class TabBarInsideAppBarPage extends StatefulWidget {
   const TabBarInsideAppBarPage({Key? key}) : super(key: key);

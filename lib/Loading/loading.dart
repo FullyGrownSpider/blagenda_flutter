@@ -9,18 +9,12 @@ import 'package:blagenda_flutter_simple/Loading/dropbox_client.dart';
 import 'package:blagenda_flutter_simple/Loading/loading_storage.dart';
 
 import '../Controllers/ButtonControllers/basic_button_controller.dart';
+import 'button_conversion.dart';
 
 class Loading {
   final DropboxClient _client = const DropboxClient();
   final LoadingFromStorage _local = const LoadingFromStorage();
-  final List<Type> typeList = [
-    AgainMonthDay,
-    AgainWeekDay,
-    AgainYearDay,
-    AgainAmountDay,
-    Deadline,
-    BasicButton
-  ];
+
   final List<Type> uploader = [];
 
   Future<void> deleteButton(BasicButtonController but) async {
@@ -64,28 +58,25 @@ class Loading {
   };
 
   Future<List<t>> getButtons<t extends BasicButtonController>() async {
-    return (await _fileToGet[t]!())
-        .map((e) => Loading.buttonToController[t]!(e) as t)
-        .toList();
+    return ((await _fileToGet[t]!())
+        .map((e) => buttonToController(e.runtimeType, e) as t)
+        .toList());
   }
 
   Future<void> _upload(Type t) async {
-    if (!typeList.contains(t)) {
-      throw FormatException('Type: ${t.toString()} is not found');
-    }
     if (uploader.contains(t)) {
       return;
     }
     uploader.add(t);
     await Future.delayed(const Duration(milliseconds: 10));
-    await _client.uploadFile('${t.toString()}.byd');
+    await _client.uploadFile(typeToFile(t));
     uploader.remove(t);
   }
 
   Future<void> downloadDatabaseFiles() async {
     List<Future> results = [];
     for (var type in typeList) {
-      results.add(_client.downloadFile('${type.toString()}.byd'));
+      results.add(_client.downloadFile(typeToFile(type)));
     }
     for (var download in results) {
       await download;
@@ -106,34 +97,20 @@ class Loading {
     return results;
   }
 
-  static final Map<Type, BasicButtonController Function(BasicButton)>
-      buttonToController = {
-    AgainAmountController: (button) =>
-        AgainAmountController(button as AgainAmountDay),
-    AgainWeekController: (button) =>
-        AgainWeekController(button as AgainWeekDay),
-    AgainYearController: (button) =>
-        AgainYearController(button as AgainYearDay),
-    AgainMonthController: (button) =>
-        AgainMonthController(button as AgainMonthDay),
-    DeadlineController: (button) => DeadlineController(button as Deadline),
-    NoteController: (button) => NoteController(button),
-  };
-
   Future<bool> downloadDatabaseFilesCarefully() async {
     List<Future> results = [];
     bool update = true;
     for (var type in typeList) {
       results.add(_client
-          .downloadFileCarefully('${type.toString()}.byd',
-              '${type.toString()}.backup.byd')
+          .downloadFileCarefully(typeToFile(type),
+          '${typeToFile(type)}.backup')
           .then((value) => {
-                results.add(_local.shouldKeepFirstFile('${type.toString()}.byd',
-                    '${type.toString()}.backup').then((value) => value ? update = false : update = update))
+                results.add(_local.shouldKeepFirstFile(typeToFile(type),
+                    '${typeToFile(type)}.backup').then((value) => value ? update = false : update = update))
               }));
     }
-    for (var download in results) {
-      await download;
+    for(int i = 0;i < results.length;i++){
+      await results[i];
     }
     return update;
   }

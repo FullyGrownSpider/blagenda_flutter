@@ -8,8 +8,8 @@ class DeadlineController extends EndBasedController<Deadline> {
 
   @override
   void create() {
-    dateController = button.date;
-    requiresChange = button.date
+    dateController = button.date!;
+    requiresChange = button.date!
         .isBefore(MyDateController.nowDate.add(const Duration(days: -3)));
   }
 }
