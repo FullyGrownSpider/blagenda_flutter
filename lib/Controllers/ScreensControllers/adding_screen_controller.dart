@@ -332,7 +332,7 @@ class AddingScreenController {
   InputObject<int> _itemIntFromList(List<String> listToShow, String hint,
       ValuesOfButtons itemsIn) {
     var displayWidget = DropdownButton<String>(
-        hint: Text(storedValues[itemsIn] ?? hint),
+        hint: Text(listToShow[storedValues[itemsIn] -1 ?? hint]),
         items: listToShow.map((String value) {
           return DropdownMenuItem<String>(
             value: value,
@@ -340,12 +340,12 @@ class AddingScreenController {
           );
         }).toList(),
         onChanged: (s) {
-          storedValues[itemsIn] = s;
+          storedValues[itemsIn] = listToShow.indexOf(s ?? "") + 1;
           _setStateMethod();
         },
         onTap: () => _createMyDateDayToShow());
     return InputObject<int>.filled(displayWidget, () {
-      return listToShow.indexOf(storedValues[itemsIn]) + 1;
+      return storedValues[itemsIn];
     }, itemsIn);
   }
 

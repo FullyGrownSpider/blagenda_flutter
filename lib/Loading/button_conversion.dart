@@ -68,7 +68,7 @@ final Map<Type, dynamic Function(String?)> _dataImportGeneratorMap = {
 
 final Map<Type, void Function(dynamic, StringBuffer)> _dataExportMap = {
   List<String>: (value, buf) => buf.write(value.join(_storageListSep)),
-  MaterialColor: (value, buf) {
+  Color: (value, buf) {
     buf.write(value.red);
     buf.write(_storageListSep);
     buf.write(value.green);
@@ -95,8 +95,9 @@ StringBuffer _dataExportGenerator(
     dynamic value, ValuesOfButtons enumValue, StringBuffer buf) {
   if (value == null) return buf;
   buf.write(_storageSep + _enumToString(enumValue) + _storageIdentifier);
-  if (_dataExportMap.containsKey(value.runtimeType)) {
-    _dataExportMap[value.runtimeType]!(value, buf);
+  var correctType = _valueToType.firstWhere((e) => e.butVal == enumValue).type;
+  if (_dataExportMap.containsKey(correctType)) {
+    _dataExportMap[correctType]!(value, buf);
   } else {
     buf.write(value);
   }
