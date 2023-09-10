@@ -29,17 +29,17 @@ class _OverviewScreenState extends State<OverviewScreen> {
   void initState() {
     super.initState();
     // defines a timer
-    Timer.periodic(const Duration(seconds: 10), (Timer t) {
+    Timer.periodic(const Duration(seconds: 30), (Timer t) {
       _timerTick();
     });
-    _timerTick();
+    _timerTick(true);
   }
 
-  void _timerTick() {
-    bool awns = MyDateController.requiresResetDate();
+  void _timerTick([bool force = false]) {
+    bool awns = MyDateController.didDayPass();
     //requiresResetDate also resets last look time its semi important that its run
-    if (_controller.justAddedCheck() || awns) {
-      if (awns) {
+    if (_controller.justAddedCheck() || awns || force) {
+      if (awns || force) {
         MyDateController.resetDate();
         _controller.resetLists();
         _resetScreen();
@@ -48,7 +48,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
       } else {
         _resetScreen();
       }
-    } else if (MyDateController.hourPassed(lastHour)) {
+    } else if (MyDateController.didHourPass(lastHour)) {
       lastHour = MyDateController.lookTime.hour;
       syncActionLowKey!(_reloadData);
     }

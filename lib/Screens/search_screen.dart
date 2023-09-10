@@ -34,7 +34,7 @@ class _SearchScreenState extends State<SearchScreen> {
           // child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: _controller.getFilling(),
+            children: _controller.getScreenWidgets(),
           ),
         ));
   }

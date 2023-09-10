@@ -171,8 +171,8 @@ class SearchScreenController {
         dateController.text = extraDatesController.text = '';
     itemList.clear();
     itemList.add(_createTextButton(s));
-    for (int i = 0; i < calcList.length; i++) {
-      itemList.add(calcList[i]);
+    for (var itemToAdd in calcList) {
+      itemList.add(itemToAdd);
     }
     setStateMethod();
   }
@@ -186,7 +186,7 @@ class SearchScreenController {
   Widget buttonCreator(EndBasedController it) => blagendaUniformButton(
       false, it.color, it.gettingTheStringSelected(), () => openEdit(it));
 
-  List<Widget> getFilling() {
+  List<Widget> getScreenWidgets() {
     List<Widget> widgets = [
       Row(children: [
         Expanded(flex: 3, child: dateFinder()),
