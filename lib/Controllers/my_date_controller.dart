@@ -6,6 +6,9 @@ class MyDateController extends DateTime {
   static MyDateController today =
       MyDateController(lookTime.year, lookTime.month, lookTime.day, 2);
 
+  static final RegExp letters = RegExp(r"[a-z]+\b");
+  static final RegExp comp = RegExp(r"\b[0-9]+[a-z]+\b");
+
   static MyDateController yesterday = _dateTimeToMyDateController(
       MyDateController(lookTime.year, lookTime.month, lookTime.day, 2)
           .subtract(const Duration(days: 1)));
@@ -35,8 +38,8 @@ class MyDateController extends DateTime {
         1;
   }
 
-  bool isDayThisYear(int month, int day) => (month < nowDate.month ||
-      month == nowDate.month && day <= nowDate.day);
+  bool isDayThisYear(int month, int day) => (month > nowDate.month ||
+      month == nowDate.month && day >= nowDate.day);
 
   @override
   MyDateController add(Duration duration) =>
@@ -67,10 +70,7 @@ class MyDateController extends DateTime {
 
   String inputDisplayString(bool showYear) {
     var monthValue = month.toRadixString(16);
-    var dayValue = day.toString();
-    if (dayValue.length == 1) {
-      dayValue = '0$dayValue';
-    }
+    var dayValue = day.toString().padLeft(2, "0");
     return '$dayValue - $monthValue ${(showYear ? ' - ${year.toString()}' : '')}';
   }
 
@@ -197,9 +197,6 @@ class MyDateController extends DateTime {
     }
     return null;
   }
-
-  static final RegExp letters = RegExp(r"[a-z]+\b");
-  static final RegExp comp = RegExp(r"\b[0-9]+[a-z]+\b");
 
   static MyDateController? _endsOrdinal(String word) {
     if (!comp.hasMatch(word)) return null;

@@ -21,7 +21,6 @@ class AgainYearDay extends SkippableButton {
   AgainYearDay([String? job, List<String>? toDos, int? id, Color? color, int? day,
       this.month, MyDateController? dateToSkip])
       : super(job, toDos, id, color, day, dateToSkip);
-
   int? month = -1;
 }
 

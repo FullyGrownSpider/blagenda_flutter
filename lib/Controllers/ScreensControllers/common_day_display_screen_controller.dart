@@ -31,12 +31,12 @@ List<Widget> createADay(
       calcDay);
   var right = _createCalcDayColor(
       listWithEverything
-          .any((e) => e is AgainYearController && e.isInLeft(fromNow + 7)),
+          .any((e) => e is AgainYearController && e.isHappeningOnDayFromNow(fromNow + 7)),
       '◭',
       calcDay);
   Text toAdd;
   var sortableList = listWithEverything
-      .where((e) => e.isInLeft(fromNow))
+      .where((e) => e.isHappeningOnDayFromNow(fromNow))
       .toList(growable: false);
   for (var item in sortableList) {
     if (item is SkippableEndBasedController) {

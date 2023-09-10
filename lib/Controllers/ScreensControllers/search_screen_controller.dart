@@ -186,7 +186,7 @@ class SearchScreenController {
   Widget buttonCreator(EndBasedController it) => blagendaUniformButton(
       false, it.color, it.gettingTheStringSelected(), () => openEdit(it));
 
-  List<Widget> getFilling() {
+  List<Widget> getScreenWidgets() {
     List<Widget> widgets = [
       Row(children: [
         Expanded(flex: 3, child: dateFinder()),

@@ -12,6 +12,7 @@ class AgainYearController extends SkippableEndBasedController<AgainYearDay> {
       AgainYearController(button);
 
   int get month => button.month!;
+
   @override
   void create() {
     var nowDate = MyDateController.nowDate;
@@ -21,15 +22,14 @@ class AgainYearController extends SkippableEndBasedController<AgainYearDay> {
       dateController = MyDateController.fromDMY(
           MyDateController.nowDate.year + 1, month, day);
     }
-    if (buttonCheck(dateToSkip, dateController)){
+    if (buttonCheck(dateToSkip, dateController)) {
       requiresChange = true;
-      button = AgainYearDay(job, toDos, id, color,
-          day, month, null);
+      button = AgainYearDay(job, toDos, id, color, day, month, null);
     }
   }
 
   @override
-  bool isInLeft(int calculatedDay) {
+  bool isHappeningOnDayFromNow(int calculatedDay) {
     if (calculatedDay == daysLeft) {
       return true;
     }
@@ -45,16 +45,6 @@ class AgainYearController extends SkippableEndBasedController<AgainYearDay> {
     }
     return newLeft == calculatedDay;
   }
-
-  @override
-  void newSkip(MyDateController dateController) => button = AgainYearDay(
-      job,
-      toDos,
-      id,
-      color,
-      day,
-      month,
-      dateController);
 }
 
 class AgainWeekController extends SkippableEndBasedController<AgainWeekDay> {
@@ -73,24 +63,15 @@ class AgainWeekController extends SkippableEndBasedController<AgainWeekDay> {
     }
     dateController =
         nowDate.add(Duration(days: weekdaysForCalc - nowDate.weekday));
-    if (buttonCheck(dateToSkip, dateController)){
+    if (buttonCheck(dateToSkip, dateController)) {
       requiresChange = true;
-      button = AgainWeekDay(job, toDos, id, color,
-          day, null);
+      button = AgainWeekDay(job, toDos, id, color, day, null);
     }
   }
 
   @override
-  bool isInLeft(int calculatedDay) => (calculatedDay - daysLeft) % 7 == 0;
-
-  @override
-  void newSkip(MyDateController dateController) => button = AgainWeekDay(
-      job,
-      toDos,
-      id,
-      color,
-      day,
-      dateController);
+  bool isHappeningOnDayFromNow(int calculatedDay) =>
+      (calculatedDay - daysLeft) % 7 == 0;
 }
 
 class AgainAmountController
@@ -106,10 +87,9 @@ class AgainAmountController
   @override
   void create() {
     dateController = button.date!;
-    if (buttonCheck(dateToSkip, dateController)){
+    if (buttonCheck(dateToSkip, dateController)) {
       requiresChange = true;
-      button = AgainAmountDay(job, toDos, id, color,
-          dateController, day, null);
+      button = AgainAmountDay(job, toDos, id, color, dateController, day, null);
     }
     var date = button.date!.add(const Duration(hours: 2));
     var toAdd = 0;
@@ -120,25 +100,13 @@ class AgainAmountController
     if (toAdd == 0) return;
     dateController = dateController.addOrRemoveDays(toAdd);
     requiresChange = true;
-    button = AgainAmountDay(job, toDos, id, color,
-        dateController, day, button.dateToSkip);
+    button = AgainAmountDay(
+        job, toDos, id, color, dateController, day, button.dateToSkip);
   }
 
   @override
-  bool isInLeft(int calculatedDay) {
+  bool isHappeningOnDayFromNow(int calculatedDay) {
     return (calculatedDay >= daysLeft && (calculatedDay - daysLeft) % day == 0);
-  }
-
-  @override
-  void newSkip(MyDateController dateController) {
-    if (altLeft == daysLeft) {
-      var dateCalc = date.addOrRemoveDays(day);
-      button = AgainAmountDay(job, toDos, id, color,
-          dateCalc, day, dateCalc);
-    } else {
-      button = AgainAmountDay(job, toDos, id, color,
-          date, day, dateController);
-    }
   }
 }
 
@@ -157,15 +125,14 @@ class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
       newLeft = MyDateController(nowDate.year, nowDate.month + 1, day);
     }
     dateController = newLeft;
-    if (buttonCheck(dateToSkip, dateController)){
+    if (buttonCheck(dateToSkip, dateController)) {
       requiresChange = true;
-      button = AgainMonthDay(job, toDos, id, color,
-          day, null);
+      button = AgainMonthDay(job, toDos, id, color, day, null);
     }
   }
 
   @override
-  bool isInLeft(int calculatedDay) {
+  bool isHappeningOnDayFromNow(int calculatedDay) {
     if (calculatedDay == daysLeft) {
       return true;
     }
@@ -181,15 +148,6 @@ class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
     }
     return newLeft == calculatedDay;
   }
-
-  @override
-  void newSkip(MyDateController dateController) => button = AgainMonthDay(
-      job,
-      toDos,
-      id,
-      color,
-      day,
-      dateController);
 }
 
 bool buttonCheck(DateTime? dateToSkip, DateTime today) {

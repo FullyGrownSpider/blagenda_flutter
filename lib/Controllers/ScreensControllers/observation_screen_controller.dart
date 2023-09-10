@@ -220,7 +220,7 @@ class ObservationScreenController {
       var lastLeft = 0;
       for (var button in endBasedList) {
         if (button.daysLeft >= _daysToShow) {
-          if (!button.isInLeft(lastLeft)) {
+          if (!button.isHappeningOnDayFromNow(lastLeft)) {
             lastLeft = button.daysLeft;
             againDeadlineDisplayList.addAll(createADay(
                 nowDate,
@@ -241,7 +241,7 @@ class ObservationScreenController {
     List<Widget> againDeadlineDisplayList = [];
     var lastLeft = -1;
     for (var button in endBasedList) {
-      if (!button.isInLeft(lastLeft)) {
+      if (!button.isHappeningOnDayFromNow(lastLeft)) {
         lastLeft = button.daysLeft;
         againDeadlineDisplayList.addAll(createADay(
             nowDate,
@@ -345,11 +345,11 @@ class ObservationScreenController {
     int index = _globalCounter;
     return blagendaUniformButton(
         clicked == index, it.color, _buttonDisplay(index, it), () {
-      clickFunction(index, it.id, it.runtimeType, setStateMethod);
+      clickOnButton(index, it.id, it.runtimeType, setStateMethod);
     });
   }
 
-  void clickFunction(
+  void clickOnButton(
       int index, int id, Type type, void Function() setStateMethod) {
     if (clicked == index) {
       clicked = idSelected = -1;
@@ -422,7 +422,7 @@ class ObservationScreenController {
     BasicButtonController? controller = getSelectedButton();
     if (controller == null || controller is SkippableEndBasedController) return;
     (controller as SkippableEndBasedController)
-        .newSkip(controller.dateController);
+        .makeNewSkip(controller.dateController);
     _updateButton(controller, setStateMethod);
   }
 

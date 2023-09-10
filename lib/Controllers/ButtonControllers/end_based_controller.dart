@@ -55,7 +55,7 @@ abstract class EndBasedController<t extends BasicButton>
 
   int howMuchLeft() => dateController.timeLeftUntil();
 
-  bool isInLeft(int calculatedDay) => daysLeft == calculatedDay;
+  bool isHappeningOnDayFromNow(int calculatedDay) => daysLeft == calculatedDay;
 
   void _setTimeOfDay() {
     //turn it into a 12 hour clock
@@ -224,14 +224,16 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   SkippableEndBasedController callConstructor(button);
 
-  void newSkip(MyDateController dateController);
+  void makeNewSkip(MyDateController newSkip){
+    button.dateToSkip = newSkip;
+  }
 
   MyDateController? skipDate() => button.dateToSkip;
   late int altLeft = -1;
 
   bool inTheNextDays(int days) {
     for (int i = 0; i <= days; i++) {
-      if (isInLeft(i)) return true;
+      if (isHappeningOnDayFromNow(i)) return true;
     }
     return false;
   }

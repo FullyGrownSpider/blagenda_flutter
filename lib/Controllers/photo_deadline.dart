@@ -198,17 +198,13 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
           )
           .then((value) => Navigator.pop(context));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('An error occurred when scanning text'),
-        ),
-      );
+     //eh whatever, something went wrong
     }
   }
 
   DeadlineController createButton(String text) {
     return DeadlineController(Deadline('Appointment', [_createTime(text)], -1,
-        usedColors.first, _createDate(text), '')); //TODO
+        usedColors.first, _createDate(text), ''));
   }
 
   final RegExp _dayReg = RegExp(r' [0-9]{1,2}[a-z]+\b');

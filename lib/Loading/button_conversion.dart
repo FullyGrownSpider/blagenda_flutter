@@ -86,12 +86,12 @@ final Map<Type, void Function(dynamic, StringBuffer)> _dataExportMap = {
 };
 
 String uniquePart<t extends BasicButton>(t line) =>
-    dataExportGenerator(
+    _dataExportGenerator(
             line.id, ValuesOfButtons.id, StringBuffer())
         .toString() +
     _storageSep;
 
-StringBuffer dataExportGenerator(
+StringBuffer _dataExportGenerator(
     dynamic value, ValuesOfButtons enumValue, StringBuffer buf) {
   if (value == null) return buf;
   buf.write(_storageSep + _enumToString(enumValue) + _storageIdentifier);
@@ -177,7 +177,7 @@ _enumToString(ValuesOfButtons val) => val.toString().split('.').last;
 dynamic buttonExportGenerator(dynamic button) {
   StringBuffer buf = StringBuffer();
   buttonToMap(button)
-      .forEach((key, value) => dataExportGenerator(value, key, buf));
+      .forEach((key, value) => _dataExportGenerator(value, key, buf));
   return buf.toString();
 }
 
