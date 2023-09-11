@@ -8,6 +8,6 @@ abstract class SkippableButton extends BasicButton {
       this.dateToSkip])
       : super(job, toDos, id, color);
 
-  int? day = -1;
+  int? day;
   MyDateController? dateToSkip;
 }
