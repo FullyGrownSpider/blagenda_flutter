@@ -8,7 +8,7 @@ class AgainAmountDay extends SkippableButton {
   AgainAmountDay([String? job, List<String>? toDos, int? id, Color? color, this.date,
       int? day, MyDateController? dateToSkip])
       : super(job, toDos, id, color, day, dateToSkip);
-  MyDateController? date = MyDateController.yesterday;
+  MyDateController? date;
 }
 
 class AgainWeekDay extends SkippableButton {
@@ -21,7 +21,7 @@ class AgainYearDay extends SkippableButton {
   AgainYearDay([String? job, List<String>? toDos, int? id, Color? color, int? day,
       this.month, MyDateController? dateToSkip])
       : super(job, toDos, id, color, day, dateToSkip);
-  int? month = -1;
+  int? month;
 }
 
 class AgainMonthDay extends SkippableButton {
