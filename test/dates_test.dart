@@ -9,7 +9,9 @@ List<String> input = [
 List<String> relativeInput = [
   "1e",
   "5",
-  "5+"
+  "5+",
+  "ma",
+  "ma++"
 ];
 void main() {
   test('test normal input', testInput);
@@ -42,7 +44,12 @@ void testRelativeInput(){
   var ord = MyDateController.translate(relativeInput[0]);
   var fromNow = MyDateController.translate(relativeInput[1]);
   var fromNowAndWeek = MyDateController.translate(relativeInput[2]);
+  var fromNowMondayNext = MyDateController.translate(relativeInput[3]);
+  var fromNowMondayNextInTwoWeeks = MyDateController.translate(relativeInput[4]);
   expect(1, ord!.day);
   expect(5, fromNow!.timeLeftUntil());
   expect(12, fromNowAndWeek!.timeLeftUntil());
+  expect(1, fromNowMondayNext!.weekday);
+  expect(1, fromNowMondayNextInTwoWeeks!.weekday);
+  expect(true, fromNowMondayNextInTwoWeeks.timeLeftUntil() >= 14);
 }
