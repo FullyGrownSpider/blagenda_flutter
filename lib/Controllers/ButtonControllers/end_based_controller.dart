@@ -91,19 +91,26 @@ abstract class EndBasedController<t extends BasicButton>
       //remove Am and Pm
       int indexOfAPm = items.indexOf(_replaceAPm);
       bool isPm = false;
+      bool isAm = false;
       if (indexOfAPm != -1) {
         isPm = items.substring(indexOfAPm).startsWith('pm');
+        isAm = !isPm;
         items = items.substring(0, indexOfAPm);
       }
       if (items.contains(_splitString)) {
+        var timeOfMinutes = int.parse(items.substring(items.indexOf(_splitString) + 1));
+        if (timeOfMinutes > 59) return;
+        var timeOfHours = int.parse(items.substring(0, items.indexOf(_splitString)));
         result =
-            int.parse(items.substring(0, items.indexOf(_splitString))) * 60 +
-                int.parse(items.substring(items.indexOf(_splitString) + 1));
+            timeOfHours * 60 +
+                timeOfMinutes;
       } else {
         result = int.parse(items) * 60;
       }
       if (isPm) {
         if (result <= 720) result += 720;
+      } else if (isAm && result >= 720) {
+        return;
       }
       if (result < 0 || result > 1440) return;
       //if time is 2.00 its not 2am its 2 pm. 7 is the earliest

@@ -177,7 +177,7 @@ enum ValuesOfButtons { job, todo, id, col, mon, dat, day, skp, cal }
 
 _enumToString(ValuesOfButtons val) => val.toString().split('.').last;
 
-dynamic buttonExportGenerator(dynamic button) {
+String buttonExportGenerator(dynamic button) {
   StringBuffer buf = StringBuffer();
   buttonToMap(button)
       .forEach((key, value) => _dataExportGenerator(value, key, buf));

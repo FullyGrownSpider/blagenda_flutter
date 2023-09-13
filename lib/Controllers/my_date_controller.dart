@@ -164,11 +164,11 @@ class MyDateController extends DateTime {
 
   static MyDateController? _ifDateOnlyOneChar(String word) {
     //its a number that needs to be added to today like its in 5 days
+    int toAdd = '+'.allMatches(word).length * 7;
+    word = word.replaceAll("+", '');
     int? daysUntilDay = int.tryParse(word);
     if (daysUntilDay != null && daysUntilDay < 0) {
-      var value = nowDate.millisecondsSinceEpoch - (daysUntilDay * 86400000);
-      return MyDateController._dateTimeToMyDateController(
-          DateTime.fromMillisecondsSinceEpoch(value));
+      return MyDateController.nowDate.addOrRemoveDays(daysUntilDay + toAdd);
     }
     if (daysUntilDay == null) {
       for (int i = 0; i < 7; i++) {
@@ -182,8 +182,7 @@ class MyDateController extends DateTime {
       }
     }
     if (daysUntilDay != null) {
-      daysUntilDay += '+'.allMatches(word).length * 7;
-      return nowDate.add(Duration(days: daysUntilDay));
+      return nowDate.addOrRemoveDays(daysUntilDay + toAdd);
     }
     for (int i = 0; i < 12; i++) {
       if (word.startsWith(months[i].toLowerCase()) ||
@@ -192,7 +191,7 @@ class MyDateController extends DateTime {
         if (d.isBefore(MyDateController.today)) {
           d = MyDateController(nowDate.year + 1, i + 1);
         }
-        return d;
+        return d.addOrRemoveDays(toAdd);
       }
     }
     return null;
