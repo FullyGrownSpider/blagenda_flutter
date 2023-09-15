@@ -18,7 +18,7 @@ abstract class EndBasedController<t extends BasicButton>
   static const String _splitString = ":";
   static const int showDayOfWeek = 6;
   static const int showDayTime = 4;
-  MyDateController? _timeWhenNotNewItemAnymore;
+  MyDateController? timeWhenNotNewItemAnymore;
   bool requiresChange = false;
   int timeOfDay = -1;
   int daysLeft = -1;
@@ -37,11 +37,11 @@ abstract class EndBasedController<t extends BasicButton>
   }
 
   bool wasJustAdded(MyDateController now) {
-    return _timeWhenNotNewItemAnymore?.isAfter(now) == true;
+    return timeWhenNotNewItemAnymore?.isAfter(now) == true;
   }
 
   void setToMakeNew() {
-    _timeWhenNotNewItemAnymore = MyDateController.now().add(const Duration(minutes: 4));
+    timeWhenNotNewItemAnymore = MyDateController.now().add(const Duration(minutes: 4));
     _setTimeOfDay();
   }
 
@@ -91,19 +91,26 @@ abstract class EndBasedController<t extends BasicButton>
       //remove Am and Pm
       int indexOfAPm = items.indexOf(_replaceAPm);
       bool isPm = false;
+      bool isAm = false;
       if (indexOfAPm != -1) {
         isPm = items.substring(indexOfAPm).startsWith('pm');
+        isAm = !isPm;
         items = items.substring(0, indexOfAPm);
       }
       if (items.contains(_splitString)) {
+        var timeOfMinutes = int.parse(items.substring(items.indexOf(_splitString) + 1));
+        if (timeOfMinutes > 59) return;
+        var timeOfHours = int.parse(items.substring(0, items.indexOf(_splitString)));
         result =
-            int.parse(items.substring(0, items.indexOf(_splitString))) * 60 +
-                int.parse(items.substring(items.indexOf(_splitString) + 1));
+            timeOfHours * 60 +
+                timeOfMinutes;
       } else {
         result = int.parse(items) * 60;
       }
       if (isPm) {
         if (result <= 720) result += 720;
+      } else if (isAm && result >= 720) {
+        return;
       }
       if (result < 0 || result > 1440) return;
       //if time is 2.00 its not 2am its 2 pm. 7 is the earliest
@@ -116,7 +123,7 @@ abstract class EndBasedController<t extends BasicButton>
   }
 
   String displayJob() {
-    if (daysLeft < showDayTime || _timeWhenNotNewItemAnymore != null) {
+    if (daysLeft < showDayTime || timeWhenNotNewItemAnymore != null) {
       return displayWithTimeJob();
     }
     return job;
@@ -150,7 +157,7 @@ abstract class EndBasedController<t extends BasicButton>
   @override
   String todosToString() {
     var result = super.todosToString();
-    if (timeOfDay != -1 || _timeWhenNotNewItemAnymore != null) {
+    if (timeOfDay != -1 || timeWhenNotNewItemAnymore != null) {
       var results = result.split('\n');
       for (int i = 0; i < results.length; i++) {
         //it equals the complete reg
@@ -240,7 +247,7 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   String displayJob() {
-    if (altLeft < EndBasedController.showDayTime || _timeWhenNotNewItemAnymore != null) {
+    if (altLeft < EndBasedController.showDayTime || timeWhenNotNewItemAnymore != null) {
       return displayWithTimeJob();
     }
     return job;

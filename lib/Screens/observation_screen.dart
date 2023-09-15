@@ -17,6 +17,7 @@ class OverviewScreen extends StatefulWidget {
 
 class _OverviewScreenState extends State<OverviewScreen> {
   int lastHour = 0;
+  bool _wentBack = false;
 
   _OverviewScreenState() {
     _controller = ObservationScreenController();
@@ -69,16 +70,17 @@ class _OverviewScreenState extends State<OverviewScreen> {
               backgroundColor: Colors.green,
             )),
         drawer: _drawer.createDrawer(context),
-        body: SingleChildScrollView(
-          // child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: _centerChildren,
-          ),
-        ));
+        body: WillPopScope(
+            onWillPop: _onWillPop,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _centerChildren,
+              ),
+            )));
   }
 
-  void _reloadData(){
+  void _reloadData() {
     _controller.loadListsFromStorage();
     _fill();
   }
@@ -98,6 +100,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   void _resetScreen() {
     _centerChildren.clear();
+    _controller.setAllToNotNew();
     _centerChildren.addAll(_controller.getWidgetListEndBased(_resetScreen));
     _centerChildren.addAll(_controller.getWidgetListNote(_resetScreen));
     _centerChildren.addAll(_centerOptionsButton);
@@ -107,17 +110,33 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   void _resetButtons() {
     _centerOptionsButton.clear();
-    _centerOptionsButton.addAll(_controller.getOptionButtons(_fullReset));
+    _wentBack = false;
+    _centerOptionsButton.addAll(_controller.getOptionButtons(() {
+      _fullReset();
+      _wentBack = false;
+    }));
   }
 
   int getNewId(Type t) => _controller.getNewId(t);
 
   BasicButtonController? getButton() => _controller.getSelectedButton();
 
-  void addOrUpdate(BasicButtonController c) =>
-      _controller.addOrUpdateButton(c, _resetScreen);
+  void addOrUpdate(BasicButtonController c) {
+    _controller.addOrUpdateButton(c, _resetScreen);
+    _wentBack = false;
+  }
 
   void delete() => _controller.deleteSelected(_resetScreen);
 
   void skipButton() => _controller.skipButton(_resetScreen);
+
+  Future<bool> _onWillPop() async {
+    if (_wentBack) {
+      _wentBack = !_wentBack;
+      return true;
+    }
+    _wentBack = !_wentBack;
+    _controller.resetSearch(_fullReset);
+    return false;
+  }
 }

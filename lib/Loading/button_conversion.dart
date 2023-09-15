@@ -68,7 +68,7 @@ final Map<Type, dynamic Function(String?)> _dataImportGeneratorMap = {
 
 final Map<Type, void Function(dynamic, StringBuffer)> _dataExportMap = {
   List<String>: (value, buf) => buf.write(value.join(_storageListSep)),
-  MaterialColor: (value, buf) {
+  Color: (value, buf) {
     buf.write(value.red);
     buf.write(_storageListSep);
     buf.write(value.green);
@@ -95,8 +95,9 @@ StringBuffer _dataExportGenerator(
     dynamic value, ValuesOfButtons enumValue, StringBuffer buf) {
   if (value == null) return buf;
   buf.write(_storageSep + _enumToString(enumValue) + _storageIdentifier);
-  if (_dataExportMap.containsKey(value.runtimeType)) {
-    _dataExportMap[value.runtimeType]!(value, buf);
+  var correctType = _valueToType.firstWhere((e) => e.butVal == enumValue).type;
+  if (_dataExportMap.containsKey(correctType)) {
+    _dataExportMap[correctType]!(value, buf);
   } else {
     buf.write(value);
   }
@@ -139,6 +140,8 @@ List<_ImportExportLogic> _valueToType = [
       ValuesOfButtons.dat, (button) => button.date),
   _ImportExportLogic(int, (button, value) => button.day = value,
       ValuesOfButtons.day, (button) => button.day),
+  _ImportExportLogic(MyDateController, (button, value) => button.dateToSkip = value,
+      ValuesOfButtons.skp, (button) => button.dateToSkip),
   _ImportExportLogic(String, (button, value) => button.calendar = value,
       ValuesOfButtons.cal, (button) => button.calendar)
 ];
@@ -170,11 +173,11 @@ class _ImportExportLogic {
   const _ImportExportLogic(this.type, this._toAssign, this.butVal, this._toGet);
 }
 
-enum ValuesOfButtons { job, todo, id, col, mon, dat, day, cal }
+enum ValuesOfButtons { job, todo, id, col, mon, dat, day, skp, cal }
 
 _enumToString(ValuesOfButtons val) => val.toString().split('.').last;
 
-dynamic buttonExportGenerator(dynamic button) {
+String buttonExportGenerator(dynamic button) {
   StringBuffer buf = StringBuffer();
   buttonToMap(button)
       .forEach((key, value) => _dataExportGenerator(value, key, buf));

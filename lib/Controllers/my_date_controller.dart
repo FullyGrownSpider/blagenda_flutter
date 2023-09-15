@@ -105,16 +105,16 @@ class MyDateController extends DateTime {
       return theDate ??= _endsOrdinal(parts.first);
     }
 
-    int? dateY = _getYear(parts);
-    int? dateM = _findMonthLetter(parts);
-    dateM ??= _findMonth(parts, dateY == null);
+    int? dateY = _consumeYear(parts);
+    int? dateM = _consumeMonthLetter(parts);
+    dateM ??= _consumeMonth(parts, dateY == null);
     if (parts.isEmpty || dateM == null) return null;
     int? dateD = int.tryParse(parts.last);
     if (dateD == null) return null;
     return _createDate(dateY, dateM, dateD);
   }
 
-  static int? _getYear(List<String> parts) {
+  static int? _consumeYear(List<String> parts) {
     for (int i = 0; i < parts.length; i++) {
       if (parts[i].length >= 4) {
         return int.tryParse(parts.removeAt(i));
@@ -136,7 +136,7 @@ class MyDateController extends DateTime {
     return MyDateController(dateY, dateM, dateD);
   }
 
-  static int? _findMonthLetter(List<String> parts) {
+  static int? _consumeMonthLetter(List<String> parts) {
     for (int i = 0; i < 12; i++) {
       for (int ii = 0; ii < parts.length; ii++) {
         if (parts[ii].contains(months[i].toLowerCase()) ||
@@ -150,7 +150,7 @@ class MyDateController extends DateTime {
     return null;
   }
 
-  static int? _findMonth(List<String> parts, bool fullTest) {
+  static int? _consumeMonth(List<String> parts, bool fullTest) {
     if (fullTest) {
       for (int i = parts.length - 1; i > -1; i--) {
         if (parts[i].length == 1) {
@@ -164,11 +164,11 @@ class MyDateController extends DateTime {
 
   static MyDateController? _ifDateOnlyOneChar(String word) {
     //its a number that needs to be added to today like its in 5 days
+    int toAdd = '+'.allMatches(word).length * 7;
+    word = word.replaceAll("+", '');
     int? daysUntilDay = int.tryParse(word);
     if (daysUntilDay != null && daysUntilDay < 0) {
-      var value = nowDate.millisecondsSinceEpoch - (daysUntilDay * 86400000);
-      return MyDateController._dateTimeToMyDateController(
-          DateTime.fromMillisecondsSinceEpoch(value));
+      return MyDateController.nowDate.addOrRemoveDays(daysUntilDay + toAdd);
     }
     if (daysUntilDay == null) {
       for (int i = 0; i < 7; i++) {
@@ -182,8 +182,7 @@ class MyDateController extends DateTime {
       }
     }
     if (daysUntilDay != null) {
-      daysUntilDay += '+'.allMatches(word).length * 7;
-      return nowDate.add(Duration(days: daysUntilDay));
+      return nowDate.addOrRemoveDays(daysUntilDay + toAdd);
     }
     for (int i = 0; i < 12; i++) {
       if (word.startsWith(months[i].toLowerCase()) ||
@@ -192,7 +191,7 @@ class MyDateController extends DateTime {
         if (d.isBefore(MyDateController.today)) {
           d = MyDateController(nowDate.year + 1, i + 1);
         }
-        return d;
+        return d.addOrRemoveDays(toAdd);
       }
     }
     return null;

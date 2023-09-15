@@ -473,7 +473,15 @@ class ObservationScreenController {
     }
     return false;
   }
+  void setAllToNotNew(){
+    _allLists.forEach((key, value) {
+      if (key != EndBasedController) return;
+      for (var button in value){
+        button.timeWhenNotNewItemAnymore = null;
+      }
+    });
 
+  }
   int getNewId(Type t) {
     var correctList = _getCorrectList(t);
     if (correctList.isNotEmpty) {
