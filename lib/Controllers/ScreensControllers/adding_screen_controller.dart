@@ -332,7 +332,7 @@ class AddingScreenController {
   InputObject<int> _itemIntFromList(List<String> listToShow, String hint,
       ValuesOfButtons itemsIn) {
     var displayWidget = DropdownButton<String>(
-        hint: Text(listToShow[storedValues[itemsIn] -1 ?? hint]),
+        hint: Text(storedValues[itemsIn] == null ? hint : listToShow[storedValues[itemsIn] -1]),
         items: listToShow.map((String value) {
           return DropdownMenuItem<String>(
             value: value,
