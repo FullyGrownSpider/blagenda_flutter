@@ -3,7 +3,7 @@ description: Blagenda But Simple
 version: 1.0.0+1
 
 environment:
-  sdk: '3.1.0'
+  sdk: '3.1.2'
 
 dependencies:
   flutter:
