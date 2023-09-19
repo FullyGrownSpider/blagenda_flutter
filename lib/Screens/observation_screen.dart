@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/basic_button_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/observation_screen_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/countdown_drawer.dart';
 import 'package:blagenda_flutter_simple/Controllers/main_drawer.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
   _OverviewScreenState() {
     _controller = ObservationScreenController();
     _drawer = MainDrawer(getButton, addOrUpdate, delete, skipButton,
-        () => _controller.resetSearch(_fullReset), getNewId);
+        () => _controller.resetSearch(_fullReset), getNewId, _fullReset);
+    _countDownDrawer = CountdownDrawer(
+        addOrUpdate, _fullReset);
     _fill();
   }
 
@@ -56,6 +59,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
   }
 
   late final MainDrawer _drawer;
+  late final CountdownDrawer _countDownDrawer;
   late final ObservationScreenController _controller;
   final List<Widget> _centerChildren = [];
   final List<Widget> _centerOptionsButton = [];
@@ -70,6 +74,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
               backgroundColor: Colors.green,
             )),
         drawer: _drawer.createDrawer(context),
+        endDrawer: _countDownDrawer,
         body: WillPopScope(
             onWillPop: _onWillPop,
             child: SingleChildScrollView(

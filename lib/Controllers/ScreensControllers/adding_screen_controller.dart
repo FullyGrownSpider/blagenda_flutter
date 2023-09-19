@@ -27,6 +27,7 @@ class AddingScreenController {
     AgainMonthDay: 'Monthly',
     AgainAmountDay: 'Every x days'
   };
+
   static bool _noCheck(Map<ValuesOfButtons, dynamic> map) => true;
   final List<InputObject> _widgetsOnScreen = [];
 
@@ -41,8 +42,8 @@ class AddingScreenController {
   final int Function(Type) _getNewId;
   final Map<ValuesOfButtons, dynamic> storedValues = {};
 
-  AddingScreenController(BasicButton? button, this._getNewId,
-      this._setStateMethod) {
+  AddingScreenController(
+      BasicButton? button, this._getNewId, this._setStateMethod) {
     if (button == null) {
       _buttonType = BasicButton;
       _id = -1;
@@ -65,7 +66,7 @@ class AddingScreenController {
       case Deadline:
         storedValues[ValuesOfButtons.dat] = storedValues[ValuesOfButtons.dat]
             .inputDisplayString(MyDateController.nowDate.year !=
-            storedValues[ValuesOfButtons.dat].year);
+                storedValues[ValuesOfButtons.dat].year);
         break;
       case AgainAmountDay:
         storedValues[ValuesOfButtons.dat] =
@@ -97,7 +98,7 @@ class AddingScreenController {
         _againYearFillerList();
         correctController = AgainYearController;
         _checks = (map) =>
-        map[ValuesOfButtons.mon] != null &&
+            map[ValuesOfButtons.mon] != null &&
             map[ValuesOfButtons.day] != null;
         break;
       case AgainMonthDay:
@@ -114,7 +115,7 @@ class AddingScreenController {
         _againAmountFillerList();
         correctController = AgainAmountController;
         _checks = (map) =>
-        map[ValuesOfButtons.dat] != null &&
+            map[ValuesOfButtons.dat] != null &&
             map[ValuesOfButtons.day] != null;
         break;
       default:
@@ -143,7 +144,9 @@ class AddingScreenController {
     return widgetList;
   }
 
-  List<Widget> _addButtonsForButtonType(Map<Type, String> typeList,) {
+  List<Widget> _addButtonsForButtonType(
+    Map<Type, String> typeList,
+  ) {
     List<Widget> widgetList = [];
     typeList.forEach((type, stringValue) =>
         widgetList.add(blagendaUniformButton(
@@ -189,7 +192,9 @@ class AddingScreenController {
     _widgetsOnScreen.addAll([
       _itemForStringList(_getFromStoredValue(ValuesOfButtons.todo, ''),
           'Extra Info', ValuesOfButtons.todo),
-      _itemForColor()
+      _itemForColor(),
+      _itemForBoolean(_getFromStoredValue(ValuesOfButtons.imp, false),
+          "Is Important?", ValuesOfButtons.imp)
     ]);
     _widgetsOnScreen.insert(
         0,
@@ -199,8 +204,7 @@ class AddingScreenController {
 
   void _deadlineFillerList() {
     _widgetsOnScreen.add(
-      _itemForMyDate(_getFromStoredValue(ValuesOfButtons.dat, ''), 'Date')
-    );
+        _itemForMyDate(_getFromStoredValue(ValuesOfButtons.dat, ''), 'Date'));
     _defaultFillerList();
   }
 
@@ -208,8 +212,8 @@ class AddingScreenController {
     _widgetsOnScreen.addAll([
       _itemForMyDate(_getFromStoredValue(ValuesOfButtons.dat, ''), 'Next time'),
       _itemForInt(_getFromStoredValue(ValuesOfButtons.day, 0), 'Days amount',
-          ValuesOfButtons.day)]
-    );
+          ValuesOfButtons.day)
+    ]);
     _defaultFillerList();
   }
 
@@ -237,10 +241,10 @@ class AddingScreenController {
     _defaultFillerList();
   }
 
-  InputObject<String> _itemForString(String preObject, String hint,
-      ValuesOfButtons itemsIn) {
+  InputObject<String> _itemForString(
+      String preObject, String hint, ValuesOfButtons itemsIn) {
     TextEditingController stringController =
-    TextEditingController(text: preObject);
+        TextEditingController(text: preObject);
     var displayWidget = TextField(
         controller: stringController,
         onChanged: (s) {
@@ -256,7 +260,7 @@ class AddingScreenController {
 
   InputObject<MyDateController?> _itemForMyDate(String preObject, String hint) {
     TextEditingController stringController =
-    TextEditingController(text: preObject);
+        TextEditingController(text: preObject);
     var displayWidget = TextField(
         controller: stringController,
         onChanged: (s) {
@@ -270,16 +274,20 @@ class AddingScreenController {
     }, ValuesOfButtons.dat);
   }
 
-  InputObject<bool> _itemForBoolean(bool preObject, String hint) {
+  InputObject<bool> _itemForBoolean(
+      bool preObject, String hint, ValuesOfButtons? value) {
     var switchState = preObject;
     var displayWidget = blagendaUniformButton(
-        !preObject, usedColors.first, (!preObject ? "⬤" : "◯") + hint, () {
+        preObject,
+        value == null ? usedColors.first : usedColors[4],
+        "${preObject ? "⬤" : "◯"} - $hint", () {
+      if (value != null) storedValues[ValuesOfButtons.imp] = !preObject;
       switchState = !preObject;
       _setStateMethod();
     });
     return InputObject<bool>.filled(displayWidget, () {
       return switchState;
-    }, ValuesOfButtons.job);
+    }, ValuesOfButtons.imp);
   }
 
   InputObject<Color> _itemForColor() {
@@ -294,8 +302,8 @@ class AddingScreenController {
   void _colorButtonPressed(int index) =>
       storedValues[ValuesOfButtons.col] = index;
 
-  InputObject<List<String>> _itemForStringList(String stringList, String hint,
-      ValuesOfButtons itemsIn) {
+  InputObject<List<String>> _itemForStringList(
+      String stringList, String hint, ValuesOfButtons itemsIn) {
     var stringController = TextEditingController(text: stringList);
     var displayWidget = TextField(
         controller: stringController,
@@ -312,8 +320,8 @@ class AddingScreenController {
     }, itemsIn);
   }
 
-  InputObject<int> _itemForInt(int preObject, String hint,
-      ValuesOfButtons itemsIn) {
+  InputObject<int> _itemForInt(
+      int preObject, String hint, ValuesOfButtons itemsIn) {
     var stringController = TextEditingController(text: preObject.toString());
     var displayWidget = TextField(
         controller: stringController,
@@ -329,10 +337,12 @@ class AddingScreenController {
     }, itemsIn);
   }
 
-  InputObject<int> _itemIntFromList(List<String> listToShow, String hint,
-      ValuesOfButtons itemsIn) {
+  InputObject<int> _itemIntFromList(
+      List<String> listToShow, String hint, ValuesOfButtons itemsIn) {
     var displayWidget = DropdownButton<String>(
-        hint: Text(storedValues[itemsIn] == null ? hint : listToShow[storedValues[itemsIn] -1]),
+        hint: Text(storedValues[itemsIn] == null
+            ? hint
+            : listToShow[storedValues[itemsIn] - 1]),
         items: listToShow.map((String value) {
           return DropdownMenuItem<String>(
             value: value,
@@ -353,11 +363,12 @@ class AddingScreenController {
     List<Widget> widgetList = [];
     _chosenStateIsOne = _itemForBoolean(
         _chosenStateIsOne?.getValue() ??
-            _buttonTypesPart1.containsKey(_buttonType),
-        'Type of Item');
+            _buttonTypesPart2.containsKey(_buttonType),
+        'Type of Item',
+        null);
     widgetList.add(_chosenStateIsOne!.displayWidget);
     widgetList.addAll(_addButtonsForButtonType(
-        _chosenStateIsOne!.getValue() ? _buttonTypesPart1 : _buttonTypesPart2));
+        _chosenStateIsOne!.getValue() ? _buttonTypesPart2 : _buttonTypesPart1));
     return widgetList;
   }
 
@@ -365,7 +376,7 @@ class AddingScreenController {
     var date = storedValues[ValuesOfButtons.dat];
     if (date == null) return;
     List<EndBasedController> everythingList =
-    await loading.getEndBasedButtons();
+        await loading.getEndBasedButtons();
     var timeLeftUntil = date.timeLeftUntil();
     _myDateDayToShow = Column(
         children: createADay(
@@ -373,7 +384,7 @@ class AddingScreenController {
             everythingList,
             timeLeftUntil,
             _setStateMethod,
-                (c, o) => _addEndBasedButton(c),
+            (c, o) => _addEndBasedButton(c),
             timeLeftUntil < 7));
     _setStateMethod();
   }

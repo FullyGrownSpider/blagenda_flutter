@@ -26,13 +26,14 @@ class MainDrawer {
           style: normalTextStyle));
 
   MainDrawer(this.getSelectedButton, this.addOrUpdateButton, this.deleteButton,
-      this.skipButton, this.resetScreen, this.getNewId);
+      this.skipButton, this.searchResetScreen, this.getNewId, this.fullReset);
 
   final BasicButtonController? Function() getSelectedButton;
   final Function(BasicButtonController) addOrUpdateButton;
   final void Function() deleteButton;
   final void Function() skipButton;
-  final void Function() resetScreen;
+  final void Function() searchResetScreen;
+  final void Function() fullReset;
   final int Function(Type) getNewId;
   static const Color sepColor = Colors.black54;
   final int funnyNumber =
@@ -117,7 +118,7 @@ class MainDrawer {
           title: _dumbJoke('Reset Display'),
           trailing: const Icon(Icons.restart_alt_rounded, color: Colors.black),
           onTap: () {
-            resetScreen();
+            searchResetScreen();
             Navigator.pop(context);
           },
         ),
@@ -148,6 +149,19 @@ class MainDrawer {
           trailing: const Icon(Icons.next_plan_outlined, color: Colors.black),
           onTap: () {
             skipButton();
+            Navigator.pop(context);
+          },
+        ),
+        ListTile(
+          title: _dumbJoke('Flip Important'),
+          trailing: const Icon(Icons.notifications, color: Colors.black),
+          onTap: () {
+            var but = getSelectedButton();
+            if (but != null) {
+              but.flipImportant();
+              addOrUpdateButton(but);
+              fullReset();
+            }
             Navigator.pop(context);
           },
         ),

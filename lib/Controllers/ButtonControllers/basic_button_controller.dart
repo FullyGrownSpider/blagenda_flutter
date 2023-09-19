@@ -18,6 +18,8 @@ abstract class BasicButtonController<t extends BasicButton> {
 
   String get job => _button.job!;
 
+  bool get important => _button.important;
+
   List<String> get toDos => _button.toDos!;
 
   int get id => _button.id!;
@@ -53,6 +55,10 @@ abstract class BasicButtonController<t extends BasicButton> {
   String writeEmpty() => "\n${emogjiList[job.hashCode % emogjiList.length]}";
 
   bool colorCheck(Color c) => color.value == c.value;
+
+  void flipImportant(){
+    _button.important = !_button.important;
+  }
 
   static String splitByLength(String input) {
     StringBuffer buf = StringBuffer();
