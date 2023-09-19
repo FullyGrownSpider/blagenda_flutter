@@ -38,9 +38,9 @@ List<Widget> createADay(
   var sortableList = listWithEverything
       .where((e) => e.isHappeningOnDayFromNow(fromNow))
       .toList(growable: false);
-  for (var item in sortableList) {
-    if (item is SkippableEndBasedController) {
-      item = item
+  for(int i = 0;i < sortableList.length;i++){
+    if (sortableList[i] is SkippableEndBasedController) {
+      sortableList[i] = (sortableList[i] as SkippableEndBasedController)
           .createNew(MyDateController.fromDaysFromNow(fromNow));
     }
   }
