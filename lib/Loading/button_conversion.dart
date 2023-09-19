@@ -143,7 +143,9 @@ List<_ImportExportLogic> _valueToType = [
   _ImportExportLogic(MyDateController, (button, value) => button.dateToSkip = value,
       ValuesOfButtons.skp, (button) => button.dateToSkip),
   _ImportExportLogic(String, (button, value) => button.calendar = value,
-      ValuesOfButtons.cal, (button) => button.calendar)
+      ValuesOfButtons.cal, (button) => button.calendar),
+  _ImportExportLogic(bool, (button, value) => button.important = value,
+      ValuesOfButtons.imp, (button) => button.important),
 ];
 
 class _ImportExportLogic {
@@ -173,7 +175,7 @@ class _ImportExportLogic {
   const _ImportExportLogic(this.type, this._toAssign, this.butVal, this._toGet);
 }
 
-enum ValuesOfButtons { job, todo, id, col, mon, dat, day, skp, cal }
+enum ValuesOfButtons { job, todo, id, col, mon, dat, day, skp, cal, imp }
 
 _enumToString(ValuesOfButtons val) => val.toString().split('.').last;
 

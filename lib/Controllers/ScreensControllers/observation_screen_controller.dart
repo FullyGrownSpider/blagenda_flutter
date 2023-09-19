@@ -13,7 +13,7 @@ import 'common_day_display_screen_controller.dart';
 import 'common_screen_controller.dart';
 
 class ObservationScreenController {
-  static const int _daysToShow = 6;
+  static const int daysToShow = 6;
   static const int _maxTextSize = 11;
   static const List<int> _possibleExtraDays = [30, 14];
   static const List<String> smallDateFormat = [D];
@@ -45,7 +45,7 @@ class ObservationScreenController {
   int chosenColor = -1;
 
   ///used to display more days or less days
-  int daysToShowNow = _daysToShow;
+  int daysToShowNow = daysToShow;
 
   ///the index used to give every button a selection ID
   int _globalCounter = -1;
@@ -88,7 +88,7 @@ class ObservationScreenController {
     } else {
       List<EndBasedController> newList = overviewList
           .where((e) =>
-              e.wasJustAdded(MyDateController.lookTime) && e.daysLeft > _daysToShow)
+              e.wasJustAdded(MyDateController.lookTime) && e.daysLeft > daysToShow)
           .toList();
       againDeadlineDisplayList.addAll(_createNewEndBasedWasJustAddedDay(
           setStateMethod, MyDateController.lookTime, newList));
@@ -132,7 +132,7 @@ class ObservationScreenController {
   }
 
   void _colorPressed(int index) {
-    daysToShowNow = _daysToShow;
+    daysToShowNow = daysToShow;
     if (chosenColor == index) {
       chosenColor = -1;
     } else {
@@ -146,7 +146,7 @@ class ObservationScreenController {
       blagendaUniformButton(-2 == chosenColor, usedColors.first, 'Show all',
           () {
         _resetCounters();
-        daysToShowNow = _daysToShow;
+        daysToShowNow = daysToShow;
         if (-2 == chosenColor) {
           chosenColor = -1;
         } else {
@@ -157,9 +157,9 @@ class ObservationScreenController {
 
   ///reset screen to default
   void resetSearch(void Function() setStateMethod) {
-    if (chosenColor == -1 && daysToShowNow == _daysToShow) return;
+    if (chosenColor == -1 && daysToShowNow == daysToShow) return;
     chosenColor = -1;
-    daysToShowNow = _daysToShow;
+    daysToShowNow = daysToShow;
     _resetCounters();
     setStateMethod();
   }
@@ -171,7 +171,7 @@ class ObservationScreenController {
           'Show next ${_possibleExtraDays[index].toString()} days', () {
         chosenColor = -1;
         if (daysToShowNow == _possibleExtraDays[index]) {
-          daysToShowNow = _daysToShow;
+          daysToShowNow = daysToShow;
         } else {
           daysToShowNow = _possibleExtraDays[index];
         }
@@ -191,11 +191,11 @@ class ObservationScreenController {
       i--;
     }
     for (; i < daysToShowNow; i++) {
-      if (i == _daysToShow) {
+      if (i == daysToShow) {
         againDeadlineDisplayList.add(bigSplitterTextField);
       }
       againDeadlineDisplayList.addAll(createADay(nowDate, endBasedList, i,
-          setStateMethod, _createButtonBase, i < _daysToShow));
+          setStateMethod, _createButtonBase, i < daysToShow));
     }
     return againDeadlineDisplayList;
   }
@@ -211,15 +211,15 @@ class ObservationScreenController {
       index--;
     }
     //-1 to also show yesterday
-    for (; index < _daysToShow; index++) {
+    for (; index < daysToShow; index++) {
       againDeadlineDisplayList.addAll(createADay(nowDate, endBasedList, index,
           setStateMethod, _createButtonBase, true));
     }
-    if (endBasedList.any((e) => e.daysLeft >= _daysToShow)) {
+    if (endBasedList.any((e) => e.daysLeft >= daysToShow)) {
       againDeadlineDisplayList.add(bigSplitterTextField);
       var lastLeft = 0;
       for (var button in endBasedList) {
-        if (button.daysLeft >= _daysToShow) {
+        if (button.daysLeft >= daysToShow) {
           if (!button.isHappeningOnDayFromNow(lastLeft)) {
             lastLeft = button.daysLeft;
             againDeadlineDisplayList.addAll(createADay(
@@ -228,7 +228,7 @@ class ObservationScreenController {
                 lastLeft,
                 setStateMethod,
                 _createButtonBase,
-                lastLeft < _daysToShow));
+                lastLeft < daysToShow));
           }
         }
       }
@@ -249,7 +249,7 @@ class ObservationScreenController {
             lastLeft,
             setStateMethod,
             _createButtonBase,
-            lastLeft < _daysToShow));
+            lastLeft < daysToShow));
       }
     }
     return againDeadlineDisplayList;
@@ -313,7 +313,7 @@ class ObservationScreenController {
     if (list.first is EndBasedController) {
       var newList =
           list.where((e) => _shouldGoIn(e as EndBasedController, now));
-      if (daysToShowNow != _daysToShow) {
+      if (daysToShowNow != daysToShow) {
         //if you select 14 you want to see something 14 days away too not just
         //13
         return list

@@ -33,7 +33,7 @@ abstract class EndBasedController<t extends BasicButton>
     if (daysLeft != -1) {
       return button.color!;
     }
-    return Color.lerp(button.color, Colors.black38, 0.3) as Color;
+    return lerpIt(button.color as Color);
   }
 
   bool wasJustAdded(MyDateController now) {
@@ -270,10 +270,14 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
     if (altLeft != -1) {
       return button.color!;
     }
-    return Color.lerp(button.color, Colors.black38, 0.3) as Color;
+    return lerpIt(button.color as Color);
   }
 
   int get day => button.day!;
 
   MyDateController? get dateToSkip => button.dateToSkip;
+}
+
+Color lerpIt(Color c){
+  return Color.lerp(c, Colors.black38, 0.3) as Color;
 }

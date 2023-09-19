@@ -7,5 +7,5 @@ class BasicButton {
   Color? color;
   String? job;
   List<String>? toDos;
-
+  bool important = false;
 }
