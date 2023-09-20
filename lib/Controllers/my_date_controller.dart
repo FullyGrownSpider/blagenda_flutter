@@ -257,6 +257,34 @@ class MyDateController extends DateTime {
     'Nov',
     'Dec'
   ];
+  static const List<String> monthsNLFull = [
+    'january',
+    'february',
+    'maart',
+    'april',
+    'mei',
+    'juni',
+    'july',
+    'augustus',
+    'september' ,
+    'october',
+    'november',
+    'december',
+  ];
+  static const List<String> monthsENFull = [
+    'january',
+    'february',
+    'march',
+    'april',
+    'may',
+    'june',
+    'july',
+    'august',
+    'september' ,
+    'october',
+    'november',
+    'december',
+  ];
   static const List<String> monthDays = [
     '1',
     '2',
@@ -309,4 +337,22 @@ class MyDateController extends DateTime {
     'vr',
     'za'
   ];
+// static const List<String> daysENFull = [
+//   'monday',
+//   'tuesday',
+//   'wednesday',
+//   'thursday',
+//   'friday',
+//   'saturday',
+//   'sunday',
+// ];
+// static const List<String> daysNLFull = [
+//   'maandag',
+//   'dinsdag',
+//   'woensdag',
+//   'donderdag',
+//   'vrijdag',
+//   'zaterdag',
+//   'zondag',
+// ];
 }

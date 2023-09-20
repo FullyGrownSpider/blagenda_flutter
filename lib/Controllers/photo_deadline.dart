@@ -1,16 +1,18 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/basic_button_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/deadline_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
-import 'package:blagenda_flutter_simple/Screens/adding_screen.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../Commons/Models/Buttons/deadline.dart';
+import '../Screens/adding_screen.dart';
 import 'ScreensControllers/common_screen_controller.dart';
+import 'dart:math';
 
 class PhotoScreen extends StatefulWidget {
   const PhotoScreen(this.addingFunction, this.getNewId, {super.key});
@@ -30,11 +32,22 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
 
   final textRecognizer = TextRecognizer();
 
+  MyDateController dateInfo = MyDateController.today;
+
+  String timeInfo = '';
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
+    // defines a timer
+    Timer.periodic(const Duration(seconds: 3), (Timer t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      _timerTick();
+    });
     _future = _requestCameraPermission();
   }
 
@@ -43,6 +56,7 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _stopCamera();
     textRecognizer.close();
+
     super.dispose();
   }
 
@@ -96,8 +110,8 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
                           padding: const EdgeInsets.only(bottom: 30.0),
                           child: Center(
                             child: ElevatedButton(
-                              onPressed: _scanImage,
-                              child: const Text('Scan text',
+                              onPressed: makeButton,
+                              child: Text(getDataString(),
                                   style: normalTextStyle,
                                   textAlign: TextAlign.center),
                             ),
@@ -177,8 +191,6 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
   Future<void> _scanImage() async {
     if (_cameraController == null) return;
 
-    final navigator = Navigator.of(context);
-
     try {
       final pictureFile = await _cameraController!.takePicture();
 
@@ -186,65 +198,100 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
 
       final inputImage = InputImage.fromFile(file);
       final recognizedText = await textRecognizer.processImage(inputImage);
-
-      await navigator
-          .push(
-            MaterialPageRoute(
-              builder: (BuildContext context) => AddingScreen(
-                  createButton(recognizedText.text),
-                  widget.addingFunction,
-                  widget.getNewId),
-            ),
-          )
-          .then((value) => Navigator.pop(context));
+      var time = _createTime(recognizedText.text);
+      bool set = false;
+      if (time.isNotEmpty){
+        timeInfo = time;
+        set = true;
+      }
+      var date = _createDate(recognizedText.text);
+      if (date != null){
+        dateInfo = date;
+        set = true;
+      }
+      if (set) setState(() {});
     } catch (e) {
-     //eh whatever, something went wrong
+      //eh whatever, something went wrong
     }
   }
 
-  DeadlineController createButton(String text) {
-    return DeadlineController(Deadline('Appointment', [_createTime(text)], -1,
-        usedColors.first, _createDate(text), ''));
+  DeadlineController createButton() {
+    return DeadlineController(Deadline('', [timeInfo], -1,
+        usedColors.first, dateInfo, ''));
   }
 
-  final RegExp _dayReg = RegExp(r' [0-9]{1,2}[a-z]+\b');
-  final RegExp _secondDayReg = RegExp(r'[0-9]{1,2} [A-z][a-z]{2}\b');
-  final RegExp _thirdDayReg = RegExp(r'[A-z][a-z]{2-12} [0-9]{1,2}\b');
+  final RegExp _numeric = RegExp(r'[0-9]{1,2}');
+
   final RegExp _timeReg = RegExp(
-      r'( |\b)[0-9]{1,2}:[0-9]{2}([a,p]m)? ?-? ?[0-9]{1,2}:[0-9]{2}([a,p]m)?');
-  final RegExp _secondTimeReg = RegExp(
-      r'( |\b)[0-9]{1,2}:[0-9]{2}([a,p]m)?');
-  final RegExp _firstDateReg = RegExp(r'[A-Z][a-z]{2} [0-9]');
-  final RegExp _secondDateReg = RegExp(r'[0-9] [A-Z][a-z]{2}');
+      r'( |\b)[0-9]{1,2}:[0-9]{0,2}([a,p]m)? ?-? ?[0-9]{1,2}:[0-9]{0,2}([a,p]m)?');
+  final RegExp _secondTimeReg = RegExp(r'( |\b)[0-9]{1,2}:[0-9]{2}([a,p]m)?');
+  final RegExp _timeRegOp = RegExp(
+      r'( |\b)[0-9]{1,2}([a,p]m) ?-? ?[0-9]{1,2}([a,p]m)');
+  final RegExp _secondTimeRegOp = RegExp(r'( |\b)[0-9]{1,2}:[0-9]{2}([a,p]m)?');
 
   String _createTime(String text) {
     var dayText = _timeReg.firstMatch(text)?[0].toString();
     dayText ??= _secondTimeReg.firstMatch(text)?[0].toString();
+    dayText = _timeRegOp.firstMatch(text)?[0].toString();
+    dayText ??= _secondTimeRegOp.firstMatch(text)?[0].toString();
     dayText ??= '';
     return dayText;
   }
 
-  MyDateController _createDate(String text) {
-    var dayText = _dayReg.firstMatch(text)?[0].toString();
-    dayText ??= _secondDayReg.firstMatch(text)?[0].toString();
-    dayText ??= _thirdDayReg.firstMatch(text)?[0].toString();
-    if (dayText == null) return MyDateController.today;
-    var day = int.tryParse(dayText.replaceAll(RegExp("[a-zA-Z]"), ""));
-    if (day == null || day > 32) return MyDateController.today;
-    for (int i = 0; i < 12; i++) {
-      var calc = _firstDateReg.firstMatch(text)?[0].toString();
-      if (calc == null) continue;
-      calc = _secondDateReg.firstMatch(text)?[0].toString();
-      if (calc == null) continue;
-      if (calc.contains(MyDateController.months[i]) ||
-          calc.contains(MyDateController.monthsNL[i])) {
-        var d = MyDateController(MyDateController.nowDate.year, i + 1, day);
-        if (d.isBefore(MyDateController.today)) {
-          d = MyDateController(MyDateController.nowDate.year + 1, i + 1, day);
+  MyDateController? _createDate(String text) {
+    text = text.toLowerCase();
+    for (int i = 0; i < MyDateController.monthsENFull.length; i++) {
+      if (text.contains(MyDateController.monthsENFull[i]) ||
+          text.contains(MyDateController.monthsNLFull[i])) {
+        var newText = MyDateController.monthsENFull[i].substring(0, 3);
+
+        var index = text.indexOf(MyDateController.monthsENFull[i]);
+        var length = MyDateController.monthsENFull[i].length;
+        if (index == -1) {
+          index = text.indexOf(MyDateController.monthsNLFull[i]);
+          length = MyDateController.monthsNLFull[i].length;
         }
-        return d;
+        var found = _numeric.firstMatch( text.substring(max(index - 4, 0), index));
+        found ??= _numeric.firstMatch(text.substring(
+              index + length, min(index + length + 4, text.length)));
+        if (found != null) {
+          var numb = int.tryParse(found[0].toString());
+          if (numb != null) {
+            return MyDateController.translate('$newText $numb')!;
+          }
+        }
       }
     }
-    return MyDateController.today;
+    return null;
+  }
+
+  void _timerTick() {
+    _scanImage();
+  }
+
+  String getDataString() {
+    String dateText;
+    if (dateInfo != MyDateController.today) {
+      dateText = '${MyDateController.months[dateInfo.month - 1]} ${dateInfo.day}';
+    } else{
+      dateText = "???";
+    }
+    return 'D:$dateText\nT:$timeInfo';
+  }
+
+  Future<void> makeButton() async {
+
+    final navigator = Navigator.of(context);
+
+    await navigator
+        .push(
+      MaterialPageRoute(
+        builder: (BuildContext context) => AddingScreen(
+            createButton(),
+            widget.addingFunction,
+            widget.getNewId),
+      ),
+    )
+        .then((value) => Navigator.pop(context));
   }
 }
