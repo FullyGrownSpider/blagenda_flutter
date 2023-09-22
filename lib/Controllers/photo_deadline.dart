@@ -41,7 +41,7 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     // defines a timer
-    Timer.periodic(const Duration(seconds: 3), (Timer t) {
+    Timer.periodic(const Duration(seconds: 2), (Timer t) {
       if (!mounted) {
         t.cancel();
         return;
@@ -198,14 +198,14 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
 
       final inputImage = InputImage.fromFile(file);
       final recognizedText = await textRecognizer.processImage(inputImage);
-      var time = _createTime(recognizedText.text);
+      var time = findTimeTextInText(recognizedText.text);
       bool set = false;
-      if (time.isNotEmpty){
+      if (time.isNotEmpty) {
         timeInfo = time;
         set = true;
       }
-      var date = _createDate(recognizedText.text);
-      if (date != null){
+      var date = createDateFromText(recognizedText.text);
+      if (date != null) {
         dateInfo = date;
         set = true;
       }
@@ -216,53 +216,8 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
   }
 
   DeadlineController createButton() {
-    return DeadlineController(Deadline('', [timeInfo], -1,
-        usedColors.first, dateInfo, ''));
-  }
-
-  final RegExp _numeric = RegExp(r'[0-9]{1,2}');
-
-  final RegExp _timeReg = RegExp(
-      r'( |\b)[0-9]{1,2}:[0-9]{0,2}([a,p]m)? ?-? ?[0-9]{1,2}:[0-9]{0,2}([a,p]m)?');
-  final RegExp _secondTimeReg = RegExp(r'( |\b)[0-9]{1,2}:[0-9]{2}([a,p]m)?');
-  final RegExp _timeRegOp = RegExp(
-      r'( |\b)[0-9]{1,2}([a,p]m) ?-? ?[0-9]{1,2}([a,p]m)');
-  final RegExp _secondTimeRegOp = RegExp(r'( |\b)[0-9]{1,2}:[0-9]{2}([a,p]m)?');
-
-  String _createTime(String text) {
-    var dayText = _timeReg.firstMatch(text)?[0].toString();
-    dayText ??= _secondTimeReg.firstMatch(text)?[0].toString();
-    dayText = _timeRegOp.firstMatch(text)?[0].toString();
-    dayText ??= _secondTimeRegOp.firstMatch(text)?[0].toString();
-    dayText ??= '';
-    return dayText;
-  }
-
-  MyDateController? _createDate(String text) {
-    text = text.toLowerCase();
-    for (int i = 0; i < MyDateController.monthsENFull.length; i++) {
-      if (text.contains(MyDateController.monthsENFull[i]) ||
-          text.contains(MyDateController.monthsNLFull[i])) {
-        var newText = MyDateController.monthsENFull[i].substring(0, 3);
-
-        var index = text.indexOf(MyDateController.monthsENFull[i]);
-        var length = MyDateController.monthsENFull[i].length;
-        if (index == -1) {
-          index = text.indexOf(MyDateController.monthsNLFull[i]);
-          length = MyDateController.monthsNLFull[i].length;
-        }
-        var found = _numeric.firstMatch( text.substring(max(index - 4, 0), index));
-        found ??= _numeric.firstMatch(text.substring(
-              index + length, min(index + length + 4, text.length)));
-        if (found != null) {
-          var numb = int.tryParse(found[0].toString());
-          if (numb != null) {
-            return MyDateController.translate('$newText $numb')!;
-          }
-        }
-      }
-    }
-    return null;
+    return DeadlineController(
+        Deadline('', [timeInfo], -1, usedColors.first, dateInfo, ''));
   }
 
   void _timerTick() {
@@ -272,26 +227,130 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
   String getDataString() {
     String dateText;
     if (dateInfo != MyDateController.today) {
-      dateText = '${MyDateController.months[dateInfo.month - 1]} ${dateInfo.day}';
-    } else{
+      dateText =
+          '${MyDateController.months[dateInfo.month - 1]} ${dateInfo.day}';
+    } else {
       dateText = "???";
     }
     return 'D:$dateText\nT:$timeInfo';
   }
 
   Future<void> makeButton() async {
-
     final navigator = Navigator.of(context);
 
     await navigator
         .push(
-      MaterialPageRoute(
-        builder: (BuildContext context) => AddingScreen(
-            createButton(),
-            widget.addingFunction,
-            widget.getNewId),
-      ),
-    )
+          MaterialPageRoute(
+            builder: (BuildContext context) => AddingScreen(
+                createButton(), widget.addingFunction, widget.getNewId),
+          ),
+        )
         .then((value) => Navigator.pop(context));
   }
+}
+
+final RegExp _numericFilter = RegExp(r'[^0-9][0-9]{1,2}[^0-9]');
+final RegExp _numeric = RegExp(r'[0-9]{1,2}');
+final RegExp _numericNotSafe = RegExp(r'[!.,]');
+final RegExp _numericDateMaybeYear =
+    RegExp(r'[0-9]{1,4}-[0-9]{1,4}(-[0-9]{1,4})?');
+
+final RegExp _timeReg = RegExp(
+    r'( |\b)[0-9]{1,2}:[0-9]{0,2}([a,p]m)? ?-? ?[0-9]{1,2}:[0-9]{0,2}([a,p]m)?');
+final RegExp _secondTimeReg = RegExp(r'( |\b)[0-9]{1,2}:[0-9]{2}([a,p]m)?');
+final RegExp _timeRegOp =
+    RegExp(r'( |\b)[0-9]{1,2}([a,p]m) ?-? ?[0-9]{1,2}([a,p]m)');
+final RegExp _secondTimeRegOp = RegExp(r'( |\b)[0-9]{1,2}:[0-9]{2}([a,p]m)?');
+
+String findTimeTextInText(String text) {
+  var dayText = _timeReg.firstMatch(text)?[0].toString();
+  dayText ??= _secondTimeReg.firstMatch(text)?[0].toString();
+  dayText = _timeRegOp.firstMatch(text)?[0].toString();
+  dayText ??= _secondTimeRegOp.firstMatch(text)?[0].toString();
+  dayText ??= '';
+  return dayText;
+}
+
+MyDateController? createDateFromText(String text) {
+  text = text.toLowerCase();
+//august 10
+  MyDateController? result = _monthNameToDate(
+      text, MyDateController.monthsENFull, MyDateController.monthsNLFull);
+//aug 10
+  result ??= _monthNameToDate(
+      text, MyDateController.months, MyDateController.monthsNL);
+
+//08-10-2020 || 08-10
+  if (result == null) {
+    var awns = _numericDateMaybeYear.firstMatch(text);
+    if (awns == null) return null;
+    List<String> newAwns = awns[0]!.split('-');
+    List<int> newAwnsInt = newAwns.map((e) => int.parse(e)).toList();
+    if (newAwns.where((e) => e.length == 4).length > 1) return null;
+    if (newAwns.any((e) => e.length == 3)) return null;
+    int year = -1, month, day;
+    if (newAwns.length == 3) {
+      var yearIndex = newAwns.indexWhere((e) => e.length == 4);
+      if (yearIndex == -1) {
+        yearIndex = newAwnsInt.indexWhere((e) =>
+            e == MyDateController.today.year % 100 ||
+            e == (MyDateController.today.year + 1) % 100);
+      }
+      if (yearIndex == -1) {
+        month = newAwnsInt[0];
+        day = newAwnsInt[1];
+      } else {
+        year = newAwnsInt[yearIndex];
+        month = newAwnsInt[1];
+        day = newAwnsInt[2 - yearIndex];
+      }
+    } else {
+      month = newAwnsInt[0];
+      day = newAwnsInt[1];
+    }
+    if (month > 12) {
+      int bak = month;
+      month = day;
+      day = bak;
+    }
+    if (year == -1) {
+      year = MyDateController.today.year;
+    }
+    result = MyDateController(year, month, day);
+    if (result.isBefore(MyDateController.today)) {
+      result = MyDateController(year + 1, month, day);
+    }
+  }
+  return result;
+}
+
+MyDateController? _monthNameToDate(
+    String text, List<String> monthsEN, List<String> monthsNL) {
+  for (int i = 0; i < monthsEN.length; i++) {
+    if (text.contains(monthsEN[i]) || text.contains(monthsNL[i])) {
+      String newText = monthsEN[i].substring(0, 3);
+
+      int index = text.indexOf(monthsEN[i]);
+      int length = monthsEN[i].length;
+      if (index == -1) {
+        index = text.indexOf(monthsNL[i]);
+        length = monthsNL[i].length;
+      }
+      var subBefore = text.substring(max(index - 6, 0), index);
+      RegExpMatch? found;
+      if (!subBefore.substring(3, subBefore.length).contains(_numericNotSafe)) {
+        found = _numericFilter.firstMatch(subBefore);
+      }
+      found ??= _numericFilter.firstMatch(
+          text.substring(index + length, min(index + length + 4, text.length)));
+      if (found != null) {
+        var awns = _numeric.firstMatch(found[0].toString());
+        int? numb = int.tryParse(awns![0].toString());
+        if (numb != null) {
+          return MyDateController.translate('$newText $numb')!;
+        }
+      }
+    }
+  }
+  return null;
 }
