@@ -37,45 +37,47 @@ class SearchScreenController {
   ///2 you have text. then we'll show you the days with an item containing text like that
   ///3 you have a date and extra time. you will see multiple days with all items
   ///4 you have a date, extra time and text, you will see days but only items in those days with that text
-  List<Widget> searchAll(int? timeLeftUntil, String text, int extraTime) {
-    if (timeLeftUntil == null && text == "") return [];
+  List<Widget> searchAll(int? daysLeftUntil, String text, int extraTime) {
     List<Widget> a = [];
-    if (timeLeftUntil == null) {
-      var everythingForRealThough = everything!
+    if (daysLeftUntil == null) {
+      if (text == "") return [];
+      var everythingFound = everything!
           .where((EndBasedController e) => _stringSearch(e, text))
           .toList();
-      List<int> counter = everythingForRealThough
-          .map((e) => e.dateController.timeLeftUntil())
+      List<int> datesOfFoundItems = everythingFound
+          .map((e) => e.dateController.daysLeftUntil())
           .toSet()
           .toList();
-      for (int i = 0; i < counter.length; i++) {
-        var list = _searchDay(counter[i],
+      for (int i = 0; i < datesOfFoundItems.length; i++) {
+        var list = _searchDay(datesOfFoundItems[i],
             everything!.toList()..removeWhere((e) => _stringSearch(e, text)));
-        list.insert(
-            2,
-            Container(
-                decoration: BoxDecoration(
-                    color: Colors.green[200],
-                    border: Border.all(
-                      width: 2,
-                      color: Colors.transparent,
-                    ),
-                    // Make rounded corners
-                    borderRadius: BorderRadius.circular(30)),
-                child: buttonCreator(everythingForRealThough[i])));
+        for (int ii = 0; ii < everythingFound.length; ii++) {
+          if (!everythingFound[ii]
+              .isHappeningOnDayFromNow(datesOfFoundItems[i])) continue;
+          list.insert(
+              2,
+              Container(
+                  decoration: BoxDecoration(
+                      color: Colors.pink[900],
+                      border: Border.all(
+                        width: 7,
+                        color: const Color.fromARGB(255, 0x88, 0xe, 0x4f),
+                      ),
+                      // Make rounded corners
+                      borderRadius: BorderRadius.circular(30)),
+                  child: buttonCreator(everythingFound[ii])));
+          list.insert(3, smallBlankSplit);
+        }
         a.addAll(list);
       }
-    } else if (extraTime == 0) {
-      a.addAll(_searchDay(timeLeftUntil, everything!));
     } else {
-      var everythingForRealThough = everything!;
-      if (text != "") {
-        everythingForRealThough = everythingForRealThough
-            .where((e) => _stringSearch(e, text))
-            .toList();
-      }
       for (int i = 0; i < extraTime; i++) {
-        a.addAll(_searchDay(i + timeLeftUntil, everythingForRealThough));
+        var toDisplayDuringDay = everything!;
+        if (text != "") {
+          toDisplayDuringDay =
+              toDisplayDuringDay.where((e) => _stringSearch(e, text)).toList();
+        }
+        a.addAll(_searchDay(daysLeftUntil + i, toDisplayDuringDay));
       }
     }
     return a;
@@ -116,7 +118,8 @@ class SearchScreenController {
           onConfirmed();
         },
         decoration: const InputDecoration(
-            hintText: 'date to look up', border: OutlineInputBorder(gapPadding: 2)));
+            hintText: 'date to look up',
+            border: OutlineInputBorder(gapPadding: 2)));
   }
 
   Widget textFinder() {
@@ -143,20 +146,20 @@ class SearchScreenController {
           onConfirmed();
         },
         decoration: const InputDecoration(
-            hintText: '+ numb or m', border: OutlineInputBorder(gapPadding: 3)));
+            hintText: '+ numb or m',
+            border: OutlineInputBorder(gapPadding: 3)));
   }
 
   void onConfirmed() {
     stringController.text = stringController.text.trim();
     var date = MyDateController.translate(dateController.text);
-    int? awns = date?.timeLeftUntil();
+    int? awns = date?.daysLeftUntil();
     var extraTime = awns == null
         ? 0
         : extraDatesController.text.toLowerCase().contains('m')
             ? MyDateController.monthCalc(awns)
-            : int.tryParse(extraDatesController.text);
-    extraTime ??= 1;
-    timerCheck(() => searchAll(awns, stringController.text, extraTime!),
+            : int.tryParse(extraDatesController.text) ?? 1;
+    timerCheck(() => searchAll(awns, stringController.text, extraTime),
         _getCorrectString(date, extraTime));
   }
 

@@ -1,6 +1,7 @@
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/again.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/deadline.dart';
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/skippable_button.dart';
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/again_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/basic_button_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/deadline_controller.dart';
@@ -62,16 +63,33 @@ class AddingScreenController {
         storedValues[ValuesOfButtons.todo].join('\n');
     storedValues[ValuesOfButtons.col] = usedColors
         .indexWhere((e) => e.value == storedValues[ValuesOfButtons.col].value);
-    switch (_buttonType) {
-      case Deadline:
-        storedValues[ValuesOfButtons.dat] = storedValues[ValuesOfButtons.dat]
-            .inputDisplayString(MyDateController.nowDate.year !=
-                storedValues[ValuesOfButtons.dat].year);
-        break;
-      case AgainAmountDay:
-        storedValues[ValuesOfButtons.dat] =
-            storedValues[ValuesOfButtons.dat].timeLeftUntil().toString();
-        break;
+    if (_buttonType == Deadline) {
+      _dateDisplay(ValuesOfButtons.dat);
+    }
+    if (button is SkippableButton) {
+      _dateDisplay(ValuesOfButtons.str);
+      _dateDisplay(ValuesOfButtons.end);
+    }
+  }
+
+  void _dateDisplay(ValuesOfButtons val) {
+    if (storedValues[val] != null) {
+      var toStore = storedValues[val]!.daysLeftUntil();
+      if (toStore < 14) {
+        storedValues[val] = toStore.toString();
+      } else if (toStore < 30) {
+        StringBuffer weekdayString = StringBuffer(
+            MyDateController.daysEn[storedValues[val]!.weekday - 1]);
+        int days =
+            storedValues[val]!.difference(MyDateController.today).inDays - 7;
+        for (int i = 0; i < days; i += 7) {
+          weekdayString.write('+');
+        }
+        storedValues[val] = weekdayString.toString();
+      } else {
+        storedValues[val] = storedValues[val].inputDisplayString(
+            MyDateController.nowDate.year != storedValues[val].year);
+      }
     }
   }
 
@@ -115,7 +133,7 @@ class AddingScreenController {
         _againAmountFillerList();
         correctController = AgainAmountController;
         _checks = (map) =>
-            map[ValuesOfButtons.dat] != null &&
+            map[ValuesOfButtons.str] != null &&
             map[ValuesOfButtons.day] != null;
         break;
       default:
@@ -196,23 +214,29 @@ class AddingScreenController {
       _itemForBoolean(_getFromStoredValue(ValuesOfButtons.imp, false),
           "Is Important?", ValuesOfButtons.imp)
     ]);
+    //everything has a job(name) so i want it at the top because its the most important
     _widgetsOnScreen.insert(
         0,
         _itemForString(_getFromStoredValue(ValuesOfButtons.job, ''), 'Title',
             ValuesOfButtons.job));
   }
 
+  void _skippableFillerList() {
+    _widgetsOnScreen.add(_itemForMyDate('Starts on', ValuesOfButtons.str));
+    _widgetsOnScreen.add(_itemForMyDate('Stops on', ValuesOfButtons.end));
+  }
+
   void _deadlineFillerList() {
-    _widgetsOnScreen.add(
-        _itemForMyDate(_getFromStoredValue(ValuesOfButtons.dat, ''), 'Date'));
+    _widgetsOnScreen.add(_itemForMyDate('Date'));
     _defaultFillerList();
   }
 
   void _againAmountFillerList() {
     _widgetsOnScreen.addAll([
-      _itemForMyDate(_getFromStoredValue(ValuesOfButtons.dat, ''), 'Next time'),
+      _itemForMyDate('Next time', ValuesOfButtons.str),
       _itemForInt(_getFromStoredValue(ValuesOfButtons.day, 0), 'Days amount',
-          ValuesOfButtons.day)
+          ValuesOfButtons.day),
+      _itemForMyDate('Stops on')
     ]);
     _defaultFillerList();
   }
@@ -221,6 +245,7 @@ class AddingScreenController {
     _widgetsOnScreen.add(
       _itemIntFromList(MyDateController.daysEn, 'Weekday', ValuesOfButtons.day),
     );
+    _skippableFillerList();
     _defaultFillerList();
   }
 
@@ -229,6 +254,7 @@ class AddingScreenController {
       _itemIntFromList(
           MyDateController.monthDays, 'Day of month', ValuesOfButtons.day),
     );
+    _skippableFillerList();
     _defaultFillerList();
   }
 
@@ -238,6 +264,7 @@ class AddingScreenController {
       _itemIntFromList(
           MyDateController.monthDays, 'Day of month', ValuesOfButtons.day),
     ]);
+    _skippableFillerList();
     _defaultFillerList();
   }
 
@@ -258,20 +285,21 @@ class AddingScreenController {
     }, itemsIn);
   }
 
-  InputObject<MyDateController?> _itemForMyDate(String preObject, String hint) {
+  InputObject<MyDateController?> _itemForMyDate(String hint,
+      [ValuesOfButtons val = ValuesOfButtons.dat]) {
     TextEditingController stringController =
-        TextEditingController(text: preObject);
+        TextEditingController(text: _getFromStoredValue(val, ''));
     var displayWidget = TextField(
         controller: stringController,
         onChanged: (s) {
-          storedValues[ValuesOfButtons.dat] = s;
+          storedValues[val] = s;
         },
         onTap: () => _createMyDateDayToShow(),
         decoration: InputDecoration(
             hintText: hint, border: const OutlineInputBorder(gapPadding: 2)));
     return InputObject<MyDateController?>.filled(displayWidget, () {
       return MyDateController.translate(stringController.text);
-    }, ValuesOfButtons.dat);
+    }, val);
   }
 
   InputObject<bool> _itemForBoolean(
@@ -281,13 +309,13 @@ class AddingScreenController {
         preObject,
         value == null ? usedColors.first : usedColors[4],
         "${preObject ? "⬤" : "◯"} - $hint", () {
-      if (value != null) storedValues[ValuesOfButtons.imp] = !preObject;
+      if (value != null) storedValues[value] = !preObject;
       switchState = !preObject;
       _setStateMethod();
     });
     return InputObject<bool>.filled(displayWidget, () {
       return switchState;
-    }, ValuesOfButtons.imp);
+    }, value ?? ValuesOfButtons.imp);
   }
 
   InputObject<Color> _itemForColor() {
@@ -377,7 +405,7 @@ class AddingScreenController {
     if (date == null) return;
     List<EndBasedController> everythingList =
         await loading.getEndBasedButtons();
-    var timeLeftUntil = date.timeLeftUntil();
+    var timeLeftUntil = date.daysLeftUntil();
     _myDateDayToShow = Column(
         children: createADay(
             MyDateController.nowDate,

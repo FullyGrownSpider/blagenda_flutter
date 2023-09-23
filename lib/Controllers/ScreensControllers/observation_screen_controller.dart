@@ -88,7 +88,8 @@ class ObservationScreenController {
     } else {
       List<EndBasedController> newList = overviewList
           .where((e) =>
-              e.wasJustAdded(MyDateController.lookTime) && e.daysLeft > daysToShow)
+              e.wasJustAdded(MyDateController.lookTime) &&
+              e.daysLeft > daysToShow)
           .toList();
       againDeadlineDisplayList.addAll(_createNewEndBasedWasJustAddedDay(
           setStateMethod, MyDateController.lookTime, newList));
@@ -255,19 +256,29 @@ class ObservationScreenController {
     return againDeadlineDisplayList;
   }
 
-  void _updateEndbasedToCurrentDay(List<EndBasedController> itemsToCheck){
+  void _updateEndbasedToCurrentDay(List<EndBasedController> itemsToCheck) {
     List<EndBasedController> itemsToUpdate =
-      _getCorrectList(itemsToCheck.firstOrNull.runtimeType)
-          .where((e) => e.requiresChange)
-          .toList() as List<EndBasedController>;
+        _getCorrectList(itemsToCheck.firstOrNull.runtimeType)
+            .where((e) => e.requiresChange)
+            .toList() as List<EndBasedController>;
     if (itemsToUpdate.isNotEmpty) {
       if (itemsToCheck.firstOrNull is DeadlineController) {
         loading.deleteButtons(itemsToUpdate);
         _getCorrectList(DeadlineController)
             .removeWhere((e) => e.requiresChange);
       } else {
-        loading.updateButtons(itemsToUpdate);
-        for(var toUpdateButton in itemsToCheck){
+        //if (is skippable button)
+        var toDelete = itemsToCheck
+            .where((e) => (e as SkippableEndBasedController).wantDeleteMe())
+            .toList();
+        var toUpdate = itemsToCheck
+            .where((e) => !(e as SkippableEndBasedController).wantDeleteMe())
+            .toList();
+        loading.deleteButtons(toDelete);
+        loading.updateButtons(toUpdate);
+        _getCorrectList(itemsToCheck.firstOrNull.runtimeType)
+            .remove((e) => e.wantDeleteMe());
+        for (var toUpdateButton in toUpdate) {
           toUpdateButton.requiresChange = false;
         }
       }
@@ -284,6 +295,7 @@ class ObservationScreenController {
       }
     }
   }
+
   void loadListsFromStorage() {
     for (var list in _allLists.entries) {
       list.value.clear();
@@ -300,7 +312,8 @@ class ObservationScreenController {
   }
 
   bool _shouldGoIn(EndBasedController eb, MyDateController now) =>
-      eb.daysLeft < daysToShowNow + 7 && eb.daysLeft >= -1 || eb.wasJustAdded(now);
+      eb.daysLeft < daysToShowNow + 7 && eb.daysLeft >= -1 ||
+      eb.wasJustAdded(now);
 
   List<BasicButtonController> _goesInList(
       List<BasicButtonController> list, MyDateController now) {
@@ -473,15 +486,16 @@ class ObservationScreenController {
     }
     return false;
   }
-  void setAllToNotNew(){
+
+  void setAllToNotNew() {
     _allLists.forEach((key, value) {
       if (key != EndBasedController) return;
-      for (var button in value){
+      for (var button in value) {
         button.timeWhenNotNewItemAnymore = null;
       }
     });
-
   }
+
   int getNewId(Type t) {
     var correctList = _getCorrectList(t);
     if (correctList.isNotEmpty) {

@@ -18,7 +18,7 @@ void main() {
 }
 
 void deadline(){
-  var deadline = Deadline("123", [""], 1, Colors.black, MyDateController.nowDate.addOrRemoveDays(10), "sdf");
+  var deadline = Deadline("123", [""], 1, Colors.black, MyDateController.nowDate.addOrRemoveDays(10));
   compare(deadline, 6);
 }
 void note(){

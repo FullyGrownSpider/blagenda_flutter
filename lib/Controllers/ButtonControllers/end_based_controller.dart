@@ -41,7 +41,8 @@ abstract class EndBasedController<t extends BasicButton>
   }
 
   void setToMakeNew() {
-    timeWhenNotNewItemAnymore = MyDateController.now().add(const Duration(minutes: 4));
+    timeWhenNotNewItemAnymore =
+        MyDateController.now().add(const Duration(minutes: 4));
     _setTimeOfDay();
   }
 
@@ -53,17 +54,15 @@ abstract class EndBasedController<t extends BasicButton>
 
   void create();
 
-  int howMuchLeft() => dateController.timeLeftUntil();
+  int howMuchLeft() => dateController.daysLeftUntil();
 
   bool isHappeningOnDayFromNow(int calculatedDay) => daysLeft == calculatedDay;
 
   void _setTimeOfDay() {
     //turn it into a 12 hour clock
     for (int j = 0; j < toDos.length; j++) {
-      var itemsList = toDos[j]
-          .toLowerCase()
-          .replaceAll(_regFix, _splitString)
-          .split(' ');
+      var itemsList =
+          toDos[j].toLowerCase().replaceAll(_regFix, _splitString).split(' ');
       String correctReg = '';
       for (int i = 0; i < itemsList.length; i++) {
         if (itemsList.length - 1 != i) {
@@ -98,12 +97,12 @@ abstract class EndBasedController<t extends BasicButton>
         items = items.substring(0, indexOfAPm);
       }
       if (items.contains(_splitString)) {
-        var timeOfMinutes = int.parse(items.substring(items.indexOf(_splitString) + 1));
+        var timeOfMinutes =
+            int.parse(items.substring(items.indexOf(_splitString) + 1));
         if (timeOfMinutes > 59) return;
-        var timeOfHours = int.parse(items.substring(0, items.indexOf(_splitString)));
-        result =
-            timeOfHours * 60 +
-                timeOfMinutes;
+        var timeOfHours =
+            int.parse(items.substring(0, items.indexOf(_splitString)));
+        result = timeOfHours * 60 + timeOfMinutes;
       } else {
         result = int.parse(items) * 60;
       }
@@ -222,7 +221,25 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
   @override
   void rebuild() {
     super.rebuild();
-    if (altLeft == -1) altLeft = daysLeft;
+    if (altLeft == -20) altLeft = daysLeft;
+    if (wantDeleteMe()) {
+      requiresChange = true;
+    }
+  }
+
+  void startedChecking(Function howToUpdate){
+    if (startDate != null) {
+      if (dateController.isBefore(startDate!)) {
+        howToUpdate();
+      } else {
+        requiresChange = true;
+        button.startDate = null;
+      }
+    }
+  }
+
+  bool wantDeleteMe() {
+    return endingDate != null && endingDate!.isBefore(MyDateController.today);
   }
 
   @override
@@ -231,12 +248,15 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   SkippableEndBasedController callConstructor(button);
 
-  void makeNewSkip(MyDateController newSkip){
+  void makeNewSkip(MyDateController newSkip) {
     button.dateToSkip = newSkip;
   }
 
-  MyDateController? skipDate() => button.dateToSkip;
-  late int altLeft = -1;
+  MyDateController? get endingDate => button.endingDate;
+
+  MyDateController? get startDate => button.startDate;
+
+  late int altLeft = -20;
 
   bool inTheNextDays(int days) {
     for (int i = 0; i <= days; i++) {
@@ -246,8 +266,16 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
   }
 
   @override
+  bool isHappeningOnDayFromNow(int calculatedDay) {
+    return super.isHappeningOnDayFromNow(calculatedDay) &&
+        (endingDate == null || endingDate!.daysLeftUntil() >= calculatedDay) &&
+        (startDate == null || startDate!.daysLeftUntil() <= calculatedDay);
+  }
+
+  @override
   String displayJob() {
-    if (altLeft < EndBasedController.showDayTime || timeWhenNotNewItemAnymore != null) {
+    if (altLeft < EndBasedController.showDayTime ||
+        timeWhenNotNewItemAnymore != null) {
       return displayWithTimeJob();
     }
     return job;
@@ -278,6 +306,6 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
   MyDateController? get dateToSkip => button.dateToSkip;
 }
 
-Color lerpIt(Color c){
+Color lerpIt(Color c) {
   return Color.lerp(c, Colors.black38, 0.3) as Color;
 }

@@ -38,8 +38,8 @@ class MyDateController extends DateTime {
         1;
   }
 
-  bool isDayThisYear(int month, int day) => (month > nowDate.month ||
-      month == nowDate.month && day >= nowDate.day);
+  bool isDayThisYear(int month, int day) =>
+      (month > nowDate.month || month == nowDate.month && day >= nowDate.day);
 
   @override
   MyDateController add(Duration duration) =>
@@ -57,13 +57,13 @@ class MyDateController extends DateTime {
 
   static MyDateController get nowDate => today;
 
-  int timeLeftUntil() {
+  int daysLeftUntil() {
     return isAfter(today)
-        ? _timeLeftUntil(today, this)
-        : -_timeLeftUntil(this, today);
+        ? _daysLeftUntil(today, this)
+        : -_daysLeftUntil(this, today);
   }
 
-  int _timeLeftUntil(MyDateController low, MyDateController high) =>
+  int _daysLeftUntil(MyDateController low, MyDateController high) =>
       Duration(hours: high.difference(low).inHours + 5).inDays;
 
   MyDateController addOrRemoveDays(int days) => add(Duration(days: days));
@@ -89,7 +89,15 @@ class MyDateController extends DateTime {
 
   String dayDisplay() => '${formatDate(this, [D])}: ';
 
+  /// will translate a representation of a date to an actual usuable date
+  /// will change + to 7 extra days and * to 2
+  /// so "su+" is the sunday after next sunday
+  /// "su##" will be sunday after 4 days
   static MyDateController? translate(String myNumb) {
+    int toAdd = '+'.allMatches(myNumb).length * 7;
+    myNumb = myNumb.replaceAll("+", '');
+    toAdd += '*'.allMatches(myNumb).length * 2;
+    myNumb = myNumb.replaceAll("*", '');
     myNumb = myNumb
         .replaceAll('-', ' ')
         .replaceAll('.', ' ')
@@ -101,17 +109,18 @@ class MyDateController extends DateTime {
       return null;
     }
     if (parts.length == 1) {
-      MyDateController? theDate = _ifDateOnlyOneChar(parts.first);
-      return theDate ??= _endsOrdinal(parts.first);
+      MyDateController? theDate =
+          _ifDateOnlyOneChar(parts.first) ?? _endsOrdinal(parts.first);
+      return theDate?.add(Duration(days: toAdd));
     }
 
     int? dateY = _consumeYear(parts);
-    int? dateM = _consumeMonthLetter(parts);
-    dateM ??= _consumeMonth(parts, dateY == null);
+    int? dateM =
+        _consumeMonthLetter(parts) ?? _consumeMonth(parts, dateY == null);
     if (parts.isEmpty || dateM == null) return null;
     int? dateD = int.tryParse(parts.last);
     if (dateD == null) return null;
-    return _createDate(dateY, dateM, dateD);
+    return _createDate(dateY, dateM, dateD).add(Duration(days: toAdd));
   }
 
   static int? _consumeYear(List<String> parts) {
@@ -164,11 +173,9 @@ class MyDateController extends DateTime {
 
   static MyDateController? _ifDateOnlyOneChar(String word) {
     //its a number that needs to be added to today like its in 5 days
-    int toAdd = '+'.allMatches(word).length * 7;
-    word = word.replaceAll("+", '');
     int? daysUntilDay = int.tryParse(word);
     if (daysUntilDay != null && daysUntilDay < 0) {
-      return MyDateController.nowDate.addOrRemoveDays(daysUntilDay + toAdd);
+      return MyDateController.nowDate.addOrRemoveDays(daysUntilDay);
     }
     if (daysUntilDay == null) {
       for (int i = 0; i < 7; i++) {
@@ -182,7 +189,7 @@ class MyDateController extends DateTime {
       }
     }
     if (daysUntilDay != null) {
-      return nowDate.addOrRemoveDays(daysUntilDay + toAdd);
+      return nowDate.addOrRemoveDays(daysUntilDay);
     }
     for (int i = 0; i < 12; i++) {
       if (word.startsWith(months[i].toLowerCase()) ||
@@ -191,7 +198,7 @@ class MyDateController extends DateTime {
         if (d.isBefore(MyDateController.today)) {
           d = MyDateController(nowDate.year + 1, i + 1);
         }
-        return d.addOrRemoveDays(toAdd);
+        return d;
       }
     }
     return null;
@@ -266,7 +273,7 @@ class MyDateController extends DateTime {
     'juni',
     'july',
     'augustus',
-    'september' ,
+    'september',
     'october',
     'november',
     'december',
@@ -280,7 +287,7 @@ class MyDateController extends DateTime {
     'june',
     'july',
     'august',
-    'september' ,
+    'september',
     'october',
     'november',
     'december',

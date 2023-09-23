@@ -47,11 +47,11 @@ void testRelativeInput() {
   var fromNowMondayNextInTwoWeeks =
       MyDateController.translate(relativeInput[4]);
   expect(1, ord!.day);
-  expect(5, fromNow!.timeLeftUntil());
-  expect(12, fromNowAndWeek!.timeLeftUntil());
+  expect(5, fromNow!.daysLeftUntil());
+  expect(12, fromNowAndWeek!.daysLeftUntil());
   expect(1, fromNowMondayNext!.weekday);
   expect(1, fromNowMondayNextInTwoWeeks!.weekday);
-  expect(true, fromNowMondayNextInTwoWeeks.timeLeftUntil() >= 14);
+  expect(true, fromNowMondayNextInTwoWeeks.daysLeftUntil() >= 14);
 }
 
 void photoNormal() {

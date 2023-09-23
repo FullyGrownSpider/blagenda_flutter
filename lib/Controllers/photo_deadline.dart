@@ -217,7 +217,7 @@ class _PhotoScreenState extends State<PhotoScreen> with WidgetsBindingObserver {
 
   DeadlineController createButton() {
     return DeadlineController(
-        Deadline('', [timeInfo], -1, usedColors.first, dateInfo, ''));
+        Deadline('', [timeInfo], -1, usedColors.first, dateInfo));
   }
 
   void _timerTick() {
@@ -263,11 +263,11 @@ final RegExp _timeRegOp =
 final RegExp _secondTimeRegOp = RegExp(r'( |\b)[0-9]{1,2}:[0-9]{2}([a,p]m)?');
 
 String findTimeTextInText(String text) {
-  var dayText = _timeReg.firstMatch(text)?[0].toString();
-  dayText ??= _secondTimeReg.firstMatch(text)?[0].toString();
-  dayText = _timeRegOp.firstMatch(text)?[0].toString();
-  dayText ??= _secondTimeRegOp.firstMatch(text)?[0].toString();
-  dayText ??= '';
+  var dayText = _timeReg.firstMatch(text)?[0].toString() ??
+      _secondTimeReg.firstMatch(text)?[0].toString() ??
+      _timeRegOp.firstMatch(text)?[0].toString() ??
+      _secondTimeRegOp.firstMatch(text)?[0].toString() ??
+      '';
   return dayText;
 }
 
@@ -275,10 +275,10 @@ MyDateController? createDateFromText(String text) {
   text = text.toLowerCase();
 //august 10
   MyDateController? result = _monthNameToDate(
-      text, MyDateController.monthsENFull, MyDateController.monthsNLFull);
+          text, MyDateController.monthsENFull, MyDateController.monthsNLFull) ??
 //aug 10
-  result ??= _monthNameToDate(
-      text, MyDateController.months, MyDateController.monthsNL);
+      _monthNameToDate(
+          text, MyDateController.months, MyDateController.monthsNL);
 
 //08-10-2020 || 08-10
   if (result == null) {
