@@ -23,23 +23,24 @@ void deadline(){
 }
 void note(){
   var note = BasicButton("123", [""], 1, Colors.black);
-  compare(note, 4);
+  note.important;
+  compare(note, 5);
 }
 void week(){
   var week = AgainWeekDay("123", [""], 1, Colors.black, 1, MyDateController.nowDate.addOrRemoveDays(10));
-  compare(week, 6);
+  compare(week, 7);
 }
 void year(){
   var year = AgainYearDay("123", [""], 1, Colors.black, 12, 10, MyDateController.nowDate.addOrRemoveDays(10));
-  compare(year, 7);
+  compare(year, 8);
 }
 void month(){
   var month = AgainMonthDay("123", [""], 1, Colors.black, 23, MyDateController.nowDate.addOrRemoveDays(10));
-  compare(month, 6);
+  compare(month, 7);
 }
 void day(){
   var day = AgainAmountDay("123", [""], 1, Colors.black, MyDateController.nowDate.addOrRemoveDays(10), 11, MyDateController.nowDate.addOrRemoveDays(10));
-  compare(day, 7);
+  compare(day, 8);
 }
 
 void compare<t extends BasicButton>(t button, int expected){
@@ -53,5 +54,13 @@ void compare<t extends BasicButton>(t button, int expected){
   expect(split.length, expected + 1);
   // all unique
   expect(true, split.where((e) => split.where((ee) => e == ee).isEmpty).isEmpty);
+
+  var check = BasicButton(button.job, button.toDos, button.id, button.color);
+  check.important = button.important;
+  expect(button.job, check.job);
+  expect(button.important, check.important);
+  expect(button.toDos, check.toDos);
+  expect(button.id, check.id);
+  expect(button.color, check.color);
 
 }

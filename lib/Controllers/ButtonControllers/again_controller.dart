@@ -70,6 +70,9 @@ class AgainWeekController extends SkippableEndBasedController<AgainWeekDay> {
       // because we need to go TO the day its -7
       dateController = startDate!
           .add(Duration(days: weekdaysForCalc - 7 - startDate!.weekday));
+      if (dateController.isBefore(startDate!)){
+        dateController = dateController.addOrRemoveDays(7);
+      }
     });
     if (buttonCheck(dateToSkip, dateController)) {
       requiresChange = true;
@@ -140,6 +143,10 @@ class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
     dateController = newLeft;
     startedChecking(() {
       newLeft = MyDateController(nowDate.year, startDate!.month, day);
+
+      if (dateController.isBefore(startDate!)){
+        dateController = MyDateController(nowDate.year, startDate!.month + 1, day);
+      }
     });
     if (buttonCheck(dateToSkip, dateController)) {
       requiresChange = true;

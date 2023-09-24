@@ -264,7 +264,6 @@ class AddingScreenController {
       _itemIntFromList(
           MyDateController.monthDays, 'Day of month', ValuesOfButtons.day),
     ]);
-    _skippableFillerList();
     _defaultFillerList();
   }
 

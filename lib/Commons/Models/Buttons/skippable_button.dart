@@ -13,7 +13,7 @@ abstract class SkippableButton extends BasicButton {
       this.dateToSkip,
       this.endingDate,
       this.startDate,
-      important])
+      bool important = false])
       : super(job, toDos, id, color);
 
   int? day;
