@@ -33,6 +33,9 @@ class AgainYearController extends SkippableEndBasedController<AgainYearDay> {
   }
 
   @override
+  bool isLastTime() => false;
+
+  @override
   bool isHappeningOnDayFromNow(int calculatedDay) {
     var can = super.isHappeningOnDayFromNow(calculatedDay);
     if (!can) return false;
@@ -58,6 +61,11 @@ class AgainWeekController extends SkippableEndBasedController<AgainWeekDay> {
       AgainWeekController(button);
 
   @override
+  bool isLastTime() =>
+      endingDate != null &&
+      endingDate!.isBefore(dateController.addOrRemoveDays(7));
+
+  @override
   void create() {
     var nowDate = MyDateController.today;
     int weekdaysForCalc = day;
@@ -70,7 +78,7 @@ class AgainWeekController extends SkippableEndBasedController<AgainWeekDay> {
       // because we need to go TO the day its -7
       dateController = startDate!
           .add(Duration(days: weekdaysForCalc - 7 - startDate!.weekday));
-      if (dateController.isBefore(startDate!)){
+      if (dateController.isBefore(startDate!)) {
         dateController = dateController.addOrRemoveDays(7);
       }
     });
@@ -98,6 +106,11 @@ class AgainAmountController
   @override
   SkippableEndBasedController<SkippableButton> callConstructor(button) =>
       AgainAmountController(button);
+
+  @override
+  bool isLastTime() =>
+      endingDate != null &&
+      endingDate!.isBefore(dateController.add(Duration(days: day)));
 
   @override
   void create() {
@@ -134,6 +147,12 @@ class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
       AgainMonthController(button);
 
   @override
+  bool isLastTime() =>
+      endingDate != null &&
+      endingDate!.isBefore(MyDateController(
+          dateController.year, dateController.month + 1, day));
+
+  @override
   void create() {
     var nowDate = MyDateController.nowDate;
     var newLeft = MyDateController(nowDate.year, nowDate.month, day);
@@ -144,8 +163,9 @@ class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
     startedChecking(() {
       newLeft = MyDateController(nowDate.year, startDate!.month, day);
 
-      if (dateController.isBefore(startDate!)){
-        dateController = MyDateController(nowDate.year, startDate!.month + 1, day);
+      if (dateController.isBefore(startDate!)) {
+        dateController =
+            MyDateController(nowDate.year, startDate!.month + 1, day);
       }
     });
     if (buttonCheck(dateToSkip, dateController)) {

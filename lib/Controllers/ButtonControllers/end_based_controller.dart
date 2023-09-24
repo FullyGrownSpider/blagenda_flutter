@@ -274,11 +274,15 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   String displayJob() {
+    var xtr = "";
+    if (isLastTime()){
+      xtr = "⚈ ";
+    }
     if (altLeft < EndBasedController.showDayTime ||
         timeWhenNotNewItemAnymore != null) {
-      return displayWithTimeJob();
+      return xtr + displayWithTimeJob();
     }
-    return job;
+    return xtr + job;
   }
 
 //returns true if you should skip
@@ -304,6 +308,8 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
   int get day => button.day!;
 
   MyDateController? get dateToSkip => button.dateToSkip;
+
+  bool isLastTime();
 }
 
 Color lerpIt(Color c) {

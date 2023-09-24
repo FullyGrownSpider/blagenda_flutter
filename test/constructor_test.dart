@@ -35,9 +35,11 @@ void week(){
   expect(d1.daysLeft > 7, true);
   var d2 = make(week2);
   expect(d2.requiresChange, true);
+  expect((d2 as SkippableEndBasedController).displayJob().contains("⚈"), false);
   expect(d2.daysLeft, 1);
   var d3 = make(week3);
   expect(d3.requiresChange, true);
+  expect((d3 as SkippableEndBasedController).displayJob().contains("⚈"), true);
   expect((d3 as AgainWeekController).wantDeleteMe(), true);
   var d4 = make(week4);
   expect(d4.daysLeft > 10, true);
@@ -50,7 +52,9 @@ void year(){
   expect(d1.daysLeft < 20, true);
   var d2 = make(year2);
   expect(d2.requiresChange, false);
+  expect((d2 as SkippableEndBasedController).displayJob().contains("⚈"), false);
   expect((d2 as AgainYearController).dateController.year, MyDateController.nowDate.year + 1);
+
 }
 void month(){
   var month = AgainMonthDay("123", [""], 1, Colors.black, 23);
@@ -60,11 +64,13 @@ void month(){
   var d1= make(month);
   expect(d1.requiresChange, false);
   var d2= make(month1);
-  expect((d2 as SkippableEndBasedController).wantDeleteMe(), false);
+  expect((d2 as AgainMonthController).displayJob().contains("⚈"), true);
+  expect(d2.wantDeleteMe(), false);
   var d3= make(month2);
   expect(d3.dateController.daysLeftUntil() > 40, true);
   var d4= make(month3);
-  expect((d4 as SkippableEndBasedController).wantDeleteMe(), true);
+  expect((d4 as SkippableEndBasedController).displayJob().contains("⚈"), true);
+  expect((d4).wantDeleteMe(), true);
 
 }
 void day(){
@@ -80,8 +86,10 @@ void day(){
   expect(d2.wantDeleteMe(), false);
   expect(d2.requiresChange, true);
   expect(d3.requiresChange, true);
+  expect((d3).displayJob().contains("⚈"), true);
   expect(d3.wantDeleteMe(), true);
   expect(d4.requiresChange, true);
+  expect((d4).displayJob().contains("⚈"), false);
   expect(d4.wantDeleteMe(), false);
 }
 
