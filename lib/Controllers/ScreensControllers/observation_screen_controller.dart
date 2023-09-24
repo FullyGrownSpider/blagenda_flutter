@@ -266,8 +266,7 @@ class ObservationScreenController {
         loading.deleteButtons(itemsToUpdate);
         _getCorrectList(DeadlineController)
             .removeWhere((e) => e.requiresChange);
-      } else {
-        //if (is skippable button)
+      } else if (itemsToCheck.firstOrNull is SkippableEndBasedController){
         var toDelete = itemsToCheck
             .where((e) => (e as SkippableEndBasedController).wantDeleteMe())
             .toList();

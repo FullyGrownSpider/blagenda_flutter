@@ -267,7 +267,7 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   bool isHappeningOnDayFromNow(int calculatedDay) {
-    return super.isHappeningOnDayFromNow(calculatedDay) &&
+    return
         (endingDate == null || endingDate!.daysLeftUntil() >= calculatedDay) &&
         (startDate == null || startDate!.daysLeftUntil() <= calculatedDay);
   }

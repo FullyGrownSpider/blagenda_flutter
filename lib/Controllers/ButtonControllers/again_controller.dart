@@ -68,7 +68,8 @@ class AgainWeekController extends SkippableEndBasedController<AgainWeekDay> {
         nowDate.add(Duration(days: weekdaysForCalc - nowDate.weekday));
     startedChecking(() {
       // because we need to go TO the day its -7
-      dateController = startDate!.add(Duration(days: weekdaysForCalc - 7 - startDate!.weekday));
+      dateController = startDate!
+          .add(Duration(days: weekdaysForCalc - 7 - startDate!.weekday));
     });
     if (buttonCheck(dateToSkip, dateController)) {
       requiresChange = true;
@@ -105,7 +106,7 @@ class AgainAmountController
     var date = button.startDate!.add(const Duration(hours: 2));
     var toAdd = 0;
     while (date.isBefore(MyDateController.yesterday)) {
-      date.addOrRemoveDays(day);
+      date = date.addOrRemoveDays(day);
       toAdd += day;
     }
     if (toAdd == 0) return;
@@ -116,7 +117,8 @@ class AgainAmountController
 
   @override
   bool isHappeningOnDayFromNow(int calculatedDay) {
-    return super.isHappeningOnDayFromNow(calculatedDay) &&
+    return (endingDate == null ||
+            endingDate!.daysLeftUntil() >= calculatedDay) &&
         (calculatedDay >= daysLeft && (calculatedDay - daysLeft) % day == 0);
   }
 }
