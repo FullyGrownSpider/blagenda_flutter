@@ -14,7 +14,7 @@ import 'common_screen_controller.dart';
 
 class ObservationScreenController {
   static const int daysToShow = 6;
-  static const int _maxTextSize = 11;
+  static const int _maxTextSize = 60;
   static const List<int> _possibleExtraDays = [30, 14];
   static const List<String> smallDateFormat = [D];
 
@@ -112,8 +112,8 @@ class ObservationScreenController {
       items.addAll(addAsRow(
           (i) => _createButtonBase(notesList[i], setStateMethod),
           notesList.length, (i) {
-        return notesList[i].gettingTheStringLongLength ~/ _maxTextSize;
-      }));
+        return notesList[i].gettingTheStringLongLength;
+      }, _maxTextSize));
       items.add(bigSplitterTextField);
     }
     return items;
