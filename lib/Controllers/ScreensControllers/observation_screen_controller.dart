@@ -77,6 +77,7 @@ class ObservationScreenController {
             as List<EndBasedController>);
       }
     }
+    if (overviewList.isEmpty) emptyDay();
     overviewList.sort();
     if (chosenColor > -1) {
       againDeadlineDisplayList.addAll(_createWidgetEndBased(
@@ -106,8 +107,7 @@ class ObservationScreenController {
         MyDateController.nowDate);
     List<Widget> items = [];
     if (notesList.isNotEmpty) {
-      notesList.sort((a, b) =>
-          b.gettingTheStringLongLength.compareTo(a.gettingTheStringLongLength));
+      notesList.sort();
       items.add(const Text('Notes', style: bigTextStyle));
       items.addAll(addAsRow(
           (i) => _createButtonBase(notesList[i], setStateMethod),
@@ -442,7 +442,7 @@ class ObservationScreenController {
 
   List<Widget> _createFullList(void Function() setStateMethod,
       MyDateController nowDate, List<EndBasedController> endBasedList) {
-    endBasedList.sort((e, b) => e.daysLeft.compareTo(b.daysLeft));
+    endBasedList.sort();
     return endBasedList
         .map((e) => _createListItemEverythingEndBased(e, setStateMethod))
         .toList();
@@ -498,9 +498,7 @@ class ObservationScreenController {
   int getNewId(Type t) {
     var correctList = _getCorrectList(t);
     if (correctList.isNotEmpty) {
-      correctList.sort((a, b) {
-        return a.button.id.compareTo(b.button.id);
-      });
+      correctList.sort();
       for (int i = 0; i < correctList.length; i++) {
         if (correctList[i].button.id != i) {
           return i;
@@ -508,5 +506,14 @@ class ObservationScreenController {
       }
     }
     return correctList.length;
+  }
+
+  void emptyDay() {
+    var list = [];
+    for(int i = 0;i < daysToShowNow;i++){
+      list.add(createADay(MyDateController.today, [], i, () { }, (p0, p1) =>
+      const Text(''), true));
+    }
+
   }
 }

@@ -21,7 +21,7 @@ abstract class EndBasedController<t extends BasicButton>
   MyDateController? timeWhenNotNewItemAnymore;
   bool requiresChange = false;
   int timeOfDay = -1;
-  int daysLeft = -1;
+  int daysLeft = -20;
   late MyDateController dateController;
 
   EndBasedController(t button) : super(button) {
@@ -206,11 +206,9 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
     extends EndBasedController<t> {
   SkippableEndBasedController(super.button);
 
-  SkippableEndBasedController createNew(MyDateController displayDate) {
+  SkippableEndBasedController createNew(int fromNow) {
     var clone = callConstructor(button);
-    clone.dateController = displayDate;
-    clone.altLeft = clone.howMuchLeft();
-    clone.dateController = dateController;
+    clone.altLeft = daysLeft + fromNow;
     return clone;
   }
 
@@ -220,8 +218,9 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   void rebuild() {
+    var daysDif = daysLeft;
     super.rebuild();
-    if (altLeft == -20) altLeft = daysLeft;
+    altLeft += (daysLeft - daysDif);
     if (wantDeleteMe()) {
       requiresChange = true;
     }

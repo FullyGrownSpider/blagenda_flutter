@@ -58,13 +58,13 @@ Widget blagendaUniformButton(
         onPressed: pressed,
         style: ElevatedButton.styleFrom(
             backgroundColor: b ? getSelectedVersionOfColor(c) : c),
-        child: s.contains('\n')
+        child: s.contains('\n\n')
             ? Column(children: [
-                Text(s.substring(0, s.indexOf('\n')),
+                Text(s.substring(0, s.indexOf('\n\n')),
                     style: normalTextStyleBold, textAlign: TextAlign.center),
                 smallBlankSplit,
                 smallBlankSplit,
-                Text(s.substring(s.indexOf('\n') + 1),
+                Text(s.substring(s.indexOf('\n\n') + 2),
                     style: normalTextStyle, textAlign: TextAlign.center),
                 const Text(
                   '-\n\n-',

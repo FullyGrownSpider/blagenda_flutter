@@ -37,12 +37,9 @@ class AgainYearController extends SkippableEndBasedController<AgainYearDay> {
 
   @override
   bool isHappeningOnDayFromNow(int calculatedDay) {
-    var can = super.isHappeningOnDayFromNow(calculatedDay);
-    if (!can) return false;
-    var counter = 1;
-    var newLeft = MyDateController(dateController.year + counter,
-            dateController.month, dateController.day)
-        .daysLeftUntil();
+    if (daysLeft == calculatedDay) return true;
+    int counter = 0;
+    int newLeft = -100;
     while (newLeft < calculatedDay) {
       counter++;
       newLeft = MyDateController(dateController.year + counter,
@@ -77,7 +74,7 @@ class AgainWeekController extends SkippableEndBasedController<AgainWeekDay> {
     startedChecking(() {
       // because we need to go TO the day its -7
       dateController = startDate!
-          .add(Duration(days: weekdaysForCalc - 7 - startDate!.weekday));
+          .add(Duration(days: weekdaysForCalc - startDate!.weekday));
       if (dateController.isBefore(startDate!)) {
         dateController = dateController.addOrRemoveDays(7);
       }

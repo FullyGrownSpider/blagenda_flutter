@@ -41,7 +41,7 @@ List<Widget> createADay(
   for(int i = 0;i < sortableList.length;i++){
     if (sortableList[i] is SkippableEndBasedController) {
       sortableList[i] = (sortableList[i] as SkippableEndBasedController)
-          .createNew(MyDateController.fromDaysFromNow(fromNow));
+          .createNew(fromNow);
     }
   }
   sortableList.sort();
