@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:flutter/material.dart';
 
@@ -5,10 +7,10 @@ abstract class BasicButtonController<t extends BasicButton> {
   static const int maxValueCheck = 38;
   t _button;
 
-  int gettingTheStringLongLength = 1;
+  int theStringLongestLength = 1;
 
   BasicButtonController(this._button) {
-    gettingTheStringLongLength = gettingTheStringSelected().length;
+    calculateLength();
   }
 
   t get button => _button;
@@ -124,6 +126,15 @@ abstract class BasicButtonController<t extends BasicButton> {
     }
     // [substring(0, _maxLengthTodos), substring(_maxLengthTodos)]
     return buf.toString();
+  }
+
+  void calculateLength() {
+    theStringLongestLength = min(job.length, maxValueCheck);
+    for (var todo in toDos){
+      if (todo.length > theStringLongestLength){
+        theStringLongestLength = todo.length;
+      }
+    }
   }
 }
 

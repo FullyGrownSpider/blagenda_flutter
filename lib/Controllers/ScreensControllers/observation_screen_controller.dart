@@ -14,7 +14,7 @@ import 'common_screen_controller.dart';
 
 class ObservationScreenController {
   static const int daysToShow = 6;
-  static const int _maxTextSize = 60;
+  static const int _maxTextSize = 38;
   static const List<int> _possibleExtraDays = [30, 14];
   static const List<String> smallDateFormat = [D];
 
@@ -107,12 +107,12 @@ class ObservationScreenController {
         MyDateController.nowDate);
     List<Widget> items = [];
     if (notesList.isNotEmpty) {
-      notesList.sort();
+      notesList = NoteController.chosenSort(notesList as List<NoteController>, _maxTextSize);
       items.add(const Text('Notes', style: bigTextStyle));
       items.addAll(addAsRow(
           (i) => _createButtonBase(notesList[i], setStateMethod),
           notesList.length, (i) {
-        return notesList[i].gettingTheStringLongLength;
+        return notesList[i].theStringLongestLength;
       }, _maxTextSize));
       items.add(bigSplitterTextField);
     }
@@ -498,7 +498,7 @@ class ObservationScreenController {
   int getNewId(Type t) {
     var correctList = _getCorrectList(t);
     if (correctList.isNotEmpty) {
-      correctList.sort();
+      correctList.sort((a, b) => a.id.compare(b.id));
       for (int i = 0; i < correctList.length; i++) {
         if (correctList[i].button.id != i) {
           return i;

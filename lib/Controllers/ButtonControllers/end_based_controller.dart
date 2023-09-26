@@ -148,10 +148,10 @@ abstract class EndBasedController<t extends BasicButton>
 
   @override
   String gettingTheStringSelected() =>
-      gettingTheStringShortWithTime() + todosToString();
+      '${gettingTheStringShortWithTime()}\n${todosToString()}';
 
   String gettingTheStringShortWithDate() =>
-      '${dateController.fullDisplayWithCal()}\n${gettingTheStringShortWithTime()}';
+      '${dateController.fullDisplayWithCal()}\n\n${gettingTheStringShortWithTime()}';
 
   @override
   String todosToString() {
@@ -202,13 +202,15 @@ abstract class EndBasedController<t extends BasicButton>
   }
 }
 
+//----------------------------------
+
 abstract class SkippableEndBasedController<t extends SkippableButton>
     extends EndBasedController<t> {
   SkippableEndBasedController(super.button);
 
   SkippableEndBasedController createNew(int fromNow) {
     var clone = callConstructor(button);
-    clone.altLeft = daysLeft + fromNow;
+    clone.altLeft = fromNow;
     return clone;
   }
 
@@ -298,10 +300,10 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   Color get color {
-    if (altLeft != -1) {
-      return button.color!;
+    if (altLeft < 0 || daysLeft < 0) {
+      return lerpIt(button.color as Color);
     }
-    return lerpIt(button.color as Color);
+    return button.color!;
   }
 
   int get day => button.day!;
