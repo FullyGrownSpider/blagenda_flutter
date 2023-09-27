@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../common_items.dart';
 import 'ButtonControllers/note_controller.dart';
+import 'ScreensControllers/ObservationScreen/obeservation_screen_options.dart';
 import 'ScreensControllers/common_screen_controller.dart';
-import 'ScreensControllers/observation_screen_controller.dart';
 
 class CountdownDrawer extends StatefulWidget {
   const CountdownDrawer(this.addOrUpdateButton, this.resetScreen)
@@ -62,7 +62,7 @@ class _CountdownDrawerState extends State<CountdownDrawer> {
       widgetList.add(containWidgetsPretty([
         blagendaUniformButton(
             false,
-            ObservationScreenController.daysToShow < but.daysLeft
+            ObservationScreenOptions.daysToShow < but.daysLeft
                 ? but.color
                 : lerpIt(but.color),
             BasicButtonController.displayGenericJob(but.gettingTheStringShortWithTime(), 25),

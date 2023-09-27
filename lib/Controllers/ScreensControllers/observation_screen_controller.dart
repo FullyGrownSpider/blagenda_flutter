@@ -10,16 +10,16 @@ import 'package:flutter/material.dart';
 
 import '../../common_items.dart';
 import 'ObservationScreen/obeservation_screen_loading.dart';
+import 'ObservationScreen/obeservation_screen_options.dart';
 import 'common_day_display_screen_controller.dart';
 import 'common_screen_controller.dart';
 
 class ObservationScreenController {
-  static const int daysToShow = 6;
-  static const int _maxTextSize = 38;
-  static const List<int> _possibleExtraDays = [30, 14];
   static const List<String> smallDateFormat = [D];
 
   late final ObservationScreenLoading _observationScreenLoading;
+  late final ObservationScreenOptions _observationScreenOptions =
+      ObservationScreenOptions();
 
   ///lists used to store all buttons and used to .select the ones to display
   final Map<Type, List> _allLists = {
@@ -30,13 +30,6 @@ class ObservationScreenController {
     DeadlineController: <DeadlineController>[],
     NoteController: <NoteController>[]
   };
-
-  ///-1 no color selected
-  ///-2 show everything in a list
-  int chosenColor = -1;
-
-  ///used to display more days or less days
-  int daysToShowNow = daysToShow;
 
   ///the index used to give every button a selection ID
   int _globalCounter = -1;
@@ -61,114 +54,56 @@ class ObservationScreenController {
     List<Widget> againDeadlineDisplayList = [];
     for (var e in _allLists.entries) {
       if (e.value is List<EndBasedController>) {
-        overviewList.addAll(_goesInList(
+        overviewList.addAll(_observationScreenOptions.goesInList(
                 e.value as List<EndBasedController>, MyDateController.lookTime)
             as List<EndBasedController>);
       }
     }
     if (overviewList.isEmpty) emptyDay();
     overviewList.sort();
-    if (chosenColor > -1) {
-      againDeadlineDisplayList.addAll(_createWidgetEndBased(
-              setStateMethod, MyDateController.lookTime, overviewList)
-          .toList());
-    } else if (chosenColor == -2) {
-      againDeadlineDisplayList.addAll(_createFullList(
-          setStateMethod, MyDateController.lookTime, overviewList));
-    } else {
+    _observationScreenOptions.pickCorrectOption(
+        () => againDeadlineDisplayList.addAll(_createWidgetEndBased(
+                setStateMethod, MyDateController.lookTime, overviewList)
+            .toList()),
+        () => againDeadlineDisplayList.addAll(_createFullList(
+            setStateMethod, MyDateController.lookTime, overviewList)), (c) {
       List<EndBasedController> newList = overviewList
           .where((e) =>
               e.wasJustAdded(MyDateController.lookTime) &&
-              e.daysLeft > daysToShow)
+              e.daysLeft > ObservationScreenOptions.daysToShow)
           .toList();
       againDeadlineDisplayList.addAll(_createNewEndBasedWasJustAddedDay(
           setStateMethod, MyDateController.lookTime, newList));
       againDeadlineDisplayList.addAll(_createEndBasedDayList(
           setStateMethod, MyDateController.lookTime, overviewList));
-    }
+    });
     againDeadlineDisplayList.add(bigSplitterTextField);
     return againDeadlineDisplayList;
   }
 
   List<Widget> getWidgetListNote(void Function() setStateMethod) {
-    List<BasicButtonController> notesList = _goesInList(
-        _getCorrectList(NoteController) as List<NoteController>,
-        MyDateController.nowDate);
+    List<BasicButtonController> notesList =
+        _observationScreenOptions.goesInList(
+            _getCorrectList(NoteController) as List<NoteController>,
+            MyDateController.nowDate);
     List<Widget> items = [];
     if (notesList.isNotEmpty) {
       notesList = NoteController.chosenSort(
-          notesList as List<NoteController>, _maxTextSize);
+          notesList as List<NoteController>, BasicButtonController.maxValueCheck);
       items.add(const Text('Notes', style: bigTextStyle));
       items.addAll(addAsRow(
           (i) => _createButtonBase(notesList[i], setStateMethod),
           notesList.length, (i) {
         return notesList[i].theStringLongestLength;
-      }, _maxTextSize));
+      }, BasicButtonController.maxValueCheck));
       items.add(bigSplitterTextField);
     }
     return items;
   }
 
-  ///the buttons to select the color to only show
-  List<Widget> getOptionButtons(void Function() setStateMethod) {
-    List<Widget> items = [];
-    items.add(const Text('Display Options', style: bigTextStyle));
-    items.addAll(
-        globalCreateColorButtons(setStateMethod, _colorPressed, chosenColor));
-    items.addAll(addAsRow((i) => _createCounterButton(setStateMethod, i),
-        _possibleExtraDays.length));
-    items.add(_createDisplayAllEndBasedButtonsButton(setStateMethod));
-    items.add(bigSplitterTextField);
-    return items;
-  }
-
-  void _colorPressed(int index) {
-    daysToShowNow = daysToShow;
-    if (chosenColor == index) {
-      chosenColor = -1;
-    } else {
-      chosenColor = index;
-    }
-    _resetCounters();
-  }
-
-  Widget _createDisplayAllEndBasedButtonsButton(
-          void Function() setStateMethod) =>
-      blagendaUniformButton(-2 == chosenColor, usedColors.first, 'Show all',
-          () {
-        _resetCounters();
-        daysToShowNow = daysToShow;
-        if (-2 == chosenColor) {
-          chosenColor = -1;
-        } else {
-          chosenColor = -2;
-        }
-        setStateMethod();
-      });
-
   ///reset screen to default
-  void resetSearch(void Function() setStateMethod) {
-    if (chosenColor == -1 && daysToShowNow == daysToShow) return;
-    chosenColor = -1;
-    daysToShowNow = daysToShow;
-    _resetCounters();
-    setStateMethod();
-  }
-
-  Widget _createCounterButton(void Function() setStateMethod, int index) =>
-      blagendaUniformButton(
-          daysToShowNow == _possibleExtraDays[index],
-          usedColors.first,
-          'Show next ${_possibleExtraDays[index].toString()} days', () {
-        chosenColor = -1;
-        if (daysToShowNow == _possibleExtraDays[index]) {
-          daysToShowNow = daysToShow;
-        } else {
-          daysToShowNow = _possibleExtraDays[index];
-        }
-        _resetCounters();
-        setStateMethod();
-      });
+  void resetSearch(void Function() setStateMethod) =>
+      _observationScreenOptions.resetSearch(setStateMethod, _resetCounters);
 
   ///days
   ///requires a sorted list based on .left
@@ -181,12 +116,12 @@ class ObservationScreenController {
       //-1 to also show yesterday
       i--;
     }
-    for (; i < daysToShowNow; i++) {
-      if (i == daysToShow) {
+    for (; i < _observationScreenOptions.daysToShowNow; i++) {
+      if (i == ObservationScreenOptions.daysToShow) {
         againDeadlineDisplayList.add(bigSplitterTextField);
       }
       againDeadlineDisplayList.addAll(createADay(nowDate, endBasedList, i,
-          setStateMethod, _createButtonBase, i < daysToShow));
+          setStateMethod, _createButtonBase, i < ObservationScreenOptions.daysToShow));
     }
     return againDeadlineDisplayList;
   }
@@ -202,15 +137,15 @@ class ObservationScreenController {
       index--;
     }
     //-1 to also show yesterday
-    for (; index < daysToShow; index++) {
+    for (; index < ObservationScreenOptions.daysToShow; index++) {
       againDeadlineDisplayList.addAll(createADay(nowDate, endBasedList, index,
           setStateMethod, _createButtonBase, true));
     }
-    if (endBasedList.any((e) => e.daysLeft >= daysToShow)) {
+    if (endBasedList.any((e) => e.daysLeft >= ObservationScreenOptions.daysToShow)) {
       againDeadlineDisplayList.add(bigSplitterTextField);
       var lastLeft = 0;
       for (var button in endBasedList) {
-        if (button.daysLeft >= daysToShow) {
+        if (button.daysLeft >= ObservationScreenOptions.daysToShow) {
           if (!button.isHappeningOnDayFromNow(lastLeft)) {
             lastLeft = button.daysLeft;
             againDeadlineDisplayList.addAll(createADay(
@@ -219,7 +154,7 @@ class ObservationScreenController {
                 lastLeft,
                 setStateMethod,
                 _createButtonBase,
-                lastLeft < daysToShow));
+                lastLeft < ObservationScreenOptions.daysToShow));
           }
         }
       }
@@ -240,7 +175,7 @@ class ObservationScreenController {
             lastLeft,
             setStateMethod,
             _createButtonBase,
-            lastLeft < daysToShow));
+            lastLeft < ObservationScreenOptions.daysToShow));
       }
     }
     return againDeadlineDisplayList;
@@ -283,35 +218,6 @@ class ObservationScreenController {
         _updateEndbasedToCurrentDay(e.value as List<EndBasedController>);
       }
     }
-  }
-
-  bool _shouldGoIn(EndBasedController eb, MyDateController now) =>
-      eb.daysLeft < daysToShowNow + 7 && eb.daysLeft >= -1 ||
-      eb.wasJustAdded(now);
-
-  List<BasicButtonController> _goesInList(
-      List<BasicButtonController> list, MyDateController now) {
-    if (chosenColor == -2 || list.isEmpty) return list;
-    if (chosenColor != -1) {
-      //a color has been picked
-      Color c = usedColors[chosenColor];
-      return (list).where((e) => e.colorCheck(c)).toList();
-    }
-    if (list.first is EndBasedController) {
-      var newList =
-          list.where((e) => _shouldGoIn(e as EndBasedController, now));
-      if (daysToShowNow != daysToShow) {
-        //if you select 14 you want to see something 14 days away too not just
-        //13
-        return list
-            .where((e) => (e as EndBasedController).daysLeft == daysToShowNow)
-            .toList()
-          ..addAll(newList);
-      } else {
-        return newList.toList();
-      }
-    }
-    return list;
   }
 
   String _buttonDisplay(int index, BasicButtonController it) {
@@ -403,7 +309,7 @@ class ObservationScreenController {
 
   void emptyDay() {
     var list = [];
-    for (int i = 0; i < daysToShowNow; i++) {
+    for (int i = 0; i < _observationScreenOptions.daysToShowNow; i++) {
       list.add(createADay(MyDateController.today, [], i, () {},
           (p0, p1) => const Text(''), true));
     }
@@ -420,9 +326,13 @@ class ObservationScreenController {
           BasicButtonController<BasicButton> c, void Function() resetScreen) =>
       _observationScreenLoading.addOrUpdateButton(c, resetScreen);
 
-  deleteSelected(void Function() resetScreen) =>
-      _observationScreenLoading.deleteSelected(resetScreen, getSelectedButton());
+  void deleteSelected(void Function() resetScreen) => _observationScreenLoading
+      .deleteSelected(resetScreen, getSelectedButton());
 
-  skipButton(void Function() resetScreen) =>
+  void skipButton(void Function() resetScreen) =>
       _observationScreenLoading.skipButton(resetScreen, getSelectedButton());
+
+  List<Widget> getOptionButtons(void Function() setStateMethod) =>
+      _observationScreenOptions.getOptionButtons(
+          setStateMethod, _resetCounters);
 }
