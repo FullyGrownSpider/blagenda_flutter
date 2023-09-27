@@ -1,14 +1,15 @@
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/again_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/basic_button_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/deadline_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/end_based_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/note_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
-import 'package:blagenda_flutter_simple/Loading/loading.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 
 import '../../common_items.dart';
+import 'ObservationScreen/obeservation_screen_loading.dart';
 import 'common_day_display_screen_controller.dart';
 import 'common_screen_controller.dart';
 
@@ -17,6 +18,8 @@ class ObservationScreenController {
   static const int _maxTextSize = 38;
   static const List<int> _possibleExtraDays = [30, 14];
   static const List<String> smallDateFormat = [D];
+
+  late final ObservationScreenLoading observationScreenLoading;
 
   ///lists used to store all buttons and used to .select the ones to display
   final Map<Type, List> _allLists = {
@@ -27,18 +30,6 @@ class ObservationScreenController {
     DeadlineController: <DeadlineController>[],
     NoteController: <NoteController>[]
   };
-  final List<bool> _loaded = [false, false, false, false, false, false];
-
-  static final List<Future<List> Function(Loading)> _buttonGet = [
-    (l) => l.getButtons<AgainAmountController>(),
-    (l) => l.getButtons<AgainMonthController>(),
-    (l) => l.getButtons<AgainWeekController>(),
-    (l) => l.getButtons<AgainYearController>(),
-    (l) => l.getButtons<DeadlineController>(),
-    (l) => l.getButtons<NoteController>(),
-  ];
-
-  bool doneLoading() => !_loaded.any((e) => !e);
 
   ///-1 no color selected
   ///-2 show everything in a list
@@ -64,7 +55,8 @@ class ObservationScreenController {
 
   ///needs to load first use doneLoading to check if done
   ObservationScreenController() {
-    loadListsFromStorage();
+    observationScreenLoading = ObservationScreenLoading(_getCorrectList);
+    observationScreenLoading.loadListsFromStorage(_allLists);
   }
 
   List<Widget> getWidgetListEndBased(void Function() setStateMethod) {
@@ -107,7 +99,8 @@ class ObservationScreenController {
         MyDateController.nowDate);
     List<Widget> items = [];
     if (notesList.isNotEmpty) {
-      notesList = NoteController.chosenSort(notesList as List<NoteController>, _maxTextSize);
+      notesList = NoteController.chosenSort(
+          notesList as List<NoteController>, _maxTextSize);
       items.add(const Text('Notes', style: bigTextStyle));
       items.addAll(addAsRow(
           (i) => _createButtonBase(notesList[i], setStateMethod),
@@ -266,7 +259,7 @@ class ObservationScreenController {
         loading.deleteButtons(itemsToUpdate);
         _getCorrectList(DeadlineController)
             .removeWhere((e) => e.requiresChange);
-      } else if (itemsToCheck.firstOrNull is SkippableEndBasedController){
+      } else if (itemsToCheck.firstOrNull is SkippableEndBasedController) {
         var toDelete = itemsToCheck
             .where((e) => (e as SkippableEndBasedController).wantDeleteMe())
             .toList();
@@ -292,21 +285,6 @@ class ObservationScreenController {
         }
         _updateEndbasedToCurrentDay(e.value as List<EndBasedController>);
       }
-    }
-  }
-
-  void loadListsFromStorage() {
-    for (var list in _allLists.entries) {
-      list.value.clear();
-    }
-    for (int i = 0; i < _loaded.length; i++) {
-      _loaded[i] = false;
-      _buttonGet[i](loading).then((value) {
-        if (value.isNotEmpty) {
-          _allLists[value.first.runtimeType]!.addAll(value);
-        }
-        _loaded[i] = true;
-      });
     }
   }
 
@@ -377,65 +355,10 @@ class ObservationScreenController {
 
   void _resetCounters() => clicked = idSelected = -1;
 
-  void _updateButton(
-      BasicButtonController toAdd, void Function() setStateMethod) {
-    loading.updateButton(toAdd);
-    if (toAdd is EndBasedController) {
-      toAdd.setToMakeNew();
-    }
-    List correctList = _getCorrectList(toAdd.runtimeType);
-    var index = correctList.indexWhere((e) => toAdd.id == e.button.id);
-    if (index == -1) return;
-    correctList[index] = toAdd;
-    setStateMethod();
-  }
-
-  void _addButton(BasicButtonController toAdd, void Function() setStateMethod) {
-    List correctList = _getCorrectList(toAdd.runtimeType);
-    if (toAdd is EndBasedController) {
-      toAdd.setToMakeNew();
-    }
-    correctList.add(toAdd);
-    loading.addButton(toAdd);
-    setStateMethod();
-  }
-
-  ///will update if selected is the same type and same id as thing added
-  void addOrUpdateButton(
-      BasicButtonController controller, void Function() setStateMethod) {
-    hasJustAdded++;
-    if (_getCorrectList(controller.runtimeType)
-        .any((e) => e.id == controller.id)) {
-      _updateButton(controller, setStateMethod);
-    } else {
-      _addButton(controller, setStateMethod);
-    }
-  }
-
   BasicButtonController? getSelectedButton() {
     if (idSelected == -1) return null;
     List correctList = _getCorrectList(_typeOfSelected!);
     return correctList.firstWhere((e) => idSelected == e.button.id);
-  }
-
-  void deleteSelected(void Function() setStateMethod) {
-    if (idSelected == -1) return;
-    BasicButtonController? controller = getSelectedButton();
-    if (controller == null) return;
-    loading.deleteButton(controller);
-
-    List correctList = _getCorrectList(_typeOfSelected!);
-    correctList.removeWhere((e) => idSelected == e.button.id);
-    setStateMethod();
-  }
-
-  void skipButton(void Function() setStateMethod) {
-    if (idSelected == -1) return;
-    BasicButtonController? controller = getSelectedButton();
-    if (controller == null || controller is SkippableEndBasedController) return;
-    (controller as SkippableEndBasedController)
-        .makeNewSkip(controller.dateController);
-    _updateButton(controller, setStateMethod);
   }
 
   List _getCorrectList(Type t) => _allLists[t]!;
@@ -495,25 +418,28 @@ class ObservationScreenController {
     });
   }
 
-  int getNewId(Type t) {
-    var correctList = _getCorrectList(t);
-    if (correctList.isNotEmpty) {
-      correctList.sort((a, b) => a.id.compareTo(b.id));
-      for (int i = 0; i < correctList.length; i++) {
-        if (correctList[i].button.id != i) {
-          return i;
-        }
-      }
-    }
-    return correctList.length;
-  }
-
   void emptyDay() {
     var list = [];
-    for(int i = 0;i < daysToShowNow;i++){
-      list.add(createADay(MyDateController.today, [], i, () { }, (p0, p1) =>
-      const Text(''), true));
+    for (int i = 0; i < daysToShowNow; i++) {
+      list.add(createADay(MyDateController.today, [], i, () {},
+          (p0, p1) => const Text(''), true));
     }
-
   }
+
+  bool doneLoading() => observationScreenLoading.doneLoading();
+
+  void loadListsFromStorage() =>
+      observationScreenLoading.loadListsFromStorage(_allLists);
+
+  int getNewId(Type t) => observationScreenLoading.getNewId(t);
+
+  void addOrUpdateButton(
+          BasicButtonController<BasicButton> c, void Function() resetScreen) =>
+      observationScreenLoading.addOrUpdateButton(c, resetScreen);
+
+  deleteSelected(void Function() resetScreen) =>
+      observationScreenLoading.deleteSelected(resetScreen, getSelectedButton());
+
+  skipButton(void Function() resetScreen) =>
+      observationScreenLoading.skipButton(resetScreen, getSelectedButton());
 }
