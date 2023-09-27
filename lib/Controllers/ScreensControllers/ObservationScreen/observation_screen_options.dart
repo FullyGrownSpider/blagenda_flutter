@@ -120,7 +120,6 @@ class ObservationScreenOptions {
     }, (c) {
       list = (list).where((e) => e.colorCheck(c)).toList();
     });
-
     return list;
   }
 }
