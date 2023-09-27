@@ -498,7 +498,7 @@ class ObservationScreenController {
   int getNewId(Type t) {
     var correctList = _getCorrectList(t);
     if (correctList.isNotEmpty) {
-      correctList.sort((a, b) => a.id.compare(b.id));
+      correctList.sort((a, b) => a.id.compareTo(b.id));
       for (int i = 0; i < correctList.length; i++) {
         if (correctList[i].button.id != i) {
           return i;
