@@ -19,7 +19,7 @@ class ObservationScreenController {
   static const List<int> _possibleExtraDays = [30, 14];
   static const List<String> smallDateFormat = [D];
 
-  late final ObservationScreenLoading observationScreenLoading;
+  late final ObservationScreenLoading _observationScreenLoading;
 
   ///lists used to store all buttons and used to .select the ones to display
   final Map<Type, List> _allLists = {
@@ -44,9 +44,6 @@ class ObservationScreenController {
   ///the selected counter
   int clicked = -1;
 
-  ///when you add something this is used to keep checking or not
-  int hasJustAdded = 0;
-
   ///id of button to update when updating
   int idSelected = -1;
 
@@ -55,8 +52,8 @@ class ObservationScreenController {
 
   ///needs to load first use doneLoading to check if done
   ObservationScreenController() {
-    observationScreenLoading = ObservationScreenLoading(_getCorrectList);
-    observationScreenLoading.loadListsFromStorage(_allLists);
+    _observationScreenLoading = ObservationScreenLoading(_getCorrectList);
+    _observationScreenLoading.loadListsFromStorage(_allLists);
   }
 
   List<Widget> getWidgetListEndBased(void Function() setStateMethod) {
@@ -393,21 +390,7 @@ class ObservationScreenController {
     ]);
   }
 
-  bool justAddedCheck() {
-    MyDateController now = MyDateController.now();
-    var hasJustAddedCalc = 0;
-    for (var e in _allLists.entries) {
-      if (e.value.isNotEmpty && e.value.first is EndBasedController) {
-        hasJustAddedCalc +=
-            e.value.where((element) => element.wasJustAdded(now)).length;
-      }
-    }
-    if (hasJustAdded != hasJustAddedCalc) {
-      hasJustAdded = hasJustAddedCalc;
-      return true;
-    }
-    return false;
-  }
+  bool justAddedCheck() => _observationScreenLoading.justAddedCheck(_allLists);
 
   void setAllToNotNew() {
     _allLists.forEach((key, value) {
@@ -426,20 +409,20 @@ class ObservationScreenController {
     }
   }
 
-  bool doneLoading() => observationScreenLoading.doneLoading();
+  bool doneLoading() => _observationScreenLoading.doneLoading();
 
   void loadListsFromStorage() =>
-      observationScreenLoading.loadListsFromStorage(_allLists);
+      _observationScreenLoading.loadListsFromStorage(_allLists);
 
-  int getNewId(Type t) => observationScreenLoading.getNewId(t);
+  int getNewId(Type t) => _observationScreenLoading.getNewId(t);
 
   void addOrUpdateButton(
           BasicButtonController<BasicButton> c, void Function() resetScreen) =>
-      observationScreenLoading.addOrUpdateButton(c, resetScreen);
+      _observationScreenLoading.addOrUpdateButton(c, resetScreen);
 
   deleteSelected(void Function() resetScreen) =>
-      observationScreenLoading.deleteSelected(resetScreen, getSelectedButton());
+      _observationScreenLoading.deleteSelected(resetScreen, getSelectedButton());
 
   skipButton(void Function() resetScreen) =>
-      observationScreenLoading.skipButton(resetScreen, getSelectedButton());
+      _observationScreenLoading.skipButton(resetScreen, getSelectedButton());
 }

@@ -5,6 +5,7 @@ import '../../ButtonControllers/basic_button_controller.dart';
 import '../../ButtonControllers/deadline_controller.dart';
 import '../../ButtonControllers/end_based_controller.dart';
 import '../../ButtonControllers/note_controller.dart';
+import '../../my_date_controller.dart';
 
 class ObservationScreenLoading {
   int hasJustAdded = 0;
@@ -115,5 +116,22 @@ class ObservationScreenLoading {
     if (selectedButton == null) return;
     selectedButton.flipImportant();
     _updateButton(selectedButton, setStateMethod);
+  }
+
+  /// if there have been updates form or away from new just addeds sends true
+  bool justAddedCheck(Map<Type, List<dynamic>> allLists) {
+    MyDateController now = MyDateController.now();
+    var hasJustAddedCalc = 0;
+    for (var e in allLists.entries) {
+      if (e.value.isNotEmpty && e.value.first is EndBasedController) {
+        hasJustAddedCalc +=
+            e.value.where((element) => element.wasJustAdded(now)).length;
+      }
+    }
+    if (hasJustAdded != hasJustAddedCalc) {
+      hasJustAdded = hasJustAddedCalc;
+      return true;
+    }
+    return false;
   }
 }
