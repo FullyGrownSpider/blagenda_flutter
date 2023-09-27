@@ -22,10 +22,16 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   _OverviewScreenState() {
     _controller = ObservationScreenController();
-    _drawer = MainDrawer(getButton, addOrUpdate, delete, skipButton,
-        () => _controller.resetSearch(_fullReset), getNewId, _fullReset);
-    _countDownDrawer = CountdownDrawer(
-        addOrUpdate, _fullReset);
+    _drawer = MainDrawer(
+        getButton,
+        addOrUpdate,
+        delete,
+        skipButton,
+        () => _controller.resetSearch(_fullReset),
+        getNewId,
+        _fullReset,
+        flipImportant);
+    _countDownDrawer = CountdownDrawer(addOrUpdate, _fullReset);
     _fill();
   }
 
@@ -134,6 +140,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
   void delete() => _controller.deleteSelected(_resetScreen);
 
   void skipButton() => _controller.skipButton(_resetScreen);
+
+  void flipImportant() => _controller.flipImportant(_resetScreen);
 
   Future<bool> _onWillPop() async {
     if (_wentBack) {

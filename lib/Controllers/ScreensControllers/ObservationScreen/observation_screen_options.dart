@@ -93,10 +93,9 @@ class ObservationScreenOptions {
     }
   }
 
-
   bool _shouldGoIn(EndBasedController eb, MyDateController now) =>
       eb.daysLeft < daysToShowNow + 7 && eb.daysLeft >= -1 ||
-          eb.wasJustAdded(now);
+      eb.wasJustAdded(now);
 
   List<BasicButtonController> goesInList(
       List<BasicButtonController> list, MyDateController now) {
@@ -104,7 +103,7 @@ class ObservationScreenOptions {
     pickCorrectOption(() {
       if (list.first is EndBasedController) {
         var newList =
-        list.where((e) => _shouldGoIn(e as EndBasedController, now));
+            list.where((e) => _shouldGoIn(e as EndBasedController, now));
         if (daysToShowNow != daysToShow) {
           //if you select 14 you want to see something 14 days away too not just
           //13

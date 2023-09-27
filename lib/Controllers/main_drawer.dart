@@ -25,8 +25,15 @@ class MainDrawer {
       title: Text('--------------------------------------------',
           style: normalTextStyle));
 
-  MainDrawer(this.getSelectedButton, this.addOrUpdateButton, this.deleteButton,
-      this.skipButton, this.searchResetScreen, this.getNewId, this.fullReset);
+  MainDrawer(
+      this.getSelectedButton,
+      this.addOrUpdateButton,
+      this.deleteButton,
+      this.skipButton,
+      this.searchResetScreen,
+      this.getNewId,
+      this.fullReset,
+      this.flipImportant);
 
   final BasicButtonController? Function() getSelectedButton;
   final Function(BasicButtonController) addOrUpdateButton;
@@ -34,6 +41,7 @@ class MainDrawer {
   final void Function() skipButton;
   final void Function() searchResetScreen;
   final void Function() fullReset;
+  final void Function() flipImportant;
   final int Function(Type) getNewId;
   static const Color sepColor = Colors.black54;
   final int funnyNumber =
@@ -156,12 +164,7 @@ class MainDrawer {
           title: _dumbJoke('Flip Important'),
           trailing: const Icon(Icons.notifications, color: Colors.black),
           onTap: () {
-            var but = getSelectedButton();
-            if (but != null) {
-              but.flipImportant();
-              addOrUpdateButton(but);
-              fullReset();
-            }
+            flipImportant();
             Navigator.pop(context);
           },
         ),

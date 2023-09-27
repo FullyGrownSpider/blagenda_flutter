@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../common_items.dart';
 import 'ButtonControllers/note_controller.dart';
-import 'ScreensControllers/ObservationScreen/obeservation_screen_options.dart';
+import 'ScreensControllers/ObservationScreen/observation_screen_options.dart';
 import 'ScreensControllers/common_screen_controller.dart';
 
 class CountdownDrawer extends StatefulWidget {

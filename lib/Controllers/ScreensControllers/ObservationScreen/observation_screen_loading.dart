@@ -111,14 +111,14 @@ class ObservationScreenLoading {
     _updateButton(selectedButton, setStateMethod);
   }
 
-  void makeImportant(
+  void flipImportant(
       void Function() setStateMethod, BasicButtonController? selectedButton) {
     if (selectedButton == null) return;
     selectedButton.flipImportant();
     _updateButton(selectedButton, setStateMethod);
   }
 
-  /// if there have been updates form or away from new just addeds sends true
+  /// if there have been updates form or away from new just added sends true
   bool justAddedCheck(Map<Type, List<dynamic>> allLists) {
     MyDateController now = MyDateController.now();
     var hasJustAddedCalc = 0;
@@ -134,4 +134,10 @@ class ObservationScreenLoading {
     }
     return false;
   }
+
+  void deleteList(List<BasicButtonController> toDelete) =>
+      loading.deleteButtons(toDelete);
+
+  void updateList(List<BasicButtonController> toUpdate) =>
+      loading.deleteButtons(toUpdate);
 }
