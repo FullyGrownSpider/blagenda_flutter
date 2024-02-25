@@ -3,12 +3,11 @@ import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter/material.dart';
 
 import '../ObjectControllers/mix_search_able.dart';
-import 'mix_button_creator.dart';
+import '../blagenda_uniform_button.dart';
 import 'mix_day_creator.dart';
 import 'mix_input_handler.dart.dart';
 
-class SearchScreenController<T extends SearchAble>
-    with dayCreator, buttonCreator, searchField {
+class SearchScreenController<T extends SearchAble> with dayCreator, searchField {
   ///needs to be sorted
   final List<T> _everything;
 
@@ -64,10 +63,10 @@ class SearchScreenController<T extends SearchAble>
         var from = MyDateController.fromDaysFromNow(data.myDateFromNow);
         if (data.range == 0) {
           _searchingText =
-              'On ${from.fullDisplayWithCal(from.year == MyDateController.today.year)}';
+              'On ${from.stringFullDisplayWithCal(from.year == MyDateController.today.year)}';
         } else {
           _searchingText =
-              '${from.fullDisplayWithCal(from.year == MyDateController.today.year)} to ${MyDateController.fromDaysFromNow(data.myDateFromNow + data.range).fullDisplayWithCal(from.year == MyDateController.today.year)}';
+              '${from.stringFullDisplayWithCal(from.year == MyDateController.today.year)} to ${MyDateController.fromDaysFromNow(data.myDateFromNow + data.range).stringFullDisplayWithCal(from.year == MyDateController.today.year)}';
         }
         for (int i = 0; i < _everything.length; i++) {
           var score = _everything[i].searchHere(SearchTypes.date, data);
@@ -124,19 +123,19 @@ class SearchScreenController<T extends SearchAble>
     for (var item in searches.values) {
       toFill.add(item.displayWidget);
     }
-    toFill.add(buttonCreator.smallBlankSplit);
-    toFill.add(blagendaUniformButton(false, usedColors.last, 'Search', resetSearch));
+    toFill.add(smallBlankSplit);
+    toFill.add(BlagendaUniformButton(false, usedColors.last, 'Search', resetSearch));
     if (_searchingText.isNotEmpty) {
-      toFill.add(buttonCreator.smallBlankSplit);
+      toFill.add(smallBlankSplit);
       //you searched for X
       toFill.add(
-          blagendaUniformButton(false, usedColors.last, _searchingText, fullSearchReset));
+          BlagendaUniformButton(false, usedColors.last, _searchingText, fullSearchReset));
 
-      toFill.add(buttonCreator.bigSplitterTextField);
+      toFill.add(bigSplitterTextField);
       //fill all found items
       for (var item in foundItems) {
-        toFill.add(buttonCreator.smallBlankSplit);
-        toFill.add(blagendaUniformButton(
+        toFill.add(smallBlankSplit);
+        toFill.add(BlagendaUniformButton(
             false,
             item.displayColor(),
             item.searchDisplay(),
@@ -155,12 +154,12 @@ class SearchScreenController<T extends SearchAble>
                 })));
       }
     } else if (foundItems.isNotEmpty) {
-      toFill.add(buttonCreator.bigSplitterTextField);
-      toFill.add(blagendaUniformButton(false, usedColors.last, 'Suggestions', () {}));
-      toFill.add(buttonCreator.bigSplitterTextField);
+      toFill.add(bigSplitterTextField);
+      toFill.add(BlagendaUniformButton(false, usedColors.last, 'Suggestions', () {}));
+      toFill.add(bigSplitterTextField);
       for (var item in foundItems) {
-        toFill.add(buttonCreator.smallBlankSplit);
-        toFill.add(blagendaUniformButton(
+        toFill.add(smallBlankSplit);
+        toFill.add(BlagendaUniformButton(
             false,
             item.displayColor(),
             item.searchDisplay(),

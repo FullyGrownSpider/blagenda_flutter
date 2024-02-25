@@ -68,10 +68,16 @@ class MyDateController extends DateTime {
     return '$dayValue - $monthValue ${(showYear ? ' - ${year.toString()}' : '')}';
   }
 
-  String fullDisplayWithCal([bool withYear = true]) => formatDate(this,
-      [D, ' ', d, ' - ', m, ' (', M, ')', withYear ? ' - ' : '', withYear ? yy : '']);
+  String stringFullDisplayWithCal([bool withYear = true]) => formatDate(
+      this, [D, ' ', d, '-', m, '(', M, ')', withYear ? '-' : '', withYear ? yy : '']);
 
-  String dayDisplay() => '${formatDate(this, [D])}: ';
+  String stringMonthSmallDisplay() {
+    return '${int.parse(formatDate(this, [m])).toRadixString(16)}-${formatDate(this, [
+          M
+        ]).substring(0, 1)}';
+  }
+
+  String stringDayDisplay() => '${formatDate(this, [D])}: ';
 
   /// will translate a representation of a date to an actual usable date
   /// will change + to 7 extra days and * to 2

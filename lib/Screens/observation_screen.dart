@@ -75,6 +75,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
     }
   }
 
+  final BorderSide border = BorderSide(color: usedColors.first, width: 2);
+
   late final MainDrawer _drawer;
   late final CountdownDrawer _countDownDrawer;
   late final ObservationScreenController _controller;
@@ -126,11 +128,34 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   void _resetScreen() {
     _centerChildren.clear();
-    _centerChildren.addAll(_controller.getWidgetListEndBased(_resetScreen));
-    _centerChildren.addAll(_controller.getWidgetListNote(_resetScreen));
-    _centerChildren.addAll(_centerOptionsButton);
+    _centerChildren
+        .add(containWidgetsPretty(_controller.getWidgetListEndBased(_resetScreen)));
+    var notes = _controller.getWidgetListNote(_resetScreen);
+    if (notes.isNotEmpty) _centerChildren.add(containWidgetsPretty(notes));
+    _centerChildren.add(containWidgetsPretty((_centerOptionsButton)));
     if (!mounted) return;
     setState(() {});
+  }
+
+  Widget containWidgetsPretty(List<Widget> list) {
+    return Container(
+        padding: const EdgeInsets.only(bottom: 5),
+        width: double.infinity,
+        decoration: BoxDecoration(border: Border(bottom: border)),
+        child: Container(
+            padding: const EdgeInsets.only(bottom: 3),
+            width: double.infinity,
+            decoration: BoxDecoration(border: Border(bottom: border)),
+            child: Container(
+                padding: const EdgeInsets.only(bottom: 1),
+                width: double.infinity,
+                decoration: BoxDecoration(border: Border(bottom: border)),
+                child: Container(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    width: double.infinity,
+                    decoration: BoxDecoration(border: Border(bottom: border)),
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center, children: list)))));
   }
 
   void _resetButtons() {

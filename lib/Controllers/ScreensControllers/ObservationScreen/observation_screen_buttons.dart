@@ -5,6 +5,7 @@ import '../../ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import '../../ObjectControllers/ButtonControllers/deadline_controller.dart';
 import '../../ObjectControllers/ButtonControllers/end_based_controller.dart';
 import '../../ObjectControllers/ButtonControllers/note_controller.dart';
+import '../../blagenda_uniform_button.dart';
 import '../../my_date_controller.dart';
 import '../mix_button_creator.dart';
 import '../mix_day_creator.dart';
@@ -64,12 +65,11 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     if (notesList.isNotEmpty) {
       notesList = NoteController.chosenSort(
           notesList.cast<NoteController>(), BasicButtonController.maxValueCheck);
-      items.add(const Text('Notes', style: buttonCreator.bigTextStyle));
+      items.add(const Text('Notes', style: bigTextStyle));
       items.addAll(addAsRow(
           (i) => _createButtonBase(notesList[i], setStateMethod), notesList.length, (i) {
         return notesList[i].theStringLongestLength;
       }, BasicButtonController.maxValueCheck));
-      items.add(buttonCreator.bigSplitterTextField);
     }
     return items;
   }
@@ -138,7 +138,6 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
           .toList()),
     );
     _globalCounter = -1;
-    againDeadlineDisplayList.add(buttonCreator.bigSplitterTextField);
     return againDeadlineDisplayList;
   }
 
@@ -155,7 +154,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
           nowDate, endBasedList, index, setStateMethod, _createButtonBase, true));
     }
     if (endBasedList.any((e) => e.daysLeft >= ObservationScreenOptions.daysToShow)) {
-      againDeadlineDisplayList.add(buttonCreator.bigSplitterTextField);
+      againDeadlineDisplayList.add(bigSplitterTextField);
       var lastLeft = 0;
       for (var button in endBasedList) {
         if (button.daysLeft >= ObservationScreenOptions.daysToShow) {
@@ -188,14 +187,14 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     _globalCounter++;
     int index = _globalCounter;
     return Column(children: [
-      blagendaUniformButton(
+      BlagendaUniformButton(
           (idSelected == e.id && typeOfSelected == e.runtimeType),
           e.color,
           (idSelected == e.id && typeOfSelected == e.runtimeType)
               ? e.gettingTheStringSelected()
               : e.gettingTheStringShortWithDate(),
           () => _clickOnButton(index, setStateMethod, e)),
-      buttonCreator.smallBlankSplit
+      smallBlankSplit
     ]);
   }
 
@@ -229,7 +228,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     for (; i < daysToShowNow; i++) {
       //show the week
       if (i == ObservationScreenOptions.daysToShow) {
-        againDeadlineDisplayList.add(buttonCreator.bigSplitterTextField);
+        againDeadlineDisplayList.add(bigSplitterTextField);
       }
       againDeadlineDisplayList.addAll(createADay(nowDate, endBasedList, i, setStateMethod,
           _createButtonBase, i < ObservationScreenOptions.daysToShow));
@@ -240,7 +239,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
   Widget _createButtonBase(BasicButtonController it, void Function() setStateMethod) {
     _globalCounter++;
     int index = _globalCounter;
-    return blagendaUniformButton(clicked == index, it.color, _buttonDisplay(index, it),
+    return BlagendaUniformButton(clicked == index, it.color, _buttonDisplay(index, it),
         () => _clickOnButton(index, setStateMethod, it));
   }
 

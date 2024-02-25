@@ -57,6 +57,7 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
         title: 'Blagenda',
         theme: ThemeData(
             canvasColor: Colors.green[800],
+            fontFamily: 'JetbrainsMonoNL',
             colorScheme: const ColorScheme.dark(
                 primary: Colors.green,
                 onPrimary: Colors.black,

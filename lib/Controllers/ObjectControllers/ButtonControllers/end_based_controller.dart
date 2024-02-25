@@ -109,12 +109,9 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
   }
 
   @visibleForTesting
-  String displayJob() {
-    if (daysLeft < showDayTime) {
-      return _displayWithTimeJob();
-    }
-    return super.gettingTheStringShort();
-  }
+  String displayJob() =>
+      (daysLeft < showDayTime ? _displayWithTimeJob() : super.gettingTheStringShort())
+          .trim();
 
   String _displayWithTimeJob() {
     if (timeOfDay == -1) return super.gettingTheStringShort();
@@ -132,7 +129,7 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
       '${_gettingTheStringShortWithTime()}\n\n${todosToString()}'.trim();
 
   String gettingTheStringShortWithDate() =>
-      '${dateController.fullDisplayWithCal()} - ${_gettingTheStringShortWithTime()}';
+      '${dateController.stringFullDisplayWithCal()} - ${_gettingTheStringShortWithTime()}';
 
   @override
   String gettingTheStringShort() => _gettingTheStringShortWithTime();
@@ -209,7 +206,7 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
 
   @override
   String searchDisplay() =>
-      '${dateController.fullDisplayWithCal(true)}\n--\n${gettingTheStringSelected()}';
+      '${dateController.stringFullDisplayWithCal(true)}\n--\n${gettingTheStringSelected()}';
 }
 
 //----------------------------------
@@ -226,7 +223,7 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   String gettingTheStringShortWithDate() =>
-      '${dateController.fullDisplayWithCal()}${_gettingTheStringShortWithTime()}\n(Repeats)';
+      '${dateController.stringFullDisplayWithCal()} - ${_gettingTheStringShortWithTime()}\n(Repeats)';
 
   @override
   void rebuild() {

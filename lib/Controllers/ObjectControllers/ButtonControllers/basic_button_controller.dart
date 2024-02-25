@@ -105,7 +105,7 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
       }
       buf.write('\n');
     }
-    return buf.toString().trim();
+    return buf.toString().replaceAll(' \n', '\n').trim();
   }
 
   void calculateLength() {

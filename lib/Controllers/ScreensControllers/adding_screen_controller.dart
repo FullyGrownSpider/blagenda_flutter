@@ -16,6 +16,7 @@ import '../ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import '../ObjectControllers/ButtonControllers/deadline_controller.dart';
 import '../ObjectControllers/ButtonControllers/end_based_controller.dart';
 import '../ObjectControllers/ButtonControllers/note_controller.dart';
+import '../blagenda_uniform_button.dart';
 import 'mix_button_creator.dart';
 import 'mix_input_handler.dart.dart';
 
@@ -212,7 +213,7 @@ class AddingScreenController with buttonCreator, dayCreator, inputHandler, loadi
 
   List<Widget> _addButtonsForButtonType(Map<Type, String> typeList) {
     List<Widget> widgetList = [];
-    typeList.forEach((type, stringValue) => widgetList.add(blagendaUniformButton(
+    typeList.forEach((type, stringValue) => widgetList.add(BlagendaUniformButton(
             buttonType == type, _getDefaultTypeColor(type), stringValue, () {
           buttonType = type;
           switchButtonType();
@@ -418,7 +419,6 @@ class AddingScreenController with buttonCreator, dayCreator, inputHandler, loadi
             ),
             color: controller.color,
             borderRadius: const BorderRadius.all(Radius.circular(5))),
-        child: Text(' ${controller.gettingTheStringShort()} ',
-            style: buttonCreator.normalTextStyle));
+        child: Text(' ${controller.gettingTheStringShort()} ', style: normalTextStyle));
   }
 }

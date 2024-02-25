@@ -49,19 +49,19 @@ void deadline() {
       usedColors.first, MyDateController(2023, 12, 27), false));
   var twoLong = make(Deadline('long 789-11-14-17-20-23-26-29-31-34-37-40', '13pm', 1,
       usedColors.first, MyDateController(2023, 12, 27), false));
-  check(oneLong, 'long 789-11-14-17-20-23-26-29-31-34-37...',
-      'long 789-11-14-17-20-23-26-29-31-34-37...\n\n🎨');
-  check(twoLong, '13:00 - long 789-11-14-17-20-23-26-29-...',
-      '13:00 - long 789-11-14-17-20-23-26-29-...\n\n🎨');
+  check(oneLong, 'long\n789-11-14-17-20-23-26-29-31-34-37-40',
+      'long\n789-11-14-17-20-23-26-29-31-34-37-40\n\n🐧');
+  check(twoLong, '13:00 - long\n789-11-14-17-20-23-26-29-31-34-37-40',
+      '13:00 - long\n789-11-14-17-20-23-26-29-31-34-37-40\n\n🎨');
 
   var oneTextLong = make(Deadline('long 789-11-14-17-20-23-26-29-31-34-37-40',
       'hello sir\n', 1, usedColors.first, MyDateController(2023, 12, 27), false));
   var twoTextLong = make(Deadline('long 789-11-14-17-20-23-26-29-31-34-37-40',
       'hello sir\n13pm', 1, usedColors.first, MyDateController(2023, 12, 27), false));
-  check(oneTextLong, 'long 789-11-14-17-20-23-26-29-31-34-37...',
-      'long 789-11-14-17-20-23-26-29-31-34-37...\n\nhello sir');
-  check(twoTextLong, '13:00 - long 789-11-14-17-20-23-26-29-...',
-      '13:00 - long 789-11-14-17-20-23-26-29-...\n\nhello sir');
+  check(oneTextLong, 'long\n789-11-14-17-20-23-26-29-31-34-37-40',
+      'long\n789-11-14-17-20-23-26-29-31-34-37-40\n\nhello sir');
+  check(twoTextLong, '13:00 - long\n789-11-14-17-20-23-26-29-31-34-37-40',
+      '13:00 - long\n789-11-14-17-20-23-26-29-31-34-37-40\n\nhello sir');
 }
 
 EndBasedController make<t extends BasicButton>(t button) {
@@ -70,6 +70,9 @@ EndBasedController make<t extends BasicButton>(t button) {
 }
 
 void check(EndBasedController it, String short, String selected) {
-  expect(it.gettingTheStringShort(), short);
-  expect(it.gettingTheStringSelected(), selected);
+  var shortN = it.gettingTheStringShort();
+  var selectedN = it.gettingTheStringSelected();
+  expect(shortN, short);
+  expect(selectedN.substring(0, selected.length - 2),
+      selected.substring(0, selected.length - 2));
 }

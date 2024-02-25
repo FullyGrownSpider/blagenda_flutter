@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../common_items.dart';
 import '../../ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import '../../ObjectControllers/ButtonControllers/end_based_controller.dart';
+import '../../blagenda_uniform_button.dart';
 
 class ObservationScreenOptions with buttonCreator {
   static const int daysToShow = 6;
@@ -20,19 +21,18 @@ class ObservationScreenOptions with buttonCreator {
   List<Widget> getOptionButtons(
       void Function() setStateMethod, Function() resetCounters) {
     List<Widget> items = [];
-    items.add(const Text('Display Options', style: buttonCreator.bigTextStyle));
+    items.add(const Text('Display Options', style: bigTextStyle));
     items.addAll(globalCreateColorButtons(
         setStateMethod, (i) => _colorPressed(i, resetCounters), _chosenColor));
     items.addAll(addAsRow((i) => _createCounterButton(setStateMethod, i, resetCounters),
         _possibleExtraDays.length));
     items.add(_createDisplayAllEndBasedButtonsButton(setStateMethod, resetCounters));
-    items.add(buttonCreator.bigSplitterTextField);
     return items;
   }
 
   Widget _createDisplayAllEndBasedButtonsButton(
           void Function() setStateMethod, Function() resetCounters) =>
-      blagendaUniformButton(-2 == _chosenColor, usedColors.first, 'Show all', () {
+      BlagendaUniformButton(-2 == _chosenColor, usedColors.first, 'Show all', () {
         resetCounters();
         daysToShowNow = daysToShow;
         if (-2 == _chosenColor) {
@@ -45,7 +45,7 @@ class ObservationScreenOptions with buttonCreator {
 
   Widget _createCounterButton(
           void Function() setStateMethod, int index, Function() resetCounters) =>
-      blagendaUniformButton(daysToShowNow == _possibleExtraDays[index], usedColors.first,
+      BlagendaUniformButton(daysToShowNow == _possibleExtraDays[index], usedColors.first,
           'Show next ${_possibleExtraDays[index].toString()} days', () {
         _chosenColor = -1;
         if (daysToShowNow == _possibleExtraDays[index]) {

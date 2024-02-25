@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../Commons/Models/entity.dart';
 import '../ObjectControllers/ButtonControllers/basic_button_controller.dart';
+import '../blagenda_uniform_button.dart';
 import 'mix_button_creator.dart';
 import 'mix_input_handler.dart.dart';
 
@@ -65,7 +66,7 @@ class AddingEntityScreenController with buttonCreator, dayCreator, inputHandler 
     _info.add(TagCreateInfo(
         0, //only one item
         inputObject,
-        blagendaUniformButton(
+        BlagendaUniformButton(
             false, usedColors.first, _storedValues['n0'], () => _setStateAndDelete(0)),
         _storedValues['n0'],
         0));
@@ -102,7 +103,7 @@ class AddingEntityScreenController with buttonCreator, dayCreator, inputHandler 
       _info.add(TagCreateInfo(
           i,
           inputObject,
-          blagendaUniformButton(
+          BlagendaUniformButton(
               false, usedColors.first, _storedValues['n$i'], () => _setStateAndDelete(i)),
           _storedValues['n$i'],
           type));
@@ -118,9 +119,9 @@ class AddingEntityScreenController with buttonCreator, dayCreator, inputHandler 
           decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: usedColors.first, width: 3))),
           child: item.destinedInput.displayWidget)));
-      widgetList.add(buttonCreator.smallBlankSplit);
+      widgetList.add(smallBlankSplit);
     }
-    widgetList.add(buttonCreator.splitterTextField);
+    widgetList.add(splitterTextField);
     widgetList.add(_nextName.displayWidget);
     widgetList.add(_nextAddButton.displayWidget);
     getEntity = () {
@@ -176,7 +177,7 @@ class AddingEntityScreenController with buttonCreator, dayCreator, inputHandler 
     _info.add(TagCreateInfo(
         i,
         inputObject,
-        blagendaUniformButton(
+        BlagendaUniformButton(
             false, usedColors.first, _storedValues['n$i'], () => _setStateAndDelete(i)),
         _storedValues['n$i'],
         toMake));
@@ -216,7 +217,7 @@ class AddingEntityScreenController with buttonCreator, dayCreator, inputHandler 
       _info[i] = (TagCreateInfo(
           i,
           _info[i].destinedInput,
-          blagendaUniformButton(
+          BlagendaUniformButton(
               false, usedColors.first, _storedValues['n$i'], () => _setStateAndDelete(i)),
           _storedValues['n$i'],
           _info[i].type));

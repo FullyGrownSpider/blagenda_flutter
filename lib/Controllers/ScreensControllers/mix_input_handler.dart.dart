@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../common_items.dart';
+import '../blagenda_uniform_button.dart';
 import '../my_date_controller.dart';
 import 'mix_button_creator.dart';
 
@@ -151,7 +152,7 @@ mixin inputHandler on buttonCreator {
       Map<String, dynamic> storedValues,
       Function setStateMethod,
       Function doWhenPossible) {
-    return blagendaUniformButton(
+    return BlagendaUniformButton(
         preObject, usedColors.first, '${preObject ? '⬤' : '◯'} - $hint', () {
       storedValues[index] = !preObject;
       setStateMethod();
@@ -249,7 +250,7 @@ mixin inputHandler on buttonCreator {
       Map<String, dynamic> storedValues,
       void Function() onThingClick,
       String Function(dynamic) getNickname) {
-    var but = blagendaUniformButton(
+    var but = BlagendaUniformButton(
         false,
         usedColors.first,
         storedValues[index] == null ? "???" : getNickname(storedValues[index]),

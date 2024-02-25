@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import '../Screens/entity_adding_screen.dart';
 import '../common_items.dart';
 import 'ObjectControllers/ButtonControllers/basic_button_controller.dart';
-import 'ScreensControllers/mix_button_creator.dart';
+import 'blagenda_uniform_button.dart';
 
 class MainDrawer {
   static const TextStyle textStyle = TextStyle(
@@ -23,8 +23,8 @@ class MainDrawer {
       color: Colors.grey);
 
   static const ListTile listSep = ListTile(
-      title: Text('--------------------------------------------',
-          style: buttonCreator.normalTextStyle));
+      title:
+          Text('--------------------------------------------', style: normalTextStyle));
 
   MainDrawer(
       this._getSelectedButton,
@@ -191,7 +191,7 @@ class MainDrawer {
       var calc = Random(MyDateController.today.hashCode).nextInt(dumberJoke.length);
       var usdCol = usedColors[calc % (usedColors.length - 1) + 1];
       return Row(children: [
-        Text('$s  ', style: buttonCreator.normalTextStyle),
+        Text('$s  ', style: normalTextStyle),
         Container(
             decoration: BoxDecoration(
                 color: usdCol,
@@ -203,7 +203,7 @@ class MainDrawer {
                 style: const TextStyle(color: Colors.white, fontSize: 8)))
       ]);
     }
-    return Text(s, style: buttonCreator.normalTextStyle);
+    return Text(s, style: normalTextStyle);
   }
 
   var dumberJoke = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Delta', 'Zeta'];

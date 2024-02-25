@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import '../../common_items.dart';
 import '../ObjectControllers/ButtonControllers/deadline_controller.dart';
 import '../ObjectControllers/ButtonControllers/end_based_controller.dart';
+import '../blagenda_uniform_button.dart';
 import '../my_date_controller.dart';
-import 'mix_button_creator.dart';
 
 const List<String> _bigDateFormat = [D, ', ', M, ' ', d];
 
@@ -55,13 +55,12 @@ mixin dayCreator {
             listWithEverything.where((e) => e.daysLeft == -1).toList(growable: false))) {
           return list;
         }
-        toAdd = const Text('Yesterday', style: buttonCreator.bigTextStyleYesterday);
+        toAdd = const Text('Yesterday', style: bigTextStyleYesterday);
       } else if (fromNow == 0) {
         var dayShort = formatDate(calcDay, _smallDateFormat).substring(0, 2);
-        toAdd = Text('Today ($dayShort)', style: buttonCreator.bigTextStyle);
+        toAdd = Text('Today ($dayShort)', style: bigTextStyle);
       } else {
-        toAdd = Text(formatDate(calcDay, _smallDateFormat),
-            style: buttonCreator.bigTextStyle);
+        toAdd = Text(formatDate(calcDay, _smallDateFormat), style: bigTextStyle);
       }
       list.add(Row(
           mainAxisAlignment: MainAxisAlignment.center, children: [left, toAdd, right]));
@@ -72,7 +71,6 @@ mixin dayCreator {
             item.skipCheckNotSure(fromNow, (item.daysLeft))) {
           continue;
         }
-        list.add(buttonCreator.smallerBlankSplit);
         list.add(addEndBasedButton(item, setStateMethod));
         added = true;
       }
@@ -88,14 +86,10 @@ mixin dayCreator {
               child: Column(mainAxisAlignment: MainAxisAlignment.center, children: list));
         } else {
           if (!added) {
-            list.add(buttonCreator.smallBlankSplit);
-            list.add(buttonCreator.smallBlankSplit);
-            list.add(buttonCreator.smallBlankSplit);
-            list.add(buttonCreator.smallBlankSplit);
-            list.add(buttonCreator.smallBlankSplit);
-            list.add(buttonCreator.smallBlankSplit);
+            list.add(medBlankSplit);
+            list.add(medBlankSplit);
           }
-          list = addAdded(list, added);
+          list.add(medBlankSplit);
           container = Container(
               width: double.infinity,
               decoration: const BoxDecoration(
@@ -105,24 +99,23 @@ mixin dayCreator {
                       bottom: BorderSide(color: Colors.green, width: 4))),
               child: Column(mainAxisAlignment: MainAxisAlignment.center, children: list));
         }
+
         list = <Widget>[];
         list.add(container);
+        list.add(medBlankSplit);
       }
     } else {
       var newDate = nowDate.addOrRemoveDays(fromNow);
       if (newDate.year == nowDate.year) {
-        toAdd =
-            Text(formatDate(newDate, _bigDateFormat), style: buttonCreator.bigTextStyle);
+        toAdd = Text(formatDate(newDate, _bigDateFormat), style: bigTextStyle);
       } else {
-        toAdd = Text(formatDate(newDate, _bigDateFormatWithYear),
-            style: buttonCreator.bigTextStyle);
+        toAdd = Text(formatDate(newDate, _bigDateFormatWithYear), style: bigTextStyle);
       }
       list.add(Row(
           mainAxisAlignment: MainAxisAlignment.center, children: [left, toAdd, right]));
       list.add(Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         left,
-        Text('In ${(fromNow).toString()} days',
-            style: buttonCreator.secondaryBigTextStyle),
+        Text('In ${(fromNow).toString()} days', style: secondaryBigTextStyle),
         right,
       ]));
       for (var item in sortableList) {
@@ -132,7 +125,7 @@ mixin dayCreator {
             item.skipCheckNotSure(fromNow, (item.daysLeft))) {
           continue;
         }
-        list.add(buttonCreator.smallerBlankSplit);
+        // list.add(smallBlankSplit);
         list.add(addEndBasedButton(item, setStateMethod));
         added = true;
       }
@@ -146,9 +139,9 @@ mixin dayCreator {
     return Text(any ? s : '▲',
         style: TextStyle(
             color: usedColors[calcDay.weekday % 7],
-            fontSize: buttonCreator.bigTextStyle.fontSize,
-            height: buttonCreator.bigTextStyle.height,
-            fontWeight: buttonCreator.bigTextStyle.fontWeight));
+            fontSize: bigTextStyle.fontSize,
+            height: bigTextStyle.height,
+            fontWeight: bigTextStyle.fontWeight));
   }
 
   bool _yesterdayShouldShow(List<EndBasedController> list) {
@@ -161,18 +154,13 @@ mixin dayCreator {
           decoration: const BoxDecoration(
               border: Border(bottom: BorderSide(color: Colors.green, width: 4))),
           child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [buttonCreator.smallBlankSplit])));
+              mainAxisAlignment: MainAxisAlignment.center, children: [smallBlankSplit])));
     } else {
       list.add(Container(
           decoration: const BoxDecoration(
               border: Border(bottom: BorderSide(color: Colors.green, width: 4))),
-          child: const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            buttonCreator.smallBlankSplit,
-            buttonCreator.smallBlankSplit,
-            buttonCreator.smallBlankSplit,
-            buttonCreator.smallBlankSplit
-          ])));
+          child: const Column(
+              mainAxisAlignment: MainAxisAlignment.center, children: [medBlankSplit])));
     }
     return list;
   }
