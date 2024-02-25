@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
-class BasicButton {
-  BasicButton([this.job, this.toDos, this.id, this.color, this.important = false]);
+import '../../store_able.dart';
 
-  int? id;
+class BasicButton extends StoreAble {
+  BasicButton([this.job, this.toDos, super.id, this.color, this.important = false]);
+
   Color? color;
   String? job;
-  List<String>? toDos;
+  String? toDos;
+
+  ///weather it should be shown in the "important" sidebar
   bool important;
 }

@@ -1,49 +1,67 @@
-import '../../../Loading/loading.dart';
-import '../../../common_items.dart';
-import '../../ButtonControllers/again_controller.dart';
-import '../../ButtonControllers/basic_button_controller.dart';
-import '../../ButtonControllers/deadline_controller.dart';
-import '../../ButtonControllers/end_based_controller.dart';
-import '../../ButtonControllers/note_controller.dart';
-import '../../my_date_controller.dart';
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/again.dart';
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/deadline.dart';
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/entity_controller.dart';
 
-class ObservationScreenLoading {
-  int hasJustAdded = 0;
+import '../../../Commons/Models/Buttons/weird_again.dart';
+import '../../../Commons/Models/entity.dart';
+import '../../../Loading/mix_loading.dart';
+import '../../ObjectControllers/ButtonControllers/basic_button_controller.dart';
+import '../../ObjectControllers/ButtonControllers/end_based_controller.dart';
 
-  ObservationScreenLoading(this._getCorrectList);
+class ObservationScreenLoading with loading {
+  final List<bool> _loaded = [false, false, false, false, false, false, false];
 
-  final List Function(Type) _getCorrectList;
+  ObservationScreenLoading();
 
-  final List<bool> _loaded = [false, false, false, false, false, false];
+  static final List<Future<List<dynamic>> Function(loading)> _toLoad = [
+    (l) => l.getData<BasicButton>(),
+    (l) => l.getData<Deadline>(),
+    (l) => l.getData<AgainYearDay>(),
+    (l) => l.getData<AgainWeekDay>(),
+    (l) => l.getData<AgainAmountDay>(),
+    (l) => l.getData<AgainWeird>(),
+    (l) => l.getData<AgainMonthDay>()
+  ];
 
   bool doneLoading() => !_loaded.any((e) => !e);
 
-  static final List<Future<List> Function(Loading)> _buttonGet = [
-    (l) => l.getButtons<AgainAmountController>(),
-    (l) => l.getButtons<AgainMonthController>(),
-    (l) => l.getButtons<AgainWeekController>(),
-    (l) => l.getButtons<AgainYearController>(),
-    (l) => l.getButtons<DeadlineController>(),
-    (l) => l.getButtons<NoteController>(),
-  ];
-
-  void loadListsFromStorage(Map<Type, List> allLists) {
-    for (var list in allLists.entries) {
-      list.value.clear();
-    }
+  ///async method will fill parameter list of buttons
+  void loadListsFromStorage(
+      List<BasicButtonController> allLists, List<EntityController> entities) {
+    var tagsUseAble = entities
+        .map((e) => e.tags.where((t) => t.data is! String).toList())
+        .expand((element) => element)
+        .toList(growable: false);
+    allLists.clear();
     for (int i = 0; i < _loaded.length; i++) {
       _loaded[i] = false;
-      _buttonGet[i](loading).then((value) {
+      _toLoad[i](this).then((value) {
         if (value.isNotEmpty) {
-          allLists[value.first.runtimeType]!.addAll(value);
+          for (var tag in tagsUseAble) {
+            for (var c in value) {
+              if (tag.data is TagObjectReference) {
+                if (tag.data.type == c.runtimeType.toString() && c.id == tag.data.itd) {
+                  c.entitied = tag.data.itd;
+                }
+              } else if (BasicButtonController.equals(tag.data.button, c.button)) {
+                c.entitied = tag.data.id;
+              }
+            }
+          }
+          allLists.addAll(value.cast<BasicButtonController>().toList());
         }
         _loaded[i] = true;
       });
     }
   }
 
-  int getNewId(Type t) {
-    var correctList = _getCorrectList(t);
+  Future<List<EntityController>> loadEntityListFromStorage() async {
+    return (await getData<Entity>()).cast<EntityController>().toList();
+  }
+
+  int getNewId(Type t, List<BasicButtonController> allItems) {
+    var correctList = allItems.where((e) => e.runtimeType == t).toList();
     if (correctList.isNotEmpty) {
       correctList.sort((a, b) => a.id.compareTo(b.id));
       for (int i = 0; i < correctList.length; i++) {
@@ -55,89 +73,71 @@ class ObservationScreenLoading {
     return correctList.length;
   }
 
-  void _updateButton(
-      BasicButtonController toAdd, void Function() setStateMethod) {
-    loading.updateButton(toAdd);
-    if (toAdd is EndBasedController) {
-      toAdd.setToMakeNew();
-    }
-    List correctList = _getCorrectList(toAdd.runtimeType);
-    var index = correctList.indexWhere((e) => toAdd.id == e.button.id);
+  void _updateButton(BasicButtonController toAdd, void Function() setStateMethod,
+      List<BasicButtonController> allItems) {
+    updateData(toAdd.button);
+    var index = allItems
+        .indexWhere((e) => toAdd.id == e.id && toAdd.runtimeType == e.runtimeType);
     if (index == -1) return;
-    correctList[index] = toAdd;
+    allItems[index] = toAdd;
     setStateMethod();
   }
 
-  void _addButton(BasicButtonController toAdd, void Function() setStateMethod) {
-    List correctList = _getCorrectList(toAdd.runtimeType);
-    if (toAdd is EndBasedController) {
-      toAdd.setToMakeNew();
-    }
-    correctList.add(toAdd);
-    loading.addButton(toAdd);
+  void _addButton(BasicButtonController toAdd, void Function() setStateMethod,
+      List<BasicButtonController> allItems) {
+    allItems.add(toAdd);
+    storeData(toAdd.button);
     setStateMethod();
   }
 
   ///will update if selected is the same type and same id as thing added
-  void addOrUpdateButton(
-      BasicButtonController controller, void Function() setStateMethod) {
-    hasJustAdded++;
-    if (_getCorrectList(controller.runtimeType)
+  void addOrUpdateButton(BasicButtonController controller, void Function() setStateMethod,
+      List<BasicButtonController> allItems) {
+    controller.touched = true;
+    if (allItems
+        .where((e) => e.runtimeType == controller.runtimeType)
         .any((e) => e.id == controller.id)) {
-      _updateButton(controller, setStateMethod);
+      _updateButton(controller, setStateMethod, allItems);
     } else {
-      _addButton(controller, setStateMethod);
+      _addButton(controller, setStateMethod, allItems);
     }
   }
 
-  void deleteSelected(
-      void Function() setStateMethod, BasicButtonController? selectedButton) {
-    if (selectedButton == null) return;
-    loading.deleteButton(selectedButton);
-
-    List correctList = _getCorrectList(selectedButton.runtimeType);
-    correctList.removeWhere((e) => selectedButton.id == e.button.id);
+  void deleteSelected(void Function() setStateMethod,
+      BasicButtonController selectedButton, List<BasicButtonController> allItems) {
+    deleteButton(selectedButton).then((value) {
+      //readd if delete didn't do its "thing"
+      if (!value) {
+        allItems.add(selectedButton);
+        setStateMethod();
+      }
+    });
+    allItems.removeWhere(
+        (e) => selectedButton.id == e.id && e.runtimeType == selectedButton.runtimeType);
     setStateMethod();
   }
 
-  void skipButton(
-      void Function() setStateMethod, BasicButtonController? selectedButton) {
-    if (selectedButton == null ||
-        selectedButton is SkippableEndBasedController) {
+  void skipButton(void Function() setStateMethod, BasicButtonController? selectedButton,
+      List<BasicButtonController> allItems) {
+    if (selectedButton == null) {
       return;
+    } else if (selectedButton is! SkippableEndBasedController) {
+      deleteSelected(setStateMethod, selectedButton, allItems);
+    } else {
+      (selectedButton).makeNewSkip(selectedButton.dateController);
+      _updateButton(selectedButton, setStateMethod, allItems);
     }
-    (selectedButton as SkippableEndBasedController)
-        .makeNewSkip(selectedButton.dateController);
-    _updateButton(selectedButton, setStateMethod);
   }
 
-  void flipImportant(
-      void Function() setStateMethod, BasicButtonController? selectedButton) {
+  void flipImportant(void Function() setStateMethod,
+      BasicButtonController? selectedButton, List<BasicButtonController> allItems) {
     if (selectedButton == null) return;
+    selectedButton.touched = true;
     selectedButton.flipImportant();
-    _updateButton(selectedButton, setStateMethod);
+    _updateButton(selectedButton, setStateMethod, allItems);
   }
 
-  /// if there have been updates form or away from new just added sends true
-  bool justAddedCheck(Map<Type, List<dynamic>> allLists) {
-    MyDateController now = MyDateController.now();
-    var hasJustAddedCalc = 0;
-    for (var e in allLists.entries) {
-      if (e.value.isNotEmpty && e.value.first is EndBasedController) {
-        hasJustAddedCalc +=
-            e.value.where((element) => element.wasJustAdded(now)).length;
-      }
-    }
-    if (hasJustAdded != hasJustAddedCalc) {
-      hasJustAdded = hasJustAddedCalc;
-      return true;
-    }
-    return false;
-  }
+  void deleteList(List<BasicButtonController> toDelete) => deleteButtons(toDelete);
 
-  void deleteList(List<BasicButtonController> toDelete) =>
-      loading.deleteButtons(toDelete);
-
-  void updateList(List<BasicButtonController> toUpdate) =>
-      loading.deleteButtons(toUpdate);
+  void updateList(List<BasicButtonController> toUpdate) => updateButtons(toUpdate);
 }

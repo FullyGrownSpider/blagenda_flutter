@@ -1,204 +1,185 @@
-import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
-import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/end_based_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
+import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-import '../../common_items.dart';
-import '../my_date_controller.dart';
-import 'common_day_display_screen_controller.dart';
-import 'common_screen_controller.dart';
+import '../ObjectControllers/mix_search_able.dart';
+import 'mix_button_creator.dart';
+import 'mix_day_creator.dart';
+import 'mix_input_handler.dart.dart';
 
-class SearchScreenController {
-  late List<EndBasedController>? everything;
+class SearchScreenController<T extends SearchAble>
+    with dayCreator, buttonCreator, searchField {
+  ///needs to be sorted
+  final List<T> _everything;
 
-  List<Widget> Function()? toCallNext;
+  String _searchingText = '';
+  final void Function() _setStateMethod;
+  final Future<dynamic> Function(T) _doActionWithClickedItem;
+  @visibleForTesting
+  late final Map<SearchTypes, InputObject> searches = {};
+  @visibleForTesting
+  final List<T> foundItems = [];
+  final Future<T> Function(T) _reAdd;
 
-  final List<Widget> itemList = [];
-  final void Function() setStateMethod;
-  final void Function(EndBasedController) openEdit;
-  final TextEditingController stringController =
-      TextEditingController(text: '');
-  final TextEditingController dateController = TextEditingController(text: '');
-  final TextEditingController extraDatesController =
-      TextEditingController(text: '');
-
-  SearchScreenController(this.setStateMethod, this.openEdit) {
-    loading.getEndBasedButtons().then((value) {
-      everything = value;
-      everything!.sort();
-    });
+  SearchScreenController(this._setStateMethod, this._doActionWithClickedItem,
+      this._everything, this._reAdd) {
+    Set searchesSet = {};
+    for (var e in _everything) {
+      searchesSet.addAll(e.possibleSearches());
+    }
+    for (var key in searchesSet) {
+      if (key == SearchTypes.date) {
+        searches[key] = dateFinder(onConfirmed);
+      } else if (key == SearchTypes.string) {
+        searches[key] = stringFinder(onConfirmed);
+      } else if (key == SearchTypes.tag) {
+        searches[key] = tagFinder(onConfirmed);
+      }
+    }
+    resetSearch();
   }
 
   static const TextStyle styleDays =
       TextStyle(fontSize: 20.0, height: 2.5, color: Colors.green);
 
-  ///there are 4 things possible
-  ///1 you have a date and nothing else. then we'll show the date
-  ///2 you have text. then we'll show you the days with an item containing text like that
-  ///3 you have a date and extra time. you will see multiple days with all items
-  ///4 you have a date, extra time and text, you will see days but only items in those days with that text
-  List<Widget> searchAll(int? daysLeftUntil, String text, int extraTime) {
-    List<Widget> a = [];
-    if (daysLeftUntil == null) {
-      if (text == "") return [];
-      var everythingFound = everything!
-          .where((EndBasedController e) => _stringSearch(e, text))
-          .toList();
-      List<int> datesOfFoundItems = everythingFound
-          .map((e) => e.dateController.daysLeftUntil())
-          .toSet()
-          .toList();
-      for (int i = 0; i < datesOfFoundItems.length; i++) {
-        var list = _searchDay(datesOfFoundItems[i],
-            everything!.toList()..removeWhere((e) => _stringSearch(e, text)));
-        for (int ii = 0; ii < everythingFound.length; ii++) {
-          if (!everythingFound[ii]
-              .isHappeningOnDayFromNow(datesOfFoundItems[i])) continue;
-          list.insert(
-              2,
-              Container(
-                  decoration: BoxDecoration(
-                      color: Colors.pink[900],
-                      border: Border.all(
-                        width: 7,
-                        color: const Color.fromARGB(255, 0x88, 0xe, 0x4f),
-                      ),
-                      // Make rounded corners
-                      borderRadius: BorderRadius.circular(30)),
-                  child: buttonCreator(everythingFound[ii])));
-          list.insert(3, smallBlankSplit);
-        }
-        a.addAll(list);
-      }
-    } else {
-      for (int i = 0; i < extraTime; i++) {
-        var toDisplayDuringDay = everything!;
-        if (text != "") {
-          toDisplayDuringDay =
-              toDisplayDuringDay.where((e) => _stringSearch(e, text)).toList();
-        }
-        a.addAll(_searchDay(daysLeftUntil + i, toDisplayDuringDay));
-      }
-    }
-    return a;
-  }
-
-  List<Widget> _searchDay(int time, List<EndBasedController> list) =>
-      (createADay(MyDateController.today, list, time, setStateMethod,
-          (c, o) => buttonCreator(c), false));
-
-  String _getCorrectString(MyDateController? date, [int extraData = 0]) {
-    StringBuffer buf = StringBuffer();
-    if (stringController.text != '') {
-      buf.write(stringController.text);
-    }
-    if (date != null) {
-      if (stringController.text != '') {
-        buf.write('\n');
-      }
-      buf.write(date.fullDisplayWithCal());
-      if (extraData > 0) {
-        buf.write('\n till \n');
-        buf.write(date.addOrRemoveDays(extraData).fullDisplayWithCal());
-      }
-    }
-    return buf.toString();
-  }
-
-  bool _stringSearch(EndBasedController<BasicButton> e, String text) {
-    text = text.toLowerCase();
-    return e.job.toLowerCase().contains(text) ||
-        e.toDos.any((element) => element.toLowerCase().contains(text));
-  }
-
-  Widget dateFinder() {
-    return TextField(
-        controller: dateController,
-        onSubmitted: (s) {
-          onConfirmed();
-        },
-        decoration: const InputDecoration(
-            hintText: 'date to look up',
-            border: OutlineInputBorder(gapPadding: 2)));
-  }
-
-  Widget textFinder() {
-    return TextField(
-        controller: stringController,
-        onSubmitted: (s) {
-          onConfirmed();
-        },
-        decoration: const InputDecoration(
-            hintText: 'text finder',
-            border: OutlineInputBorder(gapPadding: 2)));
-  }
-
-  Widget extraDatesFinder() {
-    return TextField(
-        controller: extraDatesController,
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp('[0-9]?[mM]?'))
-        ],
-        onSubmitted: (s) {
-          if (dateController.text == "") {
-            return;
-          }
-          onConfirmed();
-        },
-        decoration: const InputDecoration(
-            hintText: '+ numb or m',
-            border: OutlineInputBorder(gapPadding: 3)));
-  }
-
   void onConfirmed() {
-    stringController.text = stringController.text.trim();
-    var date = MyDateController.translate(dateController.text);
-    int? awns = date?.daysLeftUntil();
-    var extraTime = awns == null
-        ? 0
-        : extraDatesController.text.toLowerCase().contains('m')
-            ? MyDateController.monthCalc(awns)
-            : int.tryParse(extraDatesController.text) ?? 1;
-    timerCheck(() => searchAll(awns, stringController.text, extraTime),
-        _getCorrectString(date, extraTime));
+    //submitted by pressing enter in the input things
+    resetSearch();
   }
 
-  void timerCheck(List<Widget> Function() toCall, String s) {
-    toCallNext = toCall;
-    fillingFunction(setStateMethod, s);
-  }
-
-  Future<void> fillingFunction(void Function() setStateMethod, String s) async {
-    var calcList = toCallNext!();
-    stringController.text =
-        dateController.text = extraDatesController.text = '';
-    itemList.clear();
-    itemList.add(_createTextButton(s));
-    for (var itemToAdd in calcList) {
-      itemList.add(itemToAdd);
+  void resetSearch() {
+    if (_everything.isEmpty) {
+      _searchingText = 'no items';
+      _setStateMethod();
+      return;
     }
-    setStateMethod();
+    _searchingText = '';
+    foundItems.clear();
+    Map<T, int> scoreMap = {};
+    List<int> notScored = [];
+    if (searches.containsKey(SearchTypes.date)) {
+      var data = searches[SearchTypes.date]!.getValue() as DateRange;
+      searches[SearchTypes.date]!.onReset(searches[SearchTypes.date]!);
+      if (data.range > -1) {
+        var from = MyDateController.fromDaysFromNow(data.myDateFromNow);
+        if (data.range == 0) {
+          _searchingText =
+              'On ${from.fullDisplayWithCal(from.year == MyDateController.today.year)}';
+        } else {
+          _searchingText =
+              '${from.fullDisplayWithCal(from.year == MyDateController.today.year)} to ${MyDateController.fromDaysFromNow(data.myDateFromNow + data.range).fullDisplayWithCal(from.year == MyDateController.today.year)}';
+        }
+        for (int i = 0; i < _everything.length; i++) {
+          var score = _everything[i].searchHere(SearchTypes.date, data);
+          scoreMap[_everything[i]] = score;
+          if (score == 0) notScored.add(i);
+        }
+      }
+    }
+    if (searches.containsKey(SearchTypes.string)) {
+      var data = searches[SearchTypes.string]!.getValue() as String;
+      searches[SearchTypes.string]!.onReset(searches[SearchTypes.string]!);
+      if (data.isNotEmpty) {
+        if (_searchingText.isNotEmpty) _searchingText += '\n and \n';
+        _searchingText += data;
+        for (int i = 0; i < _everything.length; i++) {
+          if (notScored.contains(i)) continue;
+          var score = _everything[i].searchHere(SearchTypes.string, data);
+          scoreMap[_everything[i]] = score;
+          if (score == 0) notScored.add(i);
+        }
+      }
+    }
+    if (searches.containsKey(SearchTypes.tag)) {
+      var data = searches[SearchTypes.tag]!.getValue() as List<String>;
+      if (data.first.isNotEmpty || data.last.isNotEmpty) {
+        if (_searchingText.isNotEmpty) _searchingText += '\n and \n';
+        _searchingText += '${data[0]} - ${data[1]}';
+        for (int i = 0; i < _everything.length; i++) {
+          if (notScored.contains(i)) continue;
+          var score = _everything[i].searchHere(SearchTypes.tag, data);
+          scoreMap[_everything[i]] = score;
+          if (score == 0) notScored.add(i);
+        }
+      }
+    }
+    if (notScored.length == _everything.length || scoreMap.isEmpty) {
+      foundItems.addAll(_everything.where((e) => e.shouldShowWhenStarting()));
+      foundItems.sort();
+      _setStateMethod();
+      return;
+    }
+    for (int i = 0; i < _everything.length; i++) {
+      if (notScored.contains(i)) continue;
+      foundItems.add(_everything[i]);
+    }
+    foundItems.sort((a, b) => scoreMap[b]!.compareTo(scoreMap[a]!));
+    _setStateMethod();
   }
 
-  Widget _createTextButton(String s) =>
-      blagendaUniformButton(false, usedColors.first, s, () {
-        itemList.clear();
-        setStateMethod();
-      });
-
-  Widget buttonCreator(EndBasedController it) => blagendaUniformButton(
-      false, it.color, it.gettingTheStringSelected(), () => openEdit(it));
-
+  //Default widgets
   List<Widget> getScreenWidgets() {
-    List<Widget> widgets = [
-      Row(children: [
-        Expanded(flex: 3, child: dateFinder()),
-        Expanded(flex: 2, child: extraDatesFinder())
-      ]),
-      textFinder(),
-      const Text(' ')
-    ];
-    widgets.addAll(itemList);
-    return widgets;
+    if (_everything.isEmpty) return [const Center(child: Text('No items'))];
+    List<Widget> toFill = [];
+    for (var item in searches.values) {
+      toFill.add(item.displayWidget);
+    }
+    toFill.add(buttonCreator.smallBlankSplit);
+    toFill.add(blagendaUniformButton(false, usedColors.last, 'Search', resetSearch));
+    if (_searchingText.isNotEmpty) {
+      toFill.add(buttonCreator.smallBlankSplit);
+      //you searched for X
+      toFill.add(
+          blagendaUniformButton(false, usedColors.last, _searchingText, fullSearchReset));
+
+      toFill.add(buttonCreator.bigSplitterTextField);
+      //fill all found items
+      for (var item in foundItems) {
+        toFill.add(buttonCreator.smallBlankSplit);
+        toFill.add(blagendaUniformButton(
+            false,
+            item.displayColor(),
+            item.searchDisplay(),
+            () => _doActionWithClickedItem(item).then((value) {
+                  //if (null) is possible with if (value)
+                  if (true == value) {
+                    _everything.remove(item);
+                    resetSearch();
+                  } else if (false == value) {
+                    _everything.remove(item);
+                    _reAdd(item).then((value) {
+                      _everything.add(value);
+                      resetSearch();
+                    });
+                  }
+                })));
+      }
+    } else if (foundItems.isNotEmpty) {
+      toFill.add(buttonCreator.bigSplitterTextField);
+      toFill.add(blagendaUniformButton(false, usedColors.last, 'Suggestions', () {}));
+      toFill.add(buttonCreator.bigSplitterTextField);
+      for (var item in foundItems) {
+        toFill.add(buttonCreator.smallBlankSplit);
+        toFill.add(blagendaUniformButton(
+            false,
+            item.displayColor(),
+            item.searchDisplay(),
+            () => _doActionWithClickedItem(item).then((value) {
+                  //if (null) is possible with if (value)
+                  if (true == value) {
+                    _everything.remove(item);
+                    resetSearch();
+                  }
+                })));
+      }
+    }
+    return toFill;
+  }
+
+  void fullSearchReset() {
+    for (var item in searches.values) {
+      item.onReset(item);
+    }
+    resetSearch();
   }
 }

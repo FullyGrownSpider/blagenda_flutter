@@ -2,158 +2,140 @@ import 'package:blagenda_flutter_simple/Commons/Models/Buttons/again.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/deadline.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/skippable_button.dart';
-import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/again_controller.dart';
-import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/basic_button_controller.dart';
-import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/deadline_controller.dart';
-import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/end_based_controller.dart';
-import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/note_controller.dart';
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/weird_again.dart';
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/weird_again_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/mix_day_creator.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
+import 'package:blagenda_flutter_simple/Loading/conversion_base.dart';
 import 'package:flutter/material.dart';
 
-import '../../Loading/button_conversion.dart';
+import '../../Loading/mix_loading.dart';
 import '../../common_items.dart';
-import 'common_day_display_screen_controller.dart';
-import 'common_screen_controller.dart';
+import '../ObjectControllers/ButtonControllers/again_controller.dart';
+import '../ObjectControllers/ButtonControllers/basic_button_controller.dart';
+import '../ObjectControllers/ButtonControllers/deadline_controller.dart';
+import '../ObjectControllers/ButtonControllers/end_based_controller.dart';
+import '../ObjectControllers/ButtonControllers/note_controller.dart';
+import 'mix_button_creator.dart';
+import 'mix_input_handler.dart.dart';
 
-class AddingScreenController {
+class AddingScreenController with buttonCreator, dayCreator, inputHandler, loading {
   static const int _againWeekColor = 3;
   static const int _againYearColor = 6;
   static const Map<Type, String> _buttonTypesPart1 = {
     BasicButton: 'Note',
     Deadline: 'Deadline',
-    AgainWeekDay: 'Weekly'
+    AgainWeekDay: 'Weekly',
+    AgainAmountDay: 'Every x days'
+  };
+  static const Map<Type, String> _buttonTypesPart1NoNote = {
+    Deadline: 'Deadline',
+    AgainWeekDay: 'Weekly',
+    AgainAmountDay: 'Every x days'
   };
   static const Map<Type, String> _buttonTypesPart2 = {
     AgainYearDay: 'Yearly',
     AgainMonthDay: 'Monthly',
-    AgainAmountDay: 'Every x days'
+    AgainWeird: 'Every xday of month'
   };
 
-  static bool _noCheck(Map<ValuesOfButtons, dynamic> map) => true;
-  final List<InputObject> _widgetsOnScreen = [];
+  final bool _withNote;
 
-  bool Function(Map<ValuesOfButtons, dynamic>) _checks = _noCheck;
+  static bool _noCheck(Map<String, dynamic> map) => true;
+  final List<EndBasedController> Function() getEndBasedButtons;
+
+  bool Function(Map<String, dynamic>) _checksAndChanges = _noCheck;
   final void Function() _setStateMethod;
-  late Type _buttonType;
-  BasicButtonController? Function()? getButton;
   Widget? _myDateDayToShow;
-  late int _id;
   InputObject<bool>? _chosenStateIsOne;
 
   final int Function(Type) _getNewId;
-  final Map<ValuesOfButtons, dynamic> storedValues = {};
+  final List<InputObject> widgetsOnScreen = [];
+  @visibleForTesting
+  late Type buttonType;
+  final Map<String, dynamic> _storedValues = {};
+  late int _id;
+  late BasicButtonController? Function() getButton;
 
-  AddingScreenController(
-      BasicButton? button, this._getNewId, this._setStateMethod) {
+  AddingScreenController(BasicButton? button, this._getNewId, this._setStateMethod,
+      this.getEndBasedButtons, this._withNote) {
     if (button == null) {
-      _buttonType = BasicButton;
+      if (_withNote) {
+        buttonType = BasicButton;
+      } else {
+        buttonType = Deadline;
+      }
       _id = -1;
-      storedValues[ValuesOfButtons.col] =
-          usedColors.indexOf(_getDefaultTypeColor(_buttonType));
+      _storedValues[enumToString(enumToString(PossibleValues.col))] =
+          usedColors.indexOf(_getDefaultTypeColor(buttonType));
     } else {
-      _buttonType = button.runtimeType;
-      _fillStoredValues(button);
+      buttonType = button.runtimeType;
+      fillStoredValues(button);
       _id = button.id!;
     }
+    reCreateScreenWidgets();
   }
 
-  void _fillStoredValues(dynamic button) {
-    storedValues.addAll(buttonToMap(button));
-    storedValues[ValuesOfButtons.todo] =
-        storedValues[ValuesOfButtons.todo].join('\n');
-    storedValues[ValuesOfButtons.col] = usedColors
-        .indexWhere((e) => e.value == storedValues[ValuesOfButtons.col].value);
-    if (_buttonType == Deadline) {
-      _dateDisplay(ValuesOfButtons.dat);
-    }
-    if (button is SkippableButton) {
-      _dateDisplay(ValuesOfButtons.str);
-      _dateDisplay(ValuesOfButtons.end);
+  @visibleForTesting
+  void fillStoredValues(dynamic button) {
+    _storedValues.addAll(itemToStoringMap(button));
+    _storedValues[enumToString(PossibleValues.col)] = usedColors.indexWhere(
+        (e) => e.value == _storedValues[enumToString(PossibleValues.col)].value);
+    if (buttonType == Deadline) {
+      _dateDisplay(enumToString(PossibleValues.dat));
+    } else if (button is SkippableButton) {
+      _dateDisplay(enumToString(PossibleValues.end));
+      if (button is AgainWeird) {
+        int value = _storedValues[enumToString(PossibleValues.day)] % 7;
+        _storedValues[enumToString(PossibleValues.mon)] = value;
+        _storedValues[enumToString(PossibleValues.day)] =
+            (_storedValues[enumToString(PossibleValues.day)] ~/ 7) + 1;
+      } else if (button is AgainAmountDay) {
+        if (_storedValues[enumToString(PossibleValues.str)].daysLeftUntil() < 0) {
+          _storedValues[enumToString(PossibleValues.str)]
+              .addOrRemoveDays(_storedValues[enumToString(PossibleValues.day)]);
+        }
+      }
+      _dateDisplay(enumToString(PossibleValues.str));
     }
   }
 
-  void _dateDisplay(ValuesOfButtons val) {
-    if (storedValues[val] != null) {
-      var toStore = storedValues[val]!.daysLeftUntil();
+  void _dateDisplay(String val) {
+    if (_storedValues[val] != null) {
+      var toStore = _storedValues[val]!.daysLeftUntil();
       if (toStore < 14) {
-        storedValues[val] = toStore.toString();
+        _storedValues[val] = toStore.toString();
       } else if (toStore < 30) {
-        StringBuffer weekdayString = StringBuffer(
-            MyDateController.daysEn[storedValues[val]!.weekday - 1]);
-        int days =
-            storedValues[val]!.difference(MyDateController.today).inDays - 7;
+        StringBuffer weekdayString =
+            StringBuffer(MyDateController.daysEn[_storedValues[val]!.weekday - 1]);
+        int days = _storedValues[val]!.difference(MyDateController.today).inDays - 7;
         for (int i = 0; i < days; i += 7) {
           weekdayString.write('+');
         }
-        storedValues[val] = weekdayString.toString();
+        _storedValues[val] = weekdayString.toString();
       } else {
-        storedValues[val] = storedValues[val].inputDisplayString(
-            MyDateController.nowDate.year != storedValues[val].year);
+        _storedValues[val] = _storedValues[val]
+            .inputDisplayString(MyDateController.nowDate.year != _storedValues[val].year);
       }
     }
   }
 
-  dynamic _getFromStoredValue(ValuesOfButtons it, dynamic value) =>
-      storedValues[it] ?? value;
+  dynamic _getFromStoredValue(String it, dynamic value) => _storedValues[it] ?? value;
 
-  void _switchButtonType() {
+  @visibleForTesting
+  void switchButtonType() {
     _myDateDayToShow = null;
     _id = -1;
-    storedValues[ValuesOfButtons.col] =
-        usedColors.indexOf(_getDefaultTypeColor(_buttonType));
+    _storedValues[enumToString(PossibleValues.col)] =
+        usedColors.indexOf(_getDefaultTypeColor(buttonType));
+    reCreateScreenWidgets();
+    _setStateMethod();
   }
 
   List<Widget> createScreenWidgets() {
-    _widgetsOnScreen.clear();
-    Type correctController;
-    switch (_buttonType) {
-      case Deadline:
-        _deadlineFillerList();
-        correctController = DeadlineController;
-        _checks = (map) => map[ValuesOfButtons.dat] != null;
-        break;
-      case AgainYearDay:
-        _againYearFillerList();
-        correctController = AgainYearController;
-        _checks = (map) =>
-            map[ValuesOfButtons.mon] != null &&
-            map[ValuesOfButtons.day] != null;
-        break;
-      case AgainMonthDay:
-        _againMonthFillerList();
-        correctController = AgainMonthController;
-        _checks = (map) => map[ValuesOfButtons.day] != null;
-        break;
-      case AgainWeekDay:
-        _againWeekFillerList();
-        correctController = AgainWeekController;
-        _checks = (map) => map[ValuesOfButtons.day] != null;
-        break;
-      case AgainAmountDay:
-        _againAmountFillerList();
-        correctController = AgainAmountController;
-        _checks = (map) =>
-            map[ValuesOfButtons.str] != null &&
-            map[ValuesOfButtons.day] != null;
-        break;
-      default:
-        _defaultFillerList();
-        correctController = NoteController;
-        _checks = _noCheck;
-        break;
-    }
-    getButton = () {
-      var data = Map.fromEntries(
-          _widgetsOnScreen.map((e) => MapEntry(e.toFill, e.getValue())));
-      if (!_checks(data)) {
-        return null;
-      }
-      data.addAll(
-          {ValuesOfButtons.id: _id == -1 ? _getNewId(correctController) : _id});
-      return buttonToController(_buttonType, buttonCreator(data, _buttonType));
-    };
-    List<Widget> widgetList = _buttonTypeSelection();
-    for (var it in _widgetsOnScreen) {
+    List<Widget> widgetList = _id == -1 ? _buttonTypeSelection() : [];
+    for (var it in widgetsOnScreen) {
+      it.onReset(it);
       widgetList.add(it.displayWidget);
     }
     if (_myDateDayToShow != null) {
@@ -162,41 +144,92 @@ class AddingScreenController {
     return widgetList;
   }
 
-  List<Widget> _addButtonsForButtonType(
-    Map<Type, String> typeList,
-  ) {
+  void reCreateScreenWidgets() {
+    widgetsOnScreen.clear();
+    Type correctController;
+    switch (buttonType) {
+      case const (Deadline):
+        _deadlineFillerList();
+        correctController = DeadlineController;
+        _checksAndChanges = (map) => map[enumToString(PossibleValues.dat)] != null;
+        break;
+      case const (AgainYearDay):
+        _againYearFillerList();
+        correctController = AgainYearController;
+        _checksAndChanges = (map) =>
+            map[enumToString(PossibleValues.mon)] != null &&
+            map[enumToString(PossibleValues.day)] != null;
+        break;
+      case const (AgainWeird):
+        _againWeirdFillerList();
+        correctController = AgainWeirdController;
+        _checksAndChanges = (map) {
+          var passed = map[enumToString(PossibleValues.mon)] != null &&
+              map[enumToString(PossibleValues.day)] != null;
+          if (passed) {
+            map[enumToString(PossibleValues.day)] =
+                map.remove(enumToString(PossibleValues.mon)) +
+                    (map[enumToString(PossibleValues.day)] - 1) * 7;
+          }
+          return passed;
+        };
+        break;
+      case const (AgainMonthDay):
+        _againMonthFillerList();
+        correctController = AgainMonthController;
+        _checksAndChanges = (map) => map[enumToString(PossibleValues.day)] != null;
+        break;
+      case const (AgainWeekDay):
+        _againWeekFillerList();
+        correctController = AgainWeekController;
+        _checksAndChanges = (map) => map[enumToString(PossibleValues.day)] != null;
+        break;
+      case const (AgainAmountDay):
+        _againAmountFillerList();
+        correctController = AgainAmountController;
+        _checksAndChanges = (map) =>
+            map[enumToString(PossibleValues.str)] != null &&
+            map[enumToString(PossibleValues.day)] != null;
+        break;
+      default:
+        _defaultFillerList();
+        correctController = NoteController;
+        _checksAndChanges = _noCheck;
+        break;
+    }
+    getButton = () {
+      Map<String, dynamic> data =
+          Map.fromEntries(widgetsOnScreen.map((e) => MapEntry(e.toFill, e.getValue())));
+      if (!_checksAndChanges(data)) {
+        return null;
+      }
+      data.addAll({
+        enumToString(PossibleValues.id): _id == -1 ? _getNewId(correctController) : _id
+      });
+      return dataToController(map2Data(data, buttonType));
+    };
+  }
+
+  List<Widget> _addButtonsForButtonType(Map<Type, String> typeList) {
     List<Widget> widgetList = [];
-    typeList.forEach((type, stringValue) =>
-        widgetList.add(blagendaUniformButton(
-            _buttonType == type, _getDefaultTypeColor(type), stringValue, () {
-          _buttonType = type;
-          _switchButtonType();
+    typeList.forEach((type, stringValue) => widgetList.add(blagendaUniformButton(
+            buttonType == type, _getDefaultTypeColor(type), stringValue, () {
+          buttonType = type;
+          switchButtonType();
           _setStateMethod();
         })));
-    widgetList = [
-      Row(children: [
-        const Spacer(),
-        widgetList[0],
-        widgetList[1],
-        const Spacer()
-      ]),
-      Row(children: [
-        const Spacer(),
-        widgetList[2],
-        widgetList.length > 3 ? widgetList[3] : const Text(''),
-        const Spacer()
-      ])
-    ];
-    return widgetList;
+    var valuesList = typeList.values.toList();
+    return addAsRow(
+        (i) => widgetList[i], typeList.values.length, (i) => valuesList[i].length, 35);
   }
 
   static Color _getDefaultTypeColor(Type type) {
     Color col;
     switch (type) {
-      case AgainWeekDay:
+      case const (AgainWeekDay):
         col = usedColors[_againWeekColor];
         break;
-      case AgainYearDay:
+      case const (AgainYearDay):
         col = usedColors[_againYearColor];
         break;
       default:
@@ -207,212 +240,173 @@ class AddingScreenController {
   }
 
   void _defaultFillerList() {
-    _widgetsOnScreen.addAll([
-      _itemForStringList(_getFromStoredValue(ValuesOfButtons.todo, ''),
-          'Extra Info', ValuesOfButtons.todo),
-      _itemForColor(),
-      _itemForBoolean(_getFromStoredValue(ValuesOfButtons.imp, false),
-          "Is Important?", ValuesOfButtons.imp)
+    widgetsOnScreen.addAll([
+      itemForStringList(
+          _getFromStoredValue(enumToString(PossibleValues.todo), ''),
+          'Extra Info',
+          enumToString(PossibleValues.todo),
+          _createMyDateDayToShow,
+          _storedValues),
+      itemForColor(_setStateMethod, _colorButtonPressed, _storedValues,
+          enumToString(PossibleValues.col)),
+      itemForBoolean(
+          _getFromStoredValue(enumToString(PossibleValues.imp), false),
+          'Is Important?',
+          enumToString(PossibleValues.imp),
+          _storedValues,
+          _setStateMethod,
+          _createMyDateDayToShow)
     ]);
     //everything has a job(name) so i want it at the top because its the most important
-    _widgetsOnScreen.insert(
+    widgetsOnScreen.insert(
         0,
-        _itemForString(_getFromStoredValue(ValuesOfButtons.job, ''), 'Title',
-            ValuesOfButtons.job));
+        itemForString(_getFromStoredValue(enumToString(PossibleValues.job), ''), 'Title',
+            _storedValues, _createMyDateDayToShow, enumToString(PossibleValues.job)));
   }
 
   void _skippableFillerList() {
-    _widgetsOnScreen.add(_itemForMyDate('Starts on', ValuesOfButtons.str));
-    _widgetsOnScreen.add(_itemForMyDate('Stops on', ValuesOfButtons.end));
+    widgetsOnScreen.add(itemForMyDate(
+        'Starts on',
+        _getFromStoredValue(enumToString(PossibleValues.str), ''),
+        _storedValues,
+        _createMyDateDayToShow,
+        enumToString(PossibleValues.str)));
+    widgetsOnScreen.add(itemForMyDate(
+        'Stops on',
+        _getFromStoredValue(enumToString(PossibleValues.end), ''),
+        _storedValues,
+        _createMyDateDayToShow,
+        enumToString(PossibleValues.end)));
   }
 
   void _deadlineFillerList() {
-    _widgetsOnScreen.add(_itemForMyDate('Date'));
+    widgetsOnScreen.add(itemForMyDate(
+        'Date',
+        _getFromStoredValue(enumToString(PossibleValues.dat), ''),
+        _storedValues,
+        _createMyDateDayToShow,
+        enumToString(PossibleValues.dat)));
     _defaultFillerList();
   }
 
   void _againAmountFillerList() {
-    _widgetsOnScreen.addAll([
-      _itemForMyDate('Next time', ValuesOfButtons.str),
-      _itemForInt(_getFromStoredValue(ValuesOfButtons.day, 0), 'Days amount',
-          ValuesOfButtons.day),
-      _itemForMyDate('Stops on')
+    widgetsOnScreen.addAll([
+      itemForMyDate(
+          'Next time',
+          _getFromStoredValue(enumToString(PossibleValues.str), ''),
+          _storedValues,
+          _createMyDateDayToShow,
+          enumToString(PossibleValues.str)),
+      itemForInt(_getFromStoredValue(enumToString(PossibleValues.day), 0), 'Days amount',
+          enumToString(PossibleValues.day), _storedValues, _setStateMethod),
+      itemForMyDate('Stops on', _getFromStoredValue(enumToString(PossibleValues.end), ''),
+          _storedValues, _createMyDateDayToShow, enumToString(PossibleValues.end))
     ]);
     _defaultFillerList();
   }
 
   void _againWeekFillerList() {
-    _widgetsOnScreen.add(
-      _itemIntFromList(MyDateController.daysEn, 'Weekday', ValuesOfButtons.day),
+    widgetsOnScreen.add(
+      itemForIntFromList(
+          MyDateController.daysEn,
+          'Weekday',
+          enumToString(PossibleValues.day),
+          _storedValues,
+          _setStateMethod,
+          _createMyDateDayToShow),
     );
     _skippableFillerList();
     _defaultFillerList();
   }
 
   void _againMonthFillerList() {
-    _widgetsOnScreen.add(
-      _itemIntFromList(
-          MyDateController.monthDays, 'Day of month', ValuesOfButtons.day),
+    widgetsOnScreen.add(
+      itemForIntFromList(
+          MyDateController.monthDays,
+          'Day of month',
+          enumToString(PossibleValues.day),
+          _storedValues,
+          _setStateMethod,
+          _createMyDateDayToShow),
     );
     _skippableFillerList();
     _defaultFillerList();
   }
 
   void _againYearFillerList() {
-    _widgetsOnScreen.addAll([
-      _itemIntFromList(MyDateController.months, 'Month', ValuesOfButtons.mon),
-      _itemIntFromList(
-          MyDateController.monthDays, 'Day of month', ValuesOfButtons.day),
+    widgetsOnScreen.addAll([
+      itemForIntFromList(
+          MyDateController.months,
+          'Month',
+          enumToString(PossibleValues.mon),
+          _storedValues,
+          _setStateMethod,
+          _createMyDateDayToShow),
+      itemForIntFromList(
+          MyDateController.monthDays,
+          'Day of month',
+          enumToString(PossibleValues.day),
+          _storedValues,
+          _setStateMethod,
+          _createMyDateDayToShow),
     ]);
     _defaultFillerList();
   }
 
-  InputObject<String> _itemForString(
-      String preObject, String hint, ValuesOfButtons itemsIn) {
-    TextEditingController stringController =
-        TextEditingController(text: preObject);
-    var displayWidget = TextField(
-        controller: stringController,
-        onChanged: (s) {
-          storedValues[itemsIn] = s;
-        },
-        onTap: () => _createMyDateDayToShow(),
-        decoration: InputDecoration(
-            hintText: hint, border: const OutlineInputBorder(gapPadding: 2)));
-    return InputObject<String>.filled(displayWidget, () {
-      return stringController.text;
-    }, itemsIn);
-  }
-
-  InputObject<MyDateController?> _itemForMyDate(String hint,
-      [ValuesOfButtons val = ValuesOfButtons.dat]) {
-    TextEditingController stringController =
-        TextEditingController(text: _getFromStoredValue(val, ''));
-    var displayWidget = TextField(
-        controller: stringController,
-        onChanged: (s) {
-          storedValues[val] = s;
-        },
-        onTap: () => _createMyDateDayToShow(),
-        decoration: InputDecoration(
-            hintText: hint, border: const OutlineInputBorder(gapPadding: 2)));
-    return InputObject<MyDateController?>.filled(displayWidget, () {
-      return MyDateController.translate(stringController.text);
-    }, val);
-  }
-
-  InputObject<bool> _itemForBoolean(
-      bool preObject, String hint, ValuesOfButtons? value) {
-    var switchState = preObject;
-    var displayWidget = blagendaUniformButton(
-        preObject,
-        value == null ? usedColors.first : usedColors[4],
-        "${preObject ? "⬤" : "◯"} - $hint", () {
-      if (value != null) storedValues[value] = !preObject;
-      switchState = !preObject;
-      _setStateMethod();
-    });
-    return InputObject<bool>.filled(displayWidget, () {
-      return switchState;
-    }, value ?? ValuesOfButtons.imp);
-  }
-
-  InputObject<Color> _itemForColor() {
-    var column = Column(
-        children: globalCreateColorButtons(_setStateMethod, _colorButtonPressed,
-            storedValues[ValuesOfButtons.col]));
-    return InputObject<Color>.filled(column, () {
-      return usedColors[storedValues[ValuesOfButtons.col]];
-    }, ValuesOfButtons.col);
+  void _againWeirdFillerList() {
+    widgetsOnScreen.addAll([
+      itemForIntFromList(
+          MyDateController.daysEn,
+          'Weekday',
+          enumToString(PossibleValues.mon),
+          _storedValues,
+          _setStateMethod,
+          _createMyDateDayToShow),
+      itemForIntFromList(['1st', '2nd', '3d'], '- day', enumToString(PossibleValues.day),
+          _storedValues, _setStateMethod, _createMyDateDayToShow),
+    ]);
+    _skippableFillerList();
+    _defaultFillerList();
   }
 
   void _colorButtonPressed(int index) =>
-      storedValues[ValuesOfButtons.col] = index;
-
-  InputObject<List<String>> _itemForStringList(
-      String stringList, String hint, ValuesOfButtons itemsIn) {
-    var stringController = TextEditingController(text: stringList);
-    var displayWidget = TextField(
-        controller: stringController,
-        keyboardType: TextInputType.multiline,
-        onChanged: (s) {
-          storedValues[itemsIn] = s;
-        },
-        onTap: () => _createMyDateDayToShow(),
-        maxLines: 5,
-        decoration: InputDecoration(
-            hintText: hint, border: const OutlineInputBorder(gapPadding: 2)));
-    return InputObject<List<String>>.filled(displayWidget, () {
-      return stringController.text.trim().split('\n');
-    }, itemsIn);
-  }
-
-  InputObject<int> _itemForInt(
-      int preObject, String hint, ValuesOfButtons itemsIn) {
-    var stringController = TextEditingController(text: preObject.toString());
-    var displayWidget = TextField(
-        controller: stringController,
-        onChanged: (s) {
-          storedValues[itemsIn] = int.tryParse(s);
-        },
-        onTap: () => _createMyDateDayToShow(),
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(
-            hintText: hint, border: const OutlineInputBorder(gapPadding: 2)));
-    return InputObject<int>.filled(displayWidget, () {
-      return int.parse(stringController.text);
-    }, itemsIn);
-  }
-
-  InputObject<int> _itemIntFromList(
-      List<String> listToShow, String hint, ValuesOfButtons itemsIn) {
-    var displayWidget = DropdownButton<String>(
-        hint: Text(storedValues[itemsIn] == null
-            ? hint
-            : listToShow[storedValues[itemsIn] - 1]),
-        items: listToShow.map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
-        }).toList(),
-        onChanged: (s) {
-          storedValues[itemsIn] = listToShow.indexOf(s ?? "") + 1;
-          _setStateMethod();
-        },
-        onTap: () => _createMyDateDayToShow());
-    return InputObject<int>.filled(displayWidget, () {
-      return storedValues[itemsIn];
-    }, itemsIn);
-  }
+      _storedValues[enumToString(PossibleValues.col)] = index;
 
   List<Widget> _buttonTypeSelection() {
     List<Widget> widgetList = [];
-    _chosenStateIsOne = _itemForBoolean(
-        _chosenStateIsOne?.getValue() ??
-            _buttonTypesPart2.containsKey(_buttonType),
+    _chosenStateIsOne = itemForBoolean(
+        _chosenStateIsOne?.getValue() ?? _buttonTypesPart2.containsKey(buttonType),
         'Type of Item',
-        null);
+        '-1',
+        _storedValues,
+        _setStateMethod,
+        _createMyDateDayToShow);
     widgetList.add(_chosenStateIsOne!.displayWidget);
-    widgetList.addAll(_addButtonsForButtonType(
-        _chosenStateIsOne!.getValue() ? _buttonTypesPart2 : _buttonTypesPart1));
+    widgetList.addAll(_addButtonsForButtonType(_chosenStateIsOne!.getValue()
+        ? _buttonTypesPart2
+        : _withNote
+            ? _buttonTypesPart1
+            : _buttonTypesPart1NoNote));
     return widgetList;
   }
 
   Future<void> _createMyDateDayToShow() async {
-    var date = storedValues[ValuesOfButtons.dat];
+    var date = _storedValues[enumToString(PossibleValues.dat)];
+    if (date is String) {
+      date = MyDateController.translate(date);
+    }
     if (date == null) return;
-    List<EndBasedController> everythingList =
-        await loading.getEndBasedButtons();
+    List<EndBasedController> everythingList = getEndBasedButtons();
     var timeLeftUntil = date.daysLeftUntil();
-    _myDateDayToShow = Column(
-        children: createADay(
-            MyDateController.nowDate,
-            everythingList,
-            timeLeftUntil,
-            _setStateMethod,
-            (c, o) => _addEndBasedButton(c),
-            timeLeftUntil < 7));
+    _myDateDayToShow = Container(
+        margin: const EdgeInsets.only(top: 40),
+        padding: const EdgeInsets.all(20),
+        width: double.infinity,
+        decoration: const BoxDecoration(
+            border: Border(top: BorderSide(color: Colors.lightGreenAccent, width: 4))),
+        child: Column(
+            children: createADay(MyDateController.nowDate, everythingList, timeLeftUntil,
+                _setStateMethod, (c, o) => _addEndBasedButton(c), timeLeftUntil < 7)));
     _setStateMethod();
   }
 
@@ -424,17 +418,7 @@ class AddingScreenController {
             ),
             color: controller.color,
             borderRadius: const BorderRadius.all(Radius.circular(5))),
-        child: Text(' ${controller.displayWithTimeJob()} ',
-            style: normalTextStyle));
+        child: Text(' ${controller.gettingTheStringShort()} ',
+            style: buttonCreator.normalTextStyle));
   }
-}
-
-class InputObject<t> {
-  InputObject();
-
-  InputObject.filled(this.displayWidget, this.getValue, this.toFill);
-
-  late Widget displayWidget;
-  late t Function() getValue;
-  late ValuesOfButtons toFill;
 }

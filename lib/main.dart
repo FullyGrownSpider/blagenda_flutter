@@ -2,22 +2,23 @@ import 'package:blagenda_flutter_simple/Screens/observation_screen.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter/material.dart';
 
+import 'Loading/mix_loading.dart';
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const TabBarInsideAppBarPage());
 }
 
 class TabBarInsideAppBarPage extends StatefulWidget {
-  const TabBarInsideAppBarPage({Key? key}) : super(key: key);
+  const TabBarInsideAppBarPage({super.key});
 
   @override
   State<TabBarInsideAppBarPage> createState() => _TabBarInsideAppBarPageState();
 }
 
 class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, loading {
   OverviewScreen overviewScreen = const OverviewScreen();
-  static const int _tabLength = 1;
 
   @override
   void initState() {
@@ -33,7 +34,7 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
     setState(() {
       done = false;
     });
-    loading.downloadDatabaseFiles().then((x) {
+    downloadDatabaseFiles().then((x) {
       setState(() {
         done = true;
       });
@@ -41,7 +42,7 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
   }
 
   void syncDataLowKey(setState) {
-    loading.downloadDatabaseFilesCarefully().then((x) {
+    downloadDatabaseFilesCarefully().then((x) {
       if (x) {
         setState();
       }
@@ -52,9 +53,8 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: DefaultTabController(
-            length: _tabLength, child: done ? overviewScreen : loadingScreen()),
-        title: "Blagenda",
+        home: done ? overviewScreen : loadingScreen(),
+        title: 'Blagenda',
         theme: ThemeData(
             canvasColor: Colors.green[800],
             colorScheme: const ColorScheme.dark(

@@ -1,16 +1,22 @@
 import 'dart:async';
 
-import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/basic_button_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/end_based_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/entity_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/observation_screen_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/countdown_drawer.dart';
 import 'package:blagenda_flutter_simple/Controllers/main_drawer.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
+import 'package:blagenda_flutter_simple/Screens/search_screen.dart';
 import 'package:flutter/material.dart';
 
+import '../Commons/Models/entity.dart';
+import '../Controllers/ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import '../common_items.dart';
+import 'adding_screen.dart';
+import 'entity_adding_screen.dart';
 
 class OverviewScreen extends StatefulWidget {
-  const OverviewScreen({Key? key}) : super(key: key);
+  const OverviewScreen({super.key});
 
   @override
   State<OverviewScreen> createState() => _OverviewScreenState();
@@ -21,17 +27,21 @@ class _OverviewScreenState extends State<OverviewScreen> {
   bool _wentBack = false;
 
   _OverviewScreenState() {
-    _controller = ObservationScreenController();
+    _controller = ObservationScreenController(_openEntityEdit);
     _drawer = MainDrawer(
         getButton,
         addOrUpdate,
         delete,
         skipButton,
-        () => _controller.resetSearch(_fullReset),
         getNewId,
+        getNewEntityId,
         _fullReset,
-        flipImportant);
-    _countDownDrawer = CountdownDrawer(addOrUpdate, _fullReset);
+        flipImportant,
+        getEndbasedData,
+        getEntities,
+        getButtonCopy,
+        getEntityCopy);
+    _countDownDrawer = CountdownDrawer(addOrUpdate, _fullReset, getEndbasedData);
     _fill();
   }
 
@@ -39,7 +49,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
   void initState() {
     super.initState();
     // defines a timer
-    Timer.periodic(const Duration(seconds: 30), (Timer t) {
+    Timer.periodic(const Duration(minutes: 2), (Timer t) {
       _timerTick();
     });
     _timerTick(true);
@@ -51,10 +61,11 @@ class _OverviewScreenState extends State<OverviewScreen> {
     if (_controller.justAddedCheck() || awns || force) {
       if (awns || force) {
         MyDateController.resetDate();
-        _controller.resetLists();
-        _resetScreen();
-        lastHour = MyDateController.lookTime.hour;
-        syncActionLowKey!(_reloadData);
+        _controller.resetLists().then((value) {
+          _resetScreen();
+          lastHour = MyDateController.lookTime.hour;
+          syncActionLowKey!(_reloadData);
+        });
       } else {
         _resetScreen();
       }
@@ -70,8 +81,11 @@ class _OverviewScreenState extends State<OverviewScreen> {
   final List<Widget> _centerChildren = [];
   final List<Widget> _centerOptionsButton = [];
 
+  BuildContext? currentContext;
+
   @override
   Widget build(BuildContext context) {
+    currentContext = context;
     return Scaffold(
         backgroundColor: Colors.white24,
         appBar: PreferredSize(
@@ -81,8 +95,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
             )),
         drawer: _drawer.createDrawer(context),
         endDrawer: _countDownDrawer,
-        body: WillPopScope(
-            onWillPop: _onWillPop,
+        body: PopScope(
+            onPopInvoked: _onWillPop,
+            canPop: _wentBack,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -111,7 +126,6 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   void _resetScreen() {
     _centerChildren.clear();
-    _controller.setAllToNotNew();
     _centerChildren.addAll(_controller.getWidgetListEndBased(_resetScreen));
     _centerChildren.addAll(_controller.getWidgetListNote(_resetScreen));
     _centerChildren.addAll(_centerOptionsButton);
@@ -130,10 +144,21 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   int getNewId(Type t) => _controller.getNewId(t);
 
+  int getNewEntityId() => _controller.getNewEntityId();
+
   BasicButtonController? getButton() => _controller.getSelectedButton();
 
-  void addOrUpdate(BasicButtonController c) {
-    _controller.addOrUpdateButton(c, _resetScreen);
+  void addOrUpdate(dynamic c) {
+    if (c is EntityController) {
+      _controller.addOrUpdateEntity(c);
+      return;
+    }
+    if (c is! BasicButtonController) throw Exception('what did you do?');
+    if (c.touched) {
+      _controller.deleteButton(c, _resetScreen);
+    } else {
+      _controller.addOrUpdateButton(c, _resetScreen);
+    }
     _wentBack = false;
   }
 
@@ -143,13 +168,63 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   void flipImportant() => _controller.flipImportant(_resetScreen);
 
-  Future<bool> _onWillPop() async {
+  List<EndBasedController> getEndbasedData() => _controller.getEndbasedData();
+
+  List<EntityController> getEntities() => _controller.getEntities();
+
+  Future<dynamic> _openEntityEdit(BasicButtonController b) async {
+    var c = getEntities().firstWhere((ent) => ent.tags.any((tag) {
+          if (tag.data is TagObjectReference) {
+            return (tag.data.type == b.runtimeType.toString() && b.id == tag.data.itd);
+          }
+          return BasicButtonController.equals(tag.data.button, b.button);
+        }));
+    if (currentContext == null) return;
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => AddingEntityScreen(
+                c,
+                addOrUpdate,
+                getNewEntityId,
+                getEndbasedData,
+                getEntities,
+                (toUse) => _openButtonSearch(context, toUse, true),
+                (toGet) => _openEdit(context, null, false, (t) {
+                      toGet(t);
+                      return addOrUpdate(t);
+                    }))));
+  }
+
+  Future<dynamic> _openButtonSearch(BuildContext context,
+      Future<dynamic> Function(dynamic)? addOrUpdateItem, bool closeOnAction) {
+    return Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => SearchScreen<EndBasedController>(addOrUpdateItem!,
+                getNewId, getEndbasedData(), closeOnAction, getButtonCopy)));
+  }
+
+  Future<dynamic> _openEdit(BuildContext context, BasicButtonController? it,
+          bool withNote, dynamic Function(dynamic) doWith) =>
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  AddingScreen(it, doWith, getNewId, getEndbasedData, withNote)));
+
+  void _onWillPop(bool boolean) async {
     if (_wentBack) {
       _wentBack = !_wentBack;
-      return true;
     }
     _wentBack = !_wentBack;
     _controller.resetSearch(_fullReset);
-    return false;
   }
+
+  Future<EndBasedController> getButtonCopy(EndBasedController toFind) async => _controller
+      .getEndbasedData()
+      .firstWhere((e) => e.id == toFind.id && e.runtimeType == toFind.runtimeType);
+
+  Future<EntityController> getEntityCopy(EntityController toFind) async =>
+      _controller.getEntities().firstWhere((e) => e.id == toFind.id);
 }

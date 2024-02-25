@@ -1,46 +1,44 @@
 import 'dart:io';
 
-import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:date_format/date_format.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'button_conversion.dart';
+import '../Commons/store_able.dart';
+import 'conversion_base.dart';
 
 class LoadingFromStorage {
   const LoadingFromStorage();
 
-  Future<void> deleteButton(BasicButton but) async =>
+  Future<void> deleteItem(StoreAble but) async =>
       await SuperStorage(typeToFile(but.runtimeType)).delete(uniquePart(but));
 
-  Future<void> deleteButtons(List<BasicButton> buts) async {
+  Future<void> deleteItems(List<StoreAble> buts) async {
     if (buts.isEmpty) return;
     List<String> items = buts.map((e) => uniquePart(e)).toList();
     await SuperStorage(typeToFile(buts.first.runtimeType)).deleteAll(items);
   }
 
-  Future<void> updateButton(BasicButton but) async =>
+  Future<void> updateItem(StoreAble but) async =>
       await SuperStorage(typeToFile(but.runtimeType))
-          .update(buttonExportGenerator(but), uniquePart(but));
+          .update(exportGenerator(but), uniquePart(but));
 
-  Future<void> updateButtons(List<BasicButton> buts) async {
+  Future<void> updateItems(List<StoreAble> buts) async {
     if (buts.isEmpty) return;
     List<String> items = [];
     List<String> parts = [];
     for (var butt in buts) {
-      items.add(buttonExportGenerator(butt));
+      items.add(exportGenerator(butt));
       parts.add(uniquePart(butt));
     }
     await SuperStorage(typeToFile(buts.first.runtimeType)).updateAll(items, parts);
   }
 
-  Future<void> addButton(BasicButton but) async =>
-      await SuperStorage(typeToFile(but.runtimeType))
-          .addItem(buttonExportGenerator(but));
+  Future<void> addItem(StoreAble but) async =>
+      await SuperStorage(typeToFile(but.runtimeType)).addItem(exportGenerator(but));
 
-  Future<List<t>> getItems<t extends BasicButton>() async {
+  Future<List<String>> getItems(Type t) async {
     var file = SuperStorage(typeToFile(t));
-    List<String> allData = await file.readAllData();
-    return allData.map((e) => buttonImportGenerator<t>(e)).toList();
+    return await file.readAllData();
   }
 
   Future<bool> shouldKeepFirstFile(String fileOne, String fileTwo) async {
@@ -53,16 +51,19 @@ class LoadingFromStorage {
     }
     var two = SuperStorage(fileTwo);
     if (!await two.exists()) return true;
-    if ((await one.lastUpdate()).isBefore(await two.lastUpdate())){
+    if ((await one.lastUpdate()).isBefore(await two.lastUpdate())) {
       _copyAndDelete(one, two);
       return false;
     }
     (await two._localFile).delete();
     return true;
   }
+
   Future<void> _copyAndDelete(SuperStorage one, SuperStorage two) async {
     var path = ('${await one._localPath}/${one._fileName}');
-    (await two._localFile).copy(path).then((value) async => (await two._localFile).deleteSync());
+    (await two._localFile)
+        .copy(path)
+        .then((value) async => (await two._localFile).deleteSync());
   }
 }
 
@@ -84,13 +85,19 @@ class SuperStorage {
 
   Future<File> get _localFile async {
     final path = await _localPath;
-    return File('$path/$_fileName');
+    var dashes = '/';
+    if (!path.contains(dashes)) {
+      dashes = '\\';
+    }
+    return File('$path$dashes$_fileName');
   }
 
   Future<DateTime> _lastUpdate() async {
     try {
       final file = await _localFile;
-      if (!await file.exists()) return DateTime.now().subtract(const Duration(days: 300));
+      if (!await file.exists()) {
+        return DateTime.now().subtract(const Duration(days: 300));
+      }
       // Read the date
       var dateText = (await file.readAsLines()).first;
       return DateTime.parse(dateText.replaceFirst('Byrd', ''));
@@ -98,6 +105,7 @@ class SuperStorage {
       return DateTime.now().subtract(const Duration(days: 300));
     }
   }
+
   Future<DateTime> lastUpdate() async {
     return await _doAction(() => _lastUpdate());
   }
@@ -119,7 +127,19 @@ class SuperStorage {
   }
 
   Future<void> _writeStrings(List<String> items) async {
-    _startLine = 'Byrd${formatDate(DateTime.now(), [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn, ':', ss])}';
+    _startLine = 'Byrd${formatDate(DateTime.now(), [
+          yyyy,
+          '-',
+          mm,
+          '-',
+          dd,
+          ' ',
+          HH,
+          ':',
+          nn,
+          ':',
+          ss
+        ])}';
     final file = await _localFile;
     items.insert(0, _startLine);
     await file.writeAsString(items.join('\n'));
@@ -138,6 +158,7 @@ class SuperStorage {
   Future<void> update(String newItem, String uniquePart) async {
     await _doAction(() => _update(newItem, uniquePart));
   }
+
   Future _doAction(Future Function() method) async {
     await waitTurn();
     working = true;
@@ -145,6 +166,7 @@ class SuperStorage {
     working = false;
     return value;
   }
+
   Future<void> _update(String newItem, String uniquePart) async {
     var values = await _readAllData();
     var index = values.indexWhere((e) => e.contains(uniquePart));
@@ -162,7 +184,7 @@ class SuperStorage {
 
   Future<void> _updateAll(List<String> newItem, List<String> uniquePart) async {
     var values = await _readAllData();
-    for(int i = 0;i < newItem.length;i++){
+    for (int i = 0; i < newItem.length; i++) {
       var index = values.indexWhere((e) => e.contains(uniquePart[i]));
       values[index] = newItem[i];
     }
@@ -193,7 +215,7 @@ class SuperStorage {
 
   Future<void> waitTurn() async {
     while (working) {
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(milliseconds: 511));
     }
   }
 }

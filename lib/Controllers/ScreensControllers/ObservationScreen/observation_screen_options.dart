@@ -1,11 +1,11 @@
-import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/common_screen_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/mix_button_creator.dart';
 import 'package:flutter/material.dart';
 
-import '../../ButtonControllers/basic_button_controller.dart';
-import '../../ButtonControllers/end_based_controller.dart';
-import '../../my_date_controller.dart';
+import '../../../common_items.dart';
+import '../../ObjectControllers/ButtonControllers/basic_button_controller.dart';
+import '../../ObjectControllers/ButtonControllers/end_based_controller.dart';
 
-class ObservationScreenOptions {
+class ObservationScreenOptions with buttonCreator {
   static const int daysToShow = 6;
   static const List<int> _possibleExtraDays = [30, 14];
 
@@ -20,22 +20,19 @@ class ObservationScreenOptions {
   List<Widget> getOptionButtons(
       void Function() setStateMethod, Function() resetCounters) {
     List<Widget> items = [];
-    items.add(const Text('Display Options', style: bigTextStyle));
+    items.add(const Text('Display Options', style: buttonCreator.bigTextStyle));
     items.addAll(globalCreateColorButtons(
         setStateMethod, (i) => _colorPressed(i, resetCounters), _chosenColor));
-    items.addAll(addAsRow(
-        (i) => _createCounterButton(setStateMethod, i, resetCounters),
+    items.addAll(addAsRow((i) => _createCounterButton(setStateMethod, i, resetCounters),
         _possibleExtraDays.length));
-    items.add(
-        _createDisplayAllEndBasedButtonsButton(setStateMethod, resetCounters));
-    items.add(bigSplitterTextField);
+    items.add(_createDisplayAllEndBasedButtonsButton(setStateMethod, resetCounters));
+    items.add(buttonCreator.bigSplitterTextField);
     return items;
   }
 
   Widget _createDisplayAllEndBasedButtonsButton(
           void Function() setStateMethod, Function() resetCounters) =>
-      blagendaUniformButton(-2 == _chosenColor, usedColors.first, 'Show all',
-          () {
+      blagendaUniformButton(-2 == _chosenColor, usedColors.first, 'Show all', () {
         resetCounters();
         daysToShowNow = daysToShow;
         if (-2 == _chosenColor) {
@@ -46,11 +43,9 @@ class ObservationScreenOptions {
         setStateMethod();
       });
 
-  Widget _createCounterButton(void Function() setStateMethod, int index,
-          Function() resetCounters) =>
-      blagendaUniformButton(
-          daysToShowNow == _possibleExtraDays[index],
-          usedColors.first,
+  Widget _createCounterButton(
+          void Function() setStateMethod, int index, Function() resetCounters) =>
+      blagendaUniformButton(daysToShowNow == _possibleExtraDays[index], usedColors.first,
           'Show next ${_possibleExtraDays[index].toString()} days', () {
         _chosenColor = -1;
         if (daysToShowNow == _possibleExtraDays[index]) {
@@ -93,33 +88,28 @@ class ObservationScreenOptions {
     }
   }
 
-  bool _shouldGoIn(EndBasedController eb, MyDateController now) =>
-      eb.daysLeft < daysToShowNow + 7 && eb.daysLeft >= -1 ||
-      eb.wasJustAdded(now);
+  bool _shouldGoIn(
+          EndBasedController eb, bool Function(EndBasedController) wasJustAdded) =>
+      eb.daysLeft < daysToShowNow + 7 && eb.daysLeft >= -1 || wasJustAdded(eb);
 
-  List<BasicButtonController> goesInList(
-      List<BasicButtonController> list, MyDateController now) {
-    if (list.isEmpty) return list;
+  List<BasicButtonController> goesInList(List<BasicButtonController> allItems,
+      bool Function(EndBasedController) wasJustAdded) {
+    if (allItems.isEmpty) return allItems;
     pickCorrectOption(() {
-      if (list.first is EndBasedController) {
-        var newList =
-            list.where((e) => _shouldGoIn(e as EndBasedController, now));
-        if (daysToShowNow != daysToShow) {
-          //if you select 14 you want to see something 14 days away too not just
-          //13
-          list = list
-              .where((e) => (e as EndBasedController).daysLeft == daysToShowNow)
-              .toList()
-            ..addAll(newList);
-        } else {
-          list = newList.toList();
-        }
+      var list = allItems.whereType<EndBasedController>();
+      var newList = list.where((e) => _shouldGoIn(e, wasJustAdded));
+      if (daysToShowNow != daysToShow) {
+        //if you select 14 you want to see something 14 days away too not just
+        //13
+        list = list.where((e) => e.daysLeft == daysToShowNow).toList()..addAll(newList);
+      } else {
+        list = newList.toList();
       }
     }, () {
       // return list;
     }, (c) {
-      list = (list).where((e) => e.colorCheck(c)).toList();
+      allItems = (allItems).where((e) => e.colorCheck(c)).toList();
     });
-    return list;
+    return allItems;
   }
 }

@@ -6,7 +6,7 @@ import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 class AgainAmountDay extends SkippableButton {
   AgainAmountDay(
       [String? job,
-      List<String>? toDos,
+      String? toDos,
       int? id,
       Color? color,
       MyDateController? startDate,
@@ -14,53 +14,47 @@ class AgainAmountDay extends SkippableButton {
       MyDateController? dateToSkip,
       MyDateController? endingDate,
       bool important = false])
-      : super(job, toDos, id, color, day, dateToSkip, endingDate, startDate,
-            important);
+      : super(job, toDos, id, color, day, dateToSkip, endingDate, startDate, important);
 }
 
 class AgainWeekDay extends SkippableButton {
   AgainWeekDay(
-      [String? job,
-      List<String>? toDos,
-      int? id,
-      Color? color,
-      int? day,
-      MyDateController? dateToSkip,
-      MyDateController? endingDate,
-      MyDateController? startDate,
-          bool important = false])
-      : super(job, toDos, id, color, day, dateToSkip, endingDate, startDate,
-            important);
+      [super.job,
+      super.toDos,
+      super.id,
+      super.color,
+      super.day,
+      super.dateToSkip,
+      super.endingDate,
+      super.startDate,
+      super.important]);
 }
 
 class AgainYearDay extends SkippableButton {
   AgainYearDay(
-      [String? job,
-      List<String>? toDos,
-      int? id,
-      Color? color,
-      int? day,
+      [super.job,
+      super.toDos,
+      super.id,
+      super.color,
+      super.day,
       this.month,
-      MyDateController? dateToSkip,
-      MyDateController? endingDate,
-      MyDateController? startDate,
-      bool important = false])
-      : super(job, toDos, id, color, day, dateToSkip, endingDate, startDate,
-            important);
+      super.dateToSkip,
+      super.endingDate,
+      super.startDate,
+      super.important]);
+
   int? month;
 }
 
 class AgainMonthDay extends SkippableButton {
   AgainMonthDay(
-      [String? job,
-      List<String>? toDos,
-      int? id,
-      Color? color,
-      int? day,
-      MyDateController? dateToSkip,
-      MyDateController? endingDate,
-      MyDateController? startDate,
-      bool important = false])
-      : super(job, toDos, id, color, day, dateToSkip, endingDate, startDate,
-            important);
+      [super.job,
+      super.toDos,
+      super.id,
+      super.color,
+      super.day,
+      super.dateToSkip,
+      super.endingDate,
+      super.startDate,
+      super.important]);
 }

@@ -1,5 +1,16 @@
-import 'Loading/loading.dart';
+import 'package:flutter/material.dart';
 
-final Loading loading = Loading();
 Function()? syncAction;
 Function(Function())? syncActionLowKey;
+
+const List<Color> usedColors = [
+  Colors.green,
+  Colors.amber,
+  Colors.red,
+  Colors.blue,
+  Colors.purple,
+  Colors.grey,
+  Colors.brown,
+  Colors.tealAccent,
+  Colors.deepOrangeAccent
+];

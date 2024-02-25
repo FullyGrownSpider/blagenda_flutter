@@ -1,30 +1,29 @@
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
-import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/deadline_controller.dart';
-
 import 'package:flutter/material.dart';
-import '../../Commons/Models/Buttons/skippable_button.dart';
-import '../my_date_controller.dart';
-import 'basic_button_controller.dart';
 
-abstract class EndBasedController<t extends BasicButton>
-    extends BasicButtonController<t> implements Comparable<EndBasedController> {
-  static final RegExp _completeReg = RegExp(
-      r'(([0-9]{1,2})[:.,-]([0-9]){2} ?([a,p]m)?)|([0-9]{1,2}( )?[a,p]m)');
-  static final RegExp _regBig =
-      RegExp(r'([0-9]{1,2})[:.,-]([0-9]){2} ?([a,p]m)?\b');
+import '../../../Commons/Models/Buttons/skippable_button.dart';
+import '../../my_date_controller.dart';
+import '../mix_search_able.dart';
+import 'basic_button_controller.dart';
+import 'deadline_controller.dart';
+
+abstract class EndBasedController<t extends BasicButton> extends BasicButtonController<t>
+    implements Comparable<EndBasedController> {
+  static final RegExp _completeReg =
+      RegExp(r'(([0-9]{1,2})[:.,-]([0-9]){2} ?([a,p]m)?)|([0-9]{1,2}( )?[a,p]m)');
+  static final RegExp _regBig = RegExp(r'([0-9]{1,2})[:.,-]([0-9]){2} ?([a,p]m)?\b');
   static final RegExp _regSmall = RegExp(r'([0-9]{1,2}) ?([a,p]m)\b');
   static final RegExp _replaceAPm = RegExp(r'[a,p]m$');
   static final RegExp _regFix = RegExp(r'[-,.]');
-  static const String _splitString = ":";
+  static const String _splitString = ':';
   static const int showDayOfWeek = 6;
   static const int showDayTime = 4;
-  MyDateController? timeWhenNotNewItemAnymore;
   bool requiresChange = false;
   int timeOfDay = -1;
   int daysLeft = -20;
   late MyDateController dateController;
 
-  EndBasedController(t button) : super(button) {
+  EndBasedController(super.button) {
     rebuild();
   }
 
@@ -34,16 +33,6 @@ abstract class EndBasedController<t extends BasicButton>
       return button.color!;
     }
     return lerpIt(button.color as Color);
-  }
-
-  bool wasJustAdded(MyDateController now) {
-    return timeWhenNotNewItemAnymore?.isAfter(now) == true;
-  }
-
-  void setToMakeNew() {
-    timeWhenNotNewItemAnymore =
-        MyDateController.now().add(const Duration(minutes: 4));
-    _setTimeOfDay();
   }
 
   void rebuild() {
@@ -59,10 +48,10 @@ abstract class EndBasedController<t extends BasicButton>
   bool isHappeningOnDayFromNow(int calculatedDay) => daysLeft == calculatedDay;
 
   void _setTimeOfDay() {
+    var toDos = this.toDos.split('\n');
     //turn it into a 12 hour clock
     for (int j = 0; j < toDos.length; j++) {
-      var itemsList =
-          toDos[j].toLowerCase().replaceAll(_regFix, _splitString).split(' ');
+      var itemsList = toDos[j].toLowerCase().replaceAll(_regFix, _splitString).split(' ');
       String correctReg = '';
       for (int i = 0; i < itemsList.length; i++) {
         if (itemsList.length - 1 != i) {
@@ -97,11 +86,9 @@ abstract class EndBasedController<t extends BasicButton>
         items = items.substring(0, indexOfAPm);
       }
       if (items.contains(_splitString)) {
-        var timeOfMinutes =
-            int.parse(items.substring(items.indexOf(_splitString) + 1));
+        var timeOfMinutes = int.parse(items.substring(items.indexOf(_splitString) + 1));
         if (timeOfMinutes > 59) return;
-        var timeOfHours =
-            int.parse(items.substring(0, items.indexOf(_splitString)));
+        var timeOfHours = int.parse(items.substring(0, items.indexOf(_splitString)));
         result = timeOfHours * 60 + timeOfMinutes;
       } else {
         result = int.parse(items) * 60;
@@ -111,52 +98,49 @@ abstract class EndBasedController<t extends BasicButton>
       } else if (isAm && result >= 720) {
         return;
       }
+      //if you have 1204pm you want 1204am and here that fix is done
+      if (result > 1440 && indexOfAPm != -1) result -= 720;
       if (result < 0 || result > 1440) return;
       //if time is 2.00 its not 2am its 2 pm. 7 is the earliest
-      if (result < 420 && indexOfAPm == -1) {
-        result += 720;
-      }
+      if (result < 420 && indexOfAPm == -1) result += 720;
       timeOfDay = result;
       return;
     }
   }
 
+  @visibleForTesting
   String displayJob() {
-    if (daysLeft < showDayTime || timeWhenNotNewItemAnymore != null) {
-      return displayWithTimeJob();
+    if (daysLeft < showDayTime) {
+      return _displayWithTimeJob();
     }
-    return job;
+    return super.gettingTheStringShort();
   }
 
-  String displayWithTimeJob() {
-    if (timeOfDay == -1) return job;
+  String _displayWithTimeJob() {
+    if (timeOfDay == -1) return super.gettingTheStringShort();
     var dur = Duration(minutes: timeOfDay);
     String minutes = (timeOfDay % 60).toString().padLeft(2, '0');
-    return '${dur.inHours.toString()}$_splitString$minutes - $job';
+    return '${dur.inHours.toString()}$_splitString$minutes - ${super.gettingTheStringShort()}';
   }
 
-  @override
-  String gettingTheStringShort() => BasicButtonController.displayGenericJob(
-      displayJob(), BasicButtonController.maxValueCheck);
-
-  String gettingTheStringShortWithTime() =>
-      BasicButtonController.displayGenericJob(
-          displayWithTimeJob(), BasicButtonController.maxValueCheck);
-
-  String extensiveDate([bool withYear = false]) =>
-      dateController.fullDisplayWithCal(withYear);
+  String _gettingTheStringShortWithTime() =>
+      (entitied != -1 ? BasicButtonController.entityIndicator : '') +
+      displayGenericText(displayJob(), BasicButtonController.maxValueCheck);
 
   @override
   String gettingTheStringSelected() =>
-      '${gettingTheStringShortWithTime()}\n${todosToString()}';
+      '${_gettingTheStringShortWithTime()}\n\n${todosToString()}'.trim();
 
   String gettingTheStringShortWithDate() =>
-      '${dateController.fullDisplayWithCal()}\n\n${gettingTheStringShortWithTime()}';
+      '${dateController.fullDisplayWithCal()} - ${_gettingTheStringShortWithTime()}';
+
+  @override
+  String gettingTheStringShort() => _gettingTheStringShortWithTime();
 
   @override
   String todosToString() {
     var result = super.todosToString();
-    if (timeOfDay != -1 || timeWhenNotNewItemAnymore != null) {
+    if (timeOfDay != -1) {
       var results = result.split('\n');
       for (int i = 0; i < results.length; i++) {
         //it equals the complete reg
@@ -174,7 +158,6 @@ abstract class EndBasedController<t extends BasicButton>
         }
       }
     }
-    if (result.startsWith('\n\n')) result = result.replaceFirst('\n', '');
     return result;
   }
 
@@ -200,6 +183,33 @@ abstract class EndBasedController<t extends BasicButton>
     }
     return thisLeft.compareTo(bLeft);
   }
+
+  @override
+  int searchHere(SearchTypes searchType, dynamic value) {
+    if (searchType == SearchTypes.string) {
+      return (job.toLowerCase().contains(value) ? 9 : 0) +
+          (toDos.toLowerCase().contains(value) ? 1 : 0);
+    }
+    if (searchType == SearchTypes.date) {
+      for (int date = value.myDateFromNow;
+          date <= value.myDateFromNow + value.range;
+          date++) {
+        if (isHappeningOnDayFromNow(date)) {
+          return 10;
+        }
+      }
+    }
+    return 0;
+  }
+
+  @override
+  List<SearchTypes> possibleSearches() {
+    return [SearchTypes.string, SearchTypes.date];
+  }
+
+  @override
+  String searchDisplay() =>
+      '${dateController.fullDisplayWithCal(true)}\n--\n${gettingTheStringSelected()}';
 }
 
 //----------------------------------
@@ -216,36 +226,55 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   String gettingTheStringShortWithDate() =>
-      '${dateController.fullDisplayWithCal()}\n${gettingTheStringShortWithTime()}\n(Repeats)';
+      '${dateController.fullDisplayWithCal()}${_gettingTheStringShortWithTime()}\n(Repeats)';
 
   @override
   void rebuild() {
     var daysDif = daysLeft;
-    super.rebuild();
+    create();
+    _setTimeOfDay();
+    dateController = dateController.add(const Duration(hours: 4));
+
+    while (dateController.isBefore(MyDateController.today)) {
+      dateController = getNextTime(dateController);
+    }
+    daysLeft = howMuchLeft();
+
+    if (startDate != null &&
+        startDate!.addOrRemoveDays(3).isBefore(MyDateController.today)) {
+      requiresChange = true;
+      button.startDate = null;
+    }
+
+    if (dateToSkip != null) {
+      if (dateToSkip!.daysLeftUntil() == daysLeft) {
+        dateController = getNextTime(dateController);
+        daysLeft = howMuchLeft();
+      } else if (buttonCheck(dateToSkip!, dateController)) {
+        requiresChange = true;
+        button.dateToSkip = null;
+        altLeft += (daysLeft - daysDif);
+        return;
+      }
+    }
+
     altLeft += (daysLeft - daysDif);
     if (wantDeleteMe()) {
       requiresChange = true;
     }
   }
 
-  void startedChecking(Function howToUpdate){
-    if (startDate != null) {
-      if (dateController.isBefore(startDate!)) {
-        howToUpdate();
-      } else {
-        requiresChange = true;
-        button.startDate = null;
-      }
-    }
-  }
+  MyDateController getNextTime(MyDateController? thisTimeDate);
 
   bool wantDeleteMe() {
     return endingDate != null && endingDate!.isBefore(MyDateController.today);
   }
 
   @override
-  String writeEmpty() =>
-      '\n${emogjiList[(job + MyDateController.fromDaysFromNow(altLeft).microsecondsSinceEpoch.toString()).hashCode % emogjiList.length]}';
+  String writeEmpty() => emogjiList[
+      (job + MyDateController.fromDaysFromNow(altLeft).microsecondsSinceEpoch.toString())
+              .hashCode %
+          emogjiList.length];
 
   SkippableEndBasedController callConstructor(button);
 
@@ -268,29 +297,23 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   bool isHappeningOnDayFromNow(int calculatedDay) {
-    return
+    return (dateToSkip == null || dateToSkip!.daysLeftUntil() != calculatedDay) &&
         (endingDate == null || endingDate!.daysLeftUntil() >= calculatedDay) &&
         (startDate == null || startDate!.daysLeftUntil() <= calculatedDay);
   }
 
   @override
   String displayJob() {
-    var xtr = "";
-    if (isLastTime()){
-      xtr = "⚈ ";
+    var xtr = '';
+    if (isLastTime()) {
+      xtr = '⚈ ';
     }
-    if (altLeft < EndBasedController.showDayTime ||
-        timeWhenNotNewItemAnymore != null) {
-      return xtr + displayWithTimeJob();
-    }
-    return xtr + job;
+    return xtr + super.displayJob();
   }
 
 //returns true if you should skip
   static bool skipCheck(SkippableButton button, DateTime date) =>
-      button.dateToSkip!.day == date.day &&
-      button.dateToSkip!.month == date.month &&
-      button.dateToSkip!.year == date.year;
+      MyDateController.aboutEqual(button.dateToSkip!, date);
 
 //returns true if you should skip the copy
   bool skipCheckNotSure(int calc, int left) =>
@@ -300,7 +323,7 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   Color get color {
-    if (altLeft < 0 || daysLeft < 0) {
+    if (altLeft < 0) {
       return lerpIt(button.color as Color);
     }
     return button.color!;
@@ -312,9 +335,12 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   bool isLastTime();
 
-  bool isImportantDate(int fromNow);
+  static bool buttonCheck(DateTime dateToSkip, DateTime today) {
+    return dateToSkip.add(const Duration(days: 1)).isBefore(today);
+  }
 }
 
+//if yesterday or earlier
 Color lerpIt(Color c) {
   return Color.lerp(c, Colors.black38, 0.3) as Color;
 }

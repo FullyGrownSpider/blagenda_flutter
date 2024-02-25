@@ -1,16 +1,17 @@
 import 'dart:math';
 
-import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/basic_button_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/end_based_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/entity_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
-import 'package:blagenda_flutter_simple/Controllers/photo_deadline.dart';
 import 'package:blagenda_flutter_simple/Screens/adding_screen.dart';
 import 'package:blagenda_flutter_simple/Screens/search_screen.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 
+import '../Screens/entity_adding_screen.dart';
 import '../common_items.dart';
-import 'ScreensControllers/common_day_display_screen_controller.dart';
-import 'ScreensControllers/common_screen_controller.dart';
+import 'ObjectControllers/ButtonControllers/basic_button_controller.dart';
+import 'ScreensControllers/mix_button_creator.dart';
 
 class MainDrawer {
   static const TextStyle textStyle = TextStyle(
@@ -23,29 +24,36 @@ class MainDrawer {
 
   static const ListTile listSep = ListTile(
       title: Text('--------------------------------------------',
-          style: normalTextStyle));
+          style: buttonCreator.normalTextStyle));
 
   MainDrawer(
-      this.getSelectedButton,
-      this.addOrUpdateButton,
-      this.deleteButton,
-      this.skipButton,
-      this.searchResetScreen,
-      this.getNewId,
-      this.fullReset,
-      this.flipImportant);
+      this._getSelectedButton,
+      this._addOrUpdateItem,
+      this._deleteButton,
+      this._skipButton,
+      this._getNewId,
+      this._getNewEntityID,
+      this._fullReset,
+      this._flipImportant,
+      this._getEndbasedButtons,
+      this._getEntitiesButtons,
+      this._getButtonCopy,
+      this._getEntityCopy);
 
-  final BasicButtonController? Function() getSelectedButton;
-  final Function(BasicButtonController) addOrUpdateButton;
-  final void Function() deleteButton;
-  final void Function() skipButton;
-  final void Function() searchResetScreen;
-  final void Function() fullReset;
-  final void Function() flipImportant;
-  final int Function(Type) getNewId;
+  final Future<EndBasedController> Function(EndBasedController) _getButtonCopy;
+  final Future<EntityController> Function(EntityController) _getEntityCopy;
+  final BasicButtonController? Function() _getSelectedButton;
+  final void Function(dynamic) _addOrUpdateItem;
+  final void Function() _deleteButton;
+  final void Function() _skipButton;
+  final void Function() _fullReset;
+  final List<EndBasedController> Function() _getEndbasedButtons;
+  final List<EntityController> Function() _getEntitiesButtons;
+  final void Function() _flipImportant;
+  final int Function(Type) _getNewId;
+  final int Function() _getNewEntityID;
   static const Color sepColor = Colors.black54;
-  final int funnyNumber =
-      Random(MyDateController.today.hashCode).nextInt(100) + 1;
+  final int funnyNumber = Random(MyDateController.today.hashCode).nextInt(100) + 1;
 
   Drawer createDrawer(BuildContext context) {
     return Drawer(
@@ -59,14 +67,10 @@ class MainDrawer {
           child: Center(
               child: Column(children: [
             Text(
-              formatDate(MyDateController.today, bigDateFormat),
+              formatDate(MyDateController.today, [D, ', ', M, ' ', d]),
               style: textStyle,
             ),
-            Text(
-                "${formatDate(MyDateController.today, [
-                      'W:',
-                      WW
-                    ])} - N:$funnyNumber",
+            Text('${formatDate(MyDateController.today, ['W:', WW])} - N:$funnyNumber',
                 style: textStyle)
           ])),
         ),
@@ -74,130 +78,120 @@ class MainDrawer {
             width: double.infinity,
             decoration: const BoxDecoration(
                 border: Border(bottom: BorderSide(color: sepColor, width: 7))),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ListTile(
-                    title: _dumbJoke('Add Button'),
-                    trailing: const Icon(Icons.add, color: Colors.black),
-                    onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => AddingScreen(
-                                    null, addOrUpdateButton, getNewId)))
-                        .then((v) => Navigator.pop(context)),
-                  ),
-                  ListTile(
-                      title: _dumbJoke('Update Button'),
-                      trailing: const Icon(Icons.edit, color: Colors.black),
-                      onTap: () {
-                        var button = getSelectedButton();
-                        if (button != null) {
-                          Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => AddingScreen(
-                                          button, addOrUpdateButton, getNewId)))
-                              .then((v) => Navigator.pop(context));
-                        }
-                      }),
-                  ListTile(
-                    title: _dumbJoke('Delete Button'),
-                    trailing: const Icon(Icons.delete, color: Colors.black),
-                    onTap: () {
-                      deleteButton();
-                      Navigator.pop(context);
-                    },
-                  ),
-                  ListTile(
-                      title: _dumbJoke('Camera Add'),
-                      trailing:
-                          const Icon(Icons.camera_alt, color: Colors.black),
-                      onTap: () {
-                        Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => PhotoScreen(
-                                        addOrUpdateButton, getNewId)))
-                            .then((v) => Navigator.pop(context));
-                      }),
-                ])),
-        ListTile(
-          title: _dumbJoke('Reset Display'),
-          trailing: const Icon(Icons.restart_alt_rounded, color: Colors.black),
-          onTap: () {
-            searchResetScreen();
-            Navigator.pop(context);
-          },
-        ),
-        Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-                border: Border(
-                    bottom: BorderSide(color: sepColor, width: 11),
-                    top: BorderSide(color: sepColor, width: 9))),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ListTile(
-                    title: _dumbJoke('Find Appointment'),
-                    trailing: const Icon(Icons.search, color: Colors.black),
-                    onTap: () {
-                      Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => SearchScreen(
-                                      addOrUpdateButton, getNewId)))
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+              ListTile(
+                  title: _dumbJoke('Add Button'),
+                  trailing: const Icon(Icons.add, color: Colors.black),
+                  onTap: () => _openEdit(context, null, true, _addOrUpdateItem)
+                      .then((v) => Navigator.pop(context))),
+              ListTile(
+                  title: _dumbJoke('Update Button'),
+                  trailing: const Icon(Icons.edit, color: Colors.black),
+                  onTap: () {
+                    var button = _getSelectedButton();
+                    if (button != null) {
+                      _openEdit(context, button, true, _addOrUpdateItem)
                           .then((v) => Navigator.pop(context));
-                    },
-                  ),
-                ])),
+                    }
+                  }),
+              ListTile(
+                title: _dumbJoke('Delete Button'),
+                trailing: const Icon(Icons.delete, color: Colors.black),
+                onTap: () {
+                  _deleteButton();
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: _dumbJoke('Flip Important'),
+                trailing: const Icon(Icons.notifications, color: Colors.black),
+                onTap: () {
+                  _flipImportant();
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: _dumbJoke('Skip this time'),
+                trailing: const Icon(Icons.next_plan_outlined, color: Colors.black),
+                onTap: () {
+                  _skipButton();
+                  Navigator.pop(context);
+                },
+              ),
+            ])),
         ListTile(
-          title: _dumbJoke('Skip this time'),
-          trailing: const Icon(Icons.next_plan_outlined, color: Colors.black),
-          onTap: () {
-            skipButton();
-            Navigator.pop(context);
-          },
+            title: _dumbJoke('Find Appointment'),
+            trailing: const Icon(Icons.search, color: Colors.black),
+            onTap: () => _openButtonSearch(
+                    context, (it) => _openEdit(context, it, false, _addOrUpdateItem))
+                .then((v) => Navigator.pop(context))),
+        ListTile(
+          title: _dumbJoke('Add Entity'),
+          trailing: const Icon(Icons.add_circle_outline, color: Colors.black),
+          onTap: () => _openEntityEdit(context, null).then((v) => Navigator.pop(context)),
         ),
         ListTile(
-          title: _dumbJoke('Flip Important'),
-          trailing: const Icon(Icons.notifications, color: Colors.black),
-          onTap: () {
-            flipImportant();
-            Navigator.pop(context);
-          },
-        ),
+            title: _dumbJoke('Entities Search'),
+            trailing: const Icon(Icons.manage_search, color: Colors.black),
+            onTap: () =>
+                _openEntitySearch(-1, context, (it) => _openEntityEdit(context, it))
+                    .then((v) => Navigator.pop(context))),
         Container(
             width: double.infinity,
             decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: sepColor, width: 13))),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ListTile(
-                    title: _dumbJoke('Sync Online Data'),
-                    trailing: const Icon(Icons.sync, color: Colors.black),
-                    onTap: () {
-                      syncAction!();
-                    },
-                  )
-                ])),
+                border: Border(top: BorderSide(color: sepColor, width: 9))),
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+              ListTile(
+                title: _dumbJoke('Reset Display'),
+                trailing: const Icon(Icons.restart_alt_rounded, color: Colors.black),
+                onTap: () {
+                  _fullReset();
+                  Navigator.pop(context);
+                },
+              ),
+            ])),
+        ListTile(
+            title: _dumbJoke('Sync Online Data'),
+            trailing: const Icon(Icons.sync, color: Colors.black),
+            onTap: () => syncAction!())
       ],
     ));
   }
 
+  Future<dynamic> _openEntitySearch(int numb, BuildContext context,
+      [Future<dynamic> Function(dynamic)? addOrUpdateItem, bool closeOnAction = false]) {
+    addOrUpdateItem ??= (item) async {
+      _addOrUpdateItem(item);
+    };
+    return Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => SearchScreen(
+                addOrUpdateItem!,
+                _getNewId,
+                _getEntitiesButtons().where((e) => e.id != numb).toList(),
+                closeOnAction,
+                _getEntityCopy)));
+  }
+
+  Future<dynamic> _openButtonSearch(BuildContext context,
+      [Future<dynamic> Function(dynamic)? addOrUpdateItem, bool closeOnAction = false]) {
+    addOrUpdateItem ??= (item) async {
+      _addOrUpdateItem(item);
+    };
+    return Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => SearchScreen(addOrUpdateItem!, _getNewId,
+                _getEndbasedButtons(), closeOnAction, _getButtonCopy)));
+  }
+
   Widget _dumbJoke(String s) {
-    // for(int i = 1;i < 100;i++) {
-    //   if (s.hashCode % i == 0)
-    //     print(s);
-    // }
     if (s.hashCode % funnyNumber == 0) {
-      var calc =
-          Random(MyDateController.today.hashCode).nextInt(dumberJoke.length);
+      var calc = Random(MyDateController.today.hashCode).nextInt(dumberJoke.length);
       var usdCol = usedColors[calc % (usedColors.length - 1) + 1];
       return Row(children: [
-        Text('$s  ', style: normalTextStyle),
+        Text('$s  ', style: buttonCreator.normalTextStyle),
         Container(
             decoration: BoxDecoration(
                 color: usdCol,
@@ -209,8 +203,32 @@ class MainDrawer {
                 style: const TextStyle(color: Colors.white, fontSize: 8)))
       ]);
     }
-    return Text(s, style: normalTextStyle);
+    return Text(s, style: buttonCreator.normalTextStyle);
   }
 
   var dumberJoke = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Delta', 'Zeta'];
+
+  Future<dynamic> _openEntityEdit(BuildContext context, EntityController? c) =>
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => AddingEntityScreen(
+                  c,
+                  _addOrUpdateItem,
+                  _getNewEntityID,
+                  _getEndbasedButtons,
+                  _getEntitiesButtons,
+                  (toUse) => _openButtonSearch(context, toUse, true),
+                  (toGet) => _openEdit(context, null, false, (t) {
+                        toGet(t);
+                        return _addOrUpdateItem(t);
+                      }))));
+
+  Future<dynamic> _openEdit(BuildContext context, BasicButtonController? it,
+          bool withNote, dynamic Function(dynamic) doWith) =>
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  AddingScreen(it, doWith, _getNewId, _getEndbasedButtons, withNote)));
 }

@@ -1,13 +1,12 @@
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:flutter/material.dart';
 
-import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
-
-import '../ScreensControllers/common_screen_controller.dart';
+import '../../../common_items.dart';
 import 'basic_button_controller.dart';
 
 class NoteController extends BasicButtonController<BasicButton>
     implements Comparable<NoteController> {
-  NoteController(BasicButton button) : super(button);
+  NoteController(super.button);
 
   @override
   int compareTo(NoteController other) {
@@ -31,8 +30,7 @@ class NoteController extends BasicButtonController<BasicButton>
     return 0;
   }
 
-  static List<NoteController> chosenSort(
-      List<NoteController> toSort, int maxSize) {
+  static List<NoteController> chosenSort(List<NoteController> toSort, int maxSize) {
     Map<Color, List<NoteController>> groupedBalls = {};
 
     for (var ball in toSort) {
@@ -43,8 +41,7 @@ class NoteController extends BasicButtonController<BasicButton>
     groupedAndSorted.sort((la, lb) => la
         .where((e) => e.theStringLongestLength > (maxSize / 2))
         .length
-        .compareTo(
-            lb.where((e) => e.theStringLongestLength > (maxSize / 2)).length));
+        .compareTo(lb.where((e) => e.theStringLongestLength > (maxSize / 2)).length));
     for (int i = 0; i < groupedAndSorted.length; i++) {
       if (i % 2 == 0) {
         groupedAndSorted[i].sort((a, b) => _noteSmallSort(b, a));

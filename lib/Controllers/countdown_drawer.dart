@@ -1,25 +1,28 @@
-import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/basic_button_controller.dart';
-import 'package:blagenda_flutter_simple/Controllers/ButtonControllers/end_based_controller.dart';
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:flutter/material.dart';
 
+import '../Loading/mix_loading.dart';
 import '../common_items.dart';
-import 'ButtonControllers/note_controller.dart';
+import 'ObjectControllers/ButtonControllers/basic_button_controller.dart';
+import 'ObjectControllers/ButtonControllers/end_based_controller.dart';
+import 'ObjectControllers/ButtonControllers/note_controller.dart';
 import 'ScreensControllers/ObservationScreen/observation_screen_options.dart';
-import 'ScreensControllers/common_screen_controller.dart';
+import 'ScreensControllers/mix_button_creator.dart';
 
 class CountdownDrawer extends StatefulWidget {
-  const CountdownDrawer(this.addOrUpdateButton, this.resetScreen)
+  const CountdownDrawer(this.addOrUpdateButton, this.resetScreen, this.getEndBasedButtons)
       : super(key: null);
 
   final void Function(BasicButtonController) addOrUpdateButton;
 
   final void Function() resetScreen;
+  final List<EndBasedController> Function() getEndBasedButtons;
 
   @override
   State<CountdownDrawer> createState() => _CountdownDrawerState();
 }
 
-class _CountdownDrawerState extends State<CountdownDrawer> {
+class _CountdownDrawerState extends State<CountdownDrawer> with buttonCreator, loading {
   static const border = BorderSide(color: Colors.black38, width: 7);
   static const fakeBorder = BorderSide(color: Colors.transparent, width: 30);
 
@@ -34,48 +37,64 @@ class _CountdownDrawerState extends State<CountdownDrawer> {
   Future<void> loadSortFill() async {
     List<EndBasedController> endButtons = [];
     List<BasicButtonController> notes = [];
-    endButtons.addAll((await loading.getEndBasedButtons())
-        .where((e) => e.important && e.daysLeft > -1));
+    var walkList = widget.getEndBasedButtons();
+    endButtons.addAll(walkList.where((e) => e.important && e.daysLeft > -1));
+    var complicatedList = walkList
+        .where((e) => e.important && e.daysLeft == -1 && e is SkippableEndBasedController)
+        .toList();
+    if (complicatedList.isNotEmpty) {
+      for (int i = 0; i < 400; i++) {
+        for (int ii = 0; ii < complicatedList.length; ii++) {
+          if (complicatedList[ii].isHappeningOnDayFromNow(i)) {
+            endButtons
+                .add((complicatedList[ii] as SkippableEndBasedController).createNew(i));
+            complicatedList.removeAt(ii);
+          }
+        }
+        if (complicatedList.isEmpty) break;
+      }
+    }
+
     endButtons.sort();
-    notes.addAll(
-        (await loading.getButtons<NoteController>()).where((e) => e.important));
+    notes.addAll((await getData<BasicButton>())
+        .where((e) => e.important)
+        .toList()
+        .cast<NoteController>());
     widgetList.clear();
     for (int i = 0; i < 4; i++) {
-      widgetList.add(splitterTextField);
+      widgetList.add(buttonCreator.splitterTextField);
     }
-    widgetList.add(bigSplitterTextField);
-    widgetList.add(splitterTextField);
-    widgetList.add(splitterTextField);
+    widgetList.add(buttonCreator.bigSplitterTextField);
+    widgetList.add(buttonCreator.splitterTextField);
+    widgetList.add(buttonCreator.splitterTextField);
     for (var note in notes) {
       widgetList.add(containWidgetsPretty([
-        blagendaUniformButton(
-            false,
-            note.color,
-            BasicButtonController.displayGenericJob(note.job, 25),
+        blagendaUniformButton(false, note.color, note.displayGenericText(note.job, 25),
             () => createUnimportantButton(note))
       ]));
-      widgetList.add(bigSplitterTextField);
-      widgetList.add(splitterTextField);
-      widgetList.add(splitterTextField);
+      widgetList.add(buttonCreator.bigSplitterTextField);
+      widgetList.add(buttonCreator.splitterTextField);
+      widgetList.add(buttonCreator.splitterTextField);
     }
     for (var but in endButtons) {
+      bool displayAble = ObservationScreenOptions.daysToShow < but.daysLeft + 1 ||
+          (but is SkippableEndBasedController &&
+              ObservationScreenOptions.daysToShow < but.altLeft + 1);
       widgetList.add(containWidgetsPretty([
         blagendaUniformButton(
             false,
-            ObservationScreenOptions.daysToShow < but.daysLeft
-                ? but.color
-                : lerpIt(but.color),
-            BasicButtonController.displayGenericJob(but.gettingTheStringShortWithTime(), 25),
+            displayAble ? but.color : lerpIt(but.color),
+            but.displayGenericText(but.gettingTheStringShort(), 25),
             () => createUnimportantButton(but)),
-        createCountDownText(but)
+        if (displayAble) createCountDownText(but)
       ]));
-      widgetList.add(bigSplitterTextField);
-      widgetList.add(splitterTextField);
-      widgetList.add(splitterTextField);
+      widgetList.add(buttonCreator.bigSplitterTextField);
+      widgetList.add(buttonCreator.splitterTextField);
+      widgetList.add(buttonCreator.splitterTextField);
     }
-    widgetList.add(bigSplitterTextField);
-    widgetList.add(bigSplitterTextField);
-    widgetList.add(bigSplitterTextField);
+    widgetList.add(buttonCreator.bigSplitterTextField);
+    widgetList.add(buttonCreator.bigSplitterTextField);
+    widgetList.add(buttonCreator.bigSplitterTextField);
     setState(() {});
   }
 
@@ -88,8 +107,10 @@ class _CountdownDrawerState extends State<CountdownDrawer> {
   }
 
   Widget createCountDownText(EndBasedController it) {
-    return blagendaUniformButton(
-        false, usedColors[4], 'In ${it.daysLeft} days.', () {});
+    if (it is SkippableEndBasedController) {
+      return blagendaUniformButton(false, usedColors[4], 'In ${it.altLeft} days.', () {});
+    }
+    return blagendaUniformButton(false, usedColors[4], 'In ${it.daysLeft} days.', () {});
   }
 
   Widget containWidgetsPretty(List<Widget> list) {
@@ -97,18 +118,13 @@ class _CountdownDrawerState extends State<CountdownDrawer> {
         width: double.infinity,
         decoration: const BoxDecoration(
             color: Colors.black26,
-            border: Border(
-                top: border,
-                left: fakeBorder,
-                right: fakeBorder,
-                bottom: border)),
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, children: list));
+            border:
+                Border(top: border, left: fakeBorder, right: fakeBorder, bottom: border)),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: list));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-        child: SingleChildScrollView(child: Column(children: widgetList)));
+    return Drawer(child: SingleChildScrollView(child: Column(children: widgetList)));
   }
 }
