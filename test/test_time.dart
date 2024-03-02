@@ -12,17 +12,18 @@ List<String> inputFalse = [
   '22e',
   '20 pmed',
   '20.90',
-  '19.00am',
   '21 00',
   '20',
   '2000',
-  '20 000'
+  '20 000',
+  'pm me the d00t'
 ];
 Map<String, int> inputTrue = {
   '5am': 300,
   '9am': 540,
   '3.00': 900,
   '18.00pm': 1080,
+  '18.00am': 1080,
   '18pm': 1080,
   '9.00pm': 1260,
   '9pm': 1260,
@@ -48,7 +49,7 @@ void tesFoundTime() {
     var contr = DeadlineController(but);
     contr.rebuild();
     // print(key);
-    expect(inputTrue[key], contr.timeOfDay);
+    expect(contr.timeOfDay, inputTrue[key]);
   }
 }
 
@@ -63,6 +64,6 @@ void tesNotFoundTime() {
     var contr = DeadlineController(but);
     contr.rebuild();
     // print(item);
-    expect(-1, contr.timeOfDay);
+    expect(contr.timeOfDay, -1);
   }
 }

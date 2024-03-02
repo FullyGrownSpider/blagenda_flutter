@@ -9,12 +9,10 @@ import 'deadline_controller.dart';
 
 abstract class EndBasedController<t extends BasicButton> extends BasicButtonController<t>
     implements Comparable<EndBasedController> {
-  static final RegExp _completeReg =
-      RegExp(r'(([0-9]{1,2})[:.,-]([0-9]){2} ?([a,p]m)?)|([0-9]{1,2}( )?[a,p]m)');
-  static final RegExp _regBig = RegExp(r'([0-9]{1,2})[:.,-]([0-9]){2} ?([a,p]m)?\b');
-  static final RegExp _regSmall = RegExp(r'([0-9]{1,2}) ?([a,p]m)\b');
-  static final RegExp _replaceAPm = RegExp(r'[a,p]m$');
+  static final RegExp _completeReg = RegExp(
+      r"((?<full>[0-2]?[0-9]:[0-6][0-9]( ?[a,p]m)?)|(?<hour>[0-2]?[0-9] ?[a,p]m))\b(.{0,3} ?((?<full2>[0-2]?[0-9]:[0-6][0-9] ?([a,p]m)?)|(?<hour2>[0-2]?[0-9] ?[a,p]m))\b)?");
   static final RegExp _regFix = RegExp(r'[-,.]');
+  static final RegExp _regNum = RegExp(r'[^0-9:]');
   static const String _splitString = ':';
   static const int showDayOfWeek = 6;
   static const int showDayTime = 4;
@@ -47,65 +45,28 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
 
   bool isHappeningOnDayFromNow(int calculatedDay) => daysLeft == calculatedDay;
 
+  int getToTime(String full, String hour) {
+    var match =
+        _completeReg.firstMatch(toDos.toLowerCase().replaceAll(_regFix, _splitString));
+    var text = match?.namedGroup(full);
+    text ??= match?.namedGroup(hour);
+    if (text == null) return -1;
+    var split = text.replaceAll(_regNum, '').split(_splitString);
+    return _timeSet(
+        int.parse(split.first) * 60 + (split.length > 1 ? int.parse(split.last) : 0),
+        text);
+  }
+
   void _setTimeOfDay() {
-    var toDos = this.toDos.split('\n');
-    //turn it into a 12 hour clock
-    for (int j = 0; j < toDos.length; j++) {
-      var itemsList = toDos[j].toLowerCase().replaceAll(_regFix, _splitString).split(' ');
-      String correctReg = '';
-      for (int i = 0; i < itemsList.length; i++) {
-        if (itemsList.length - 1 != i) {
-          if (itemsList[i + 1].startsWith(_replaceAPm)) {
-            itemsList[i] += itemsList[i + 1];
-          }
-        }
-        //see in what way time is written down either 10:00, 10:00am, 10am, 10 am or 10:00 am
-        correctReg = itemsList[i].splitMapJoin(_regBig,
-            onMatch: (m) => '${m.group(0)}', onNonMatch: (n) => '');
-        if (correctReg == '') {
-          correctReg = itemsList[i].splitMapJoin(_regSmall,
-              onMatch: (m) => '${m.group(0)}', onNonMatch: (n) => '');
-        }
-        if (correctReg != '') {
-          break;
-        }
-      }
-      if (correctReg == '') {
-        continue;
-      }
-      //remove all items that are found in the correct reg
-      var items = correctReg;
-      int result;
-      //remove Am and Pm
-      int indexOfAPm = items.indexOf(_replaceAPm);
-      bool isPm = false;
-      bool isAm = false;
-      if (indexOfAPm != -1) {
-        isPm = items.substring(indexOfAPm).startsWith('pm');
-        isAm = !isPm;
-        items = items.substring(0, indexOfAPm);
-      }
-      if (items.contains(_splitString)) {
-        var timeOfMinutes = int.parse(items.substring(items.indexOf(_splitString) + 1));
-        if (timeOfMinutes > 59) return;
-        var timeOfHours = int.parse(items.substring(0, items.indexOf(_splitString)));
-        result = timeOfHours * 60 + timeOfMinutes;
-      } else {
-        result = int.parse(items) * 60;
-      }
-      if (isPm) {
-        if (result <= 720) result += 720;
-      } else if (isAm && result >= 720) {
-        return;
-      }
-      //if you have 1204pm you want 1204am and here that fix is done
-      if (result > 1440 && indexOfAPm != -1) result -= 720;
-      if (result < 0 || result > 1440) return;
-      //if time is 2.00 its not 2am its 2 pm. 7 is the earliest
-      if (result < 420 && indexOfAPm == -1) result += 720;
-      timeOfDay = result;
-      return;
+    timeOfDay = getToTime('full', 'hour');
+  }
+
+  int _timeSet(int result, String text) {
+    if ((text.contains('p') && result < 721) || (!text.contains('a') && result < 420)) {
+      result += 720;
     }
+    if (result > 1440) return -1;
+    return result;
   }
 
   @visibleForTesting
