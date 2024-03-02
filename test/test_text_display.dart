@@ -36,14 +36,14 @@ void deadline() {
       'normal', '13pm', 1, usedColors.first, MyDateController(2023, 12, 27), false));
   two.rebuild();
   check(one, 'normal', 'normal\n\n🦏');
-  check(two, '13:00 - normal', '13:00 - normal\n\n🦏');
+  check(two, '13:00 ~ normal', '13:00 ~ normal\n\n🦏');
 
   var oneText = make(Deadline('normal', 'hello sir\n', 1, usedColors.first,
       MyDateController(2023, 12, 27), false));
   var twoText = make(Deadline('normal', 'hello sir\n13pm', 1, usedColors.first,
       MyDateController(2023, 12, 27), false));
   check(oneText, 'normal', 'normal\n\nhello sir');
-  check(twoText, '13:00 - normal', '13:00 - normal\n\nhello sir');
+  check(twoText, '13:00 ~ normal', '13:00 ~ normal\n\nhello sir');
 
   var oneLong = make(Deadline('long 789-11-14-17-20-23-26-29-31-34-37-40', '', 1,
       usedColors.first, MyDateController(2023, 12, 27), false));
@@ -51,8 +51,8 @@ void deadline() {
       usedColors.first, MyDateController(2023, 12, 27), false));
   check(oneLong, 'long\n789-11-14-17-20-23-26-29-31-34-37-40',
       'long\n789-11-14-17-20-23-26-29-31-34-37-40\n\n🐧');
-  check(twoLong, '13:00 - long\n789-11-14-17-20-23-26-29-31-34-37-40',
-      '13:00 - long\n789-11-14-17-20-23-26-29-31-34-37-40\n\n🎨');
+  check(twoLong, '13:00 ~ long\n789-11-14-17-20-23-26-29-31-34-37-40',
+      '13:00 ~ long\n789-11-14-17-20-23-26-29-31-34-37-40\n\n🎨');
 
   var oneTextLong = make(Deadline('long 789-11-14-17-20-23-26-29-31-34-37-40',
       'hello sir\n', 1, usedColors.first, MyDateController(2023, 12, 27), false));
@@ -60,8 +60,13 @@ void deadline() {
       'hello sir\n13pm', 1, usedColors.first, MyDateController(2023, 12, 27), false));
   check(oneTextLong, 'long\n789-11-14-17-20-23-26-29-31-34-37-40',
       'long\n789-11-14-17-20-23-26-29-31-34-37-40\n\nhello sir');
-  check(twoTextLong, '13:00 - long\n789-11-14-17-20-23-26-29-31-34-37-40',
-      '13:00 - long\n789-11-14-17-20-23-26-29-31-34-37-40\n\nhello sir');
+  check(twoTextLong, '13:00 ~ long\n789-11-14-17-20-23-26-29-31-34-37-40',
+      '13:00 ~ long\n789-11-14-17-20-23-26-29-31-34-37-40\n\nhello sir');
+
+  var oneTextTimeTwo = make(Deadline('13:00 tot 13.30', '13:00 tot 13.30\n', 1,
+      usedColors.first, MyDateController(2023, 12, 27), false));
+  check(oneTextTimeTwo, '13:00-13:30 ~ 13:00 tot 13.30',
+      '13:00-13:30 ~ 13:00 tot 13.30\n\n🎨');
 }
 
 EndBasedController make<t extends BasicButton>(t button) {

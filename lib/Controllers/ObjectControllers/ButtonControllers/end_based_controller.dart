@@ -10,7 +10,7 @@ import 'deadline_controller.dart';
 abstract class EndBasedController<t extends BasicButton> extends BasicButtonController<t>
     implements Comparable<EndBasedController> {
   static final RegExp _completeReg = RegExp(
-      r"((?<full>[0-2]?[0-9]:[0-6][0-9]( ?[a,p]m)?)|(?<hour>[0-2]?[0-9] ?[a,p]m))\b(.{0,3} ?((?<full2>[0-2]?[0-9]:[0-6][0-9] ?([a,p]m)?)|(?<hour2>[0-2]?[0-9] ?[a,p]m))\b)?");
+      r"((?<full>[0-2]?[0-9]:[0-6][0-9]( ?[a,p]m)?)|(?<hour>[0-2]?[0-9] ?[a,p]m))(([^0-9]{0,5}((?<full2>[0-2]?[0-9]:[0-6][0-9] ?([a,p]m)?)|(?<hour2>[0-2]?[0-9] ?[a,p]m))\b)|\b)");
   static final RegExp _regFix = RegExp(r'[-,.]');
   static final RegExp _regNum = RegExp(r'[^0-9:]');
   static const String _splitString = ':';
@@ -18,6 +18,7 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
   static const int showDayTime = 4;
   bool requiresChange = false;
   int timeOfDay = -1;
+  int timeOfDayEnd = -1;
   int daysLeft = -20;
   late MyDateController dateController;
 
@@ -45,9 +46,19 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
 
   bool isHappeningOnDayFromNow(int calculatedDay) => daysLeft == calculatedDay;
 
-  int getToTime(String full, String hour) {
+  void _setTimeOfDay() {
     var match =
         _completeReg.firstMatch(toDos.toLowerCase().replaceAll(_regFix, _splitString));
+    timeOfDay = _getTime(match, 'full', 'hour');
+    timeOfDayEnd = _getTime(match, 'full2', 'hour2');
+    if (timeOfDayEnd != -1 && timeOfDayEnd < timeOfDay) {
+      var calc = timeOfDay;
+      timeOfDay = timeOfDayEnd;
+      timeOfDayEnd = calc;
+    }
+  }
+
+  int _getTime(RegExpMatch? match, String full, String hour) {
     var text = match?.namedGroup(full);
     text ??= match?.namedGroup(hour);
     if (text == null) return -1;
@@ -55,10 +66,6 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
     return _timeSet(
         int.parse(split.first) * 60 + (split.length > 1 ? int.parse(split.last) : 0),
         text);
-  }
-
-  void _setTimeOfDay() {
-    timeOfDay = getToTime('full', 'hour');
   }
 
   int _timeSet(int result, String text) {
@@ -75,10 +82,10 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
           .trim();
 
   String _displayWithTimeJob() {
-    if (timeOfDay == -1) return super.gettingTheStringShort();
-    var dur = Duration(minutes: timeOfDay);
-    String minutes = (timeOfDay % 60).toString().padLeft(2, '0');
-    return '${dur.inHours.toString()}$_splitString$minutes - ${super.gettingTheStringShort()}';
+    return (timeOfDay != -1
+            ? '${timeOfDay ~/ 60}$_splitString${(timeOfDay % 60).toString().padLeft(2, '0')}${timeOfDayEnd != -1 ? '-${timeOfDayEnd ~/ 60}$_splitString${(timeOfDayEnd % 60).toString().padLeft(2, '0')} ~ ' : ' ~ '}'
+            : '') +
+        super.gettingTheStringShort();
   }
 
   String _gettingTheStringShortWithTime() =>
@@ -102,9 +109,10 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
       var results = result.split('\n');
       for (int i = 0; i < results.length; i++) {
         //it equals the complete reg
-        if (results[i].startsWith(_completeReg)) {
-          results[i] = results[i].replaceFirst(_completeReg, '');
-          if (results[i].trim().isEmpty) {
+        var calc = _completeReg
+            .firstMatch(results[i].toLowerCase().replaceAll(_regFix, _splitString));
+        if (calc != null) {
+          if (calc.end != results[i].length) {
             results.removeAt(i);
             if (results.length < i && results[i + 1].isEmpty) {
               results.removeAt(i + 1);
