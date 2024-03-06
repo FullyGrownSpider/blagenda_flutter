@@ -46,4 +46,7 @@ class AgainWeirdController extends SkippableEndBasedController<AgainWeird> {
   MyDateController getNextTime(MyDateController? thisTimeDate) {
     return getDateFromMonth(thisTimeDate!.year, thisTimeDate.month, thisTimeDate.day);
   }
+
+  @override
+  void addOrRemoveDaysDo(int amount) => button.day = (day + amount) % 28;
 }

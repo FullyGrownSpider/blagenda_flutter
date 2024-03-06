@@ -1,5 +1,6 @@
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/again.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
+import 'package:flutter/material.dart';
 
 import '../../../Commons/Models/Buttons/skippable_button.dart';
 import 'end_based_controller.dart';
@@ -39,6 +40,13 @@ class AgainYearController extends SkippableEndBasedController<AgainYearDay> {
   MyDateController getNextTime(MyDateController? thisTimeDate) {
     return MyDateController(thisTimeDate!.year + 1, thisTimeDate.month, thisTimeDate.day);
   }
+
+  @override
+  void addOrRemoveDaysDo(int amount) {
+    var newDate = dateController.addOrRemoveDays(amount);
+    button.day = newDate.day;
+    button.month = newDate.month;
+  }
 }
 
 class AgainWeekController extends SkippableEndBasedController<AgainWeekDay> {
@@ -73,6 +81,9 @@ class AgainWeekController extends SkippableEndBasedController<AgainWeekDay> {
     return (super.isHappeningOnDayFromNow(calculatedDay)) &&
         (calculatedDay - altLeft) % 7 == 0;
   }
+
+  @override
+  void addOrRemoveDaysDo(int amount) => button.day = (day + amount) % 7;
 }
 
 class AgainAmountController extends SkippableEndBasedController<AgainAmountDay> {
@@ -110,6 +121,10 @@ class AgainAmountController extends SkippableEndBasedController<AgainAmountDay> 
     return (endingDate == null || endingDate!.daysLeftUntil() >= calculatedDay) &&
         (daysLeft - calculatedDay) % day == 0;
   }
+
+  @override
+  void addOrRemoveDaysDo(int amount) =>
+      button.startDate = startDate!.addOrRemoveDays(amount);
 }
 
 class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
@@ -136,6 +151,19 @@ class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
       dateController = MyDateController(
           MyDateController.today.year, MyDateController.today.month, day);
     }
+
+    if (dateController.day != day && !job.contains('+')) {
+      //if this month does not have 31 days get the last one
+      int daysInMonth = DateTimeRange(
+              start: MyDateController(
+                  MyDateController.today.year, MyDateController.today.month),
+              end: MyDateController(
+                  MyDateController.today.year, MyDateController.today.month + 1))
+          .duration
+          .inDays;
+      dateController = MyDateController(
+          MyDateController.today.year, MyDateController.today.month, daysInMonth);
+    }
   }
 
   @override
@@ -159,4 +187,7 @@ class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
     }
     return newLeft == calculatedDay;
   }
+
+  @override
+  void addOrRemoveDaysDo(int amount) => button.day = ((day + amount - 1) % 31) + 1;
 }

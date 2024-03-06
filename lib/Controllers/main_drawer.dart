@@ -34,7 +34,6 @@ class MainDrawer {
       this._getNewId,
       this._getNewEntityID,
       this._fullReset,
-      this._flipImportant,
       this._getEndbasedButtons,
       this._getEntitiesButtons,
       this._getButtonCopy,
@@ -49,7 +48,6 @@ class MainDrawer {
   final void Function() _fullReset;
   final List<EndBasedController> Function() _getEndbasedButtons;
   final List<EntityController> Function() _getEntitiesButtons;
-  final void Function() _flipImportant;
   final int Function(Type) _getNewId;
   final int Function() _getNewEntityID;
   static const Color sepColor = Colors.black54;
@@ -99,14 +97,6 @@ class MainDrawer {
                 trailing: const Icon(Icons.delete, color: Colors.black),
                 onTap: () {
                   _deleteButton();
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: _dumbJoke('Flip Important'),
-                trailing: const Icon(Icons.notifications, color: Colors.black),
-                onTap: () {
-                  _flipImportant();
                   Navigator.pop(context);
                 },
               ),

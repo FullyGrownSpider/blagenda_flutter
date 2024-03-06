@@ -140,4 +140,15 @@ class ObservationScreenLoading with loading {
   void deleteList(List<BasicButtonController> toDelete) => deleteButtons(toDelete);
 
   void updateList(List<BasicButtonController> toUpdate) => updateButtons(toUpdate);
+
+  void changeDays(
+      void Function() setStateMethod,
+      BasicButtonController<BasicButton>? selectedButton,
+      List<BasicButtonController> allItems,
+      int amount) {
+    if (selectedButton == null || selectedButton is! EndBasedController) return;
+    selectedButton.touched = true;
+    selectedButton.addOrRemoveDays(amount);
+    _updateButton(selectedButton, setStateMethod, allItems);
+  }
 }

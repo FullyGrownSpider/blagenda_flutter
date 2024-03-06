@@ -12,4 +12,8 @@ class DeadlineController extends EndBasedController<Deadline> {
     requiresChange =
         button.date!.isBefore(MyDateController.nowDate.add(const Duration(days: -3)));
   }
+
+  @override
+  void addOrRemoveDaysDo(int amount) =>
+      button.date = button.date!.addOrRemoveDays(amount);
 }

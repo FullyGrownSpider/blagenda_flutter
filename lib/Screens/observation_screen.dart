@@ -36,12 +36,12 @@ class _OverviewScreenState extends State<OverviewScreen> {
         getNewId,
         getNewEntityId,
         _fullReset,
-        flipImportant,
         getEndbasedData,
         getEntities,
         getButtonCopy,
         getEntityCopy);
-    _countDownDrawer = CountdownDrawer(addOrUpdate, _fullReset, getEndbasedData);
+    _countDownDrawer = CountdownDrawer(addOrUpdate, _fullReset, getEndbasedData,
+        flipImportant, getButton, () => addOrRemoveDays(1), () => addOrRemoveDays(-1));
     _fill();
   }
 
@@ -192,6 +192,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
   void skipButton() => _controller.skipButton(_resetScreen);
 
   void flipImportant() => _controller.flipImportant(_resetScreen);
+
+  void addOrRemoveDays(int amount) => _controller.addOrRemoveDay(_resetScreen, amount);
 
   List<EndBasedController> getEndbasedData() => _controller.getEndbasedData();
 

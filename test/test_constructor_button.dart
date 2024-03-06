@@ -142,6 +142,13 @@ void month() {
   backToTheFutureTesting(month2);
   backToTheFutureTesting(month3);
   MyDateController.today = MyDateController.nowDate.addOrRemoveDays(-1);
+
+  var toDay = MyDateController.today;
+  MyDateController.today = MyDateController(toDay.year, 4, 30);
+  month = AgainMonthDay('123', '', 69, Colors.black, 31);
+  d1 = make(month);
+  expect(0, d1.daysLeft);
+  MyDateController.today = toDay;
 }
 
 void weird() {

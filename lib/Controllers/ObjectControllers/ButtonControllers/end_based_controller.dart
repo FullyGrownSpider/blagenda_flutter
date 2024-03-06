@@ -176,6 +176,14 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
   @override
   String searchDisplay() =>
       '${dateController.stringFullDisplayWithCal(true)}\n--\n${gettingTheStringSelected()}';
+
+  void addOrRemoveDays(int amount) {
+    addOrRemoveDaysDo(amount);
+    rebuild();
+  }
+
+  @protected
+  void addOrRemoveDaysDo(int amount);
 }
 
 //----------------------------------

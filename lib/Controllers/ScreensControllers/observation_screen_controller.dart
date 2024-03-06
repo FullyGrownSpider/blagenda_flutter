@@ -95,6 +95,10 @@ class ObservationScreenController {
   void flipImportant(void Function() resetScreen) => _observationScreenLoading
       .flipImportant(resetScreen, getSelectedButton(), _allLists);
 
+  void addOrRemoveDay(void Function() resetScreen, int amount) =>
+      _observationScreenLoading.changeDays(
+          resetScreen, getSelectedButton(), _allLists, amount);
+
   List<Widget> getOptionButtons(void Function() setStateMethod) =>
       _observationScreenOptions.getOptionButtons(setStateMethod, _resetCounters);
 
