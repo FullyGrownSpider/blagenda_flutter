@@ -1,3 +1,4 @@
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/note_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/mix_button_creator.dart';
 import 'package:flutter/material.dart';
 
@@ -90,26 +91,25 @@ class ObservationScreenOptions with buttonCreator {
 
   bool _shouldGoIn(
           EndBasedController eb, bool Function(EndBasedController) wasJustAdded) =>
-      eb.daysLeft < daysToShowNow + 7 && eb.daysLeft >= -1 || wasJustAdded(eb);
+      eb.daysLeft <= daysToShowNow + 7 && eb.daysLeft >= -1 || wasJustAdded(eb);
 
   List<BasicButtonController> goesInList(List<BasicButtonController> allItems,
       bool Function(EndBasedController) wasJustAdded) {
-    if (allItems.isEmpty) return allItems;
+    List<BasicButtonController> returnList = [];
     pickCorrectOption(() {
+      //show x days
       var list = allItems.whereType<EndBasedController>();
-      var newList = list.where((e) => _shouldGoIn(e, wasJustAdded));
-      if (daysToShowNow != daysToShow) {
-        //if you select 14 you want to see something 14 days away too not just
-        //13
-        list = list.where((e) => e.daysLeft == daysToShowNow).toList()..addAll(newList);
-      } else {
-        list = newList.toList();
+      returnList.addAll(list.where((e) => _shouldGoIn(e, wasJustAdded)));
+      if (daysToShow == daysToShowNow) {
+        returnList.addAll(allItems.whereType<NoteController>());
       }
     }, () {
-      // return list;
+      //show everything
+      returnList = allItems;
     }, (c) {
-      allItems = (allItems).where((e) => e.colorCheck(c)).toList();
+      //show colored
+      returnList = (allItems).where((e) => e.colorCheck(c)).toList();
     });
-    return allItems;
+    return returnList;
   }
 }

@@ -108,9 +108,10 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
 
   List<Widget> getWidgetListEndBased(void Function() setStateMethod, int daysToShow,
       List<dynamic> allLists, ObservationScreenOptions options) {
-    List<EndBasedController> everythingToShow = options.goesInList(
-            allLists.whereType<EndBasedController>().toList(), wasJustAdded)
-        as List<EndBasedController>;
+    List<EndBasedController> everythingToShow = options
+        .goesInList(allLists.whereType<EndBasedController>().toList(), wasJustAdded)
+        .whereType<EndBasedController>()
+        .toList();
     List<Widget> againDeadlineDisplayList = [];
     if (everythingToShow.isEmpty) _emptyDay(daysToShow);
     everythingToShow.sort();
@@ -127,7 +128,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
         againDeadlineDisplayList.addAll(_createEndBasedDayList(
             setStateMethod,
             MyDateController.lookTime,
-            everythingToShow.where((e) => e.daysLeft < daysToShow).toList(),
+            everythingToShow..removeWhere((element) => newList.contains(element)),
             options.daysToShowNow,
             newList));
       },

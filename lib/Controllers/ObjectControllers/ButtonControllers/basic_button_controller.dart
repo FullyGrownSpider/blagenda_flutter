@@ -151,6 +151,11 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
       b1 is BasicButton &&
       b1.runtimeType == b2.runtimeType &&
       exportGenerator(b1) == exportGenerator(b2);
+
+  @override
+  String toString() {
+    return job;
+  }
 }
 
 const List<String> emogjiList = [
