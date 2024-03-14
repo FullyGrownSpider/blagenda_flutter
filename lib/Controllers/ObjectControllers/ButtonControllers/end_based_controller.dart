@@ -10,7 +10,7 @@ import 'deadline_controller.dart';
 abstract class EndBasedController<t extends BasicButton> extends BasicButtonController<t>
     implements Comparable<EndBasedController> {
   static final RegExp _completeReg = RegExp(
-      r"((?<full>[0-2]?[0-9]:[0-6][0-9]( ?[a,p]m)?)|(?<hour>[0-2]?[0-9] ?[a,p]m))(([^0-9]{0,5}((?<full2>[0-2]?[0-9]:[0-6][0-9] ?([a,p]m)?)|(?<hour2>[0-2]?[0-9] ?[a,p]m))\b)|\b)");
+      r"(?:(?<full>[0-2]?[0-9]:[0-6][0-9](?: ?[a,p]m)?)|(?<hour>[0-2]?[0-9] ?[a,p]m))(?:(?:[^0-9]{0,5}(?:(?<full2>[0-2]?[0-9]:[0-6][0-9] ?([a,p]m)?)|(?<hour2>[0-2]?[0-9] ?[a,p]m))\b)|\b)");
   static final RegExp _regFix = RegExp(r'[-,.]');
   static final RegExp _regNum = RegExp(r'[^0-9:]');
   static const String _splitString = ':';
