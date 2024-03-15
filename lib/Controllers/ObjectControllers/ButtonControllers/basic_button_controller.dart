@@ -33,6 +33,7 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
 
   String get toDos => _button.toDos!;
 
+  @override
   int get id => _button.id!;
 
   int entitied = -1;
@@ -45,7 +46,7 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
       (entitied != -1 ? entityIndicator : '') + splitByLength(job, maxValueCheck);
 
   String gettingTheStringSelected() =>
-      '${gettingTheStringShortSplit()}\n\n${todosToString()}';
+      '${gettingTheStringShortSplit()}\n\n${todosToString().trim()}';
 
   String gettingTheStringShortSplit() {
     return splitByLength(job, maxValueCheck);

@@ -10,10 +10,9 @@ import 'deadline_controller.dart';
 abstract class EndBasedController<t extends BasicButton> extends BasicButtonController<t>
     implements Comparable<EndBasedController> {
   static final RegExp _completeReg = RegExp(
-      r"(?:(?<full>[0-2]?[0-9]:[0-6][0-9](?: ?[a,p]m)?)|(?<hour>[0-2]?[0-9] ?[a,p]m))(?:(?:[^0-9]{0,5}(?:(?<full2>[0-2]?[0-9]:[0-6][0-9] ?([a,p]m)?)|(?<hour2>[0-2]?[0-9] ?[a,p]m))\b)|\b)");
-  static final RegExp _regFix = RegExp(r'[-,.]');
-  static final RegExp _regNum = RegExp(r'[^0-9:]');
-  static const String _splitString = ':';
+      r"(?:(?<full>[0-2]?[0-9][-,.:][0-6][0-9](?: ?[apAP][mM])?)|(?<hour>[0-2]?[0-9] ?[apAP][mM]))(?:([^0-9]{0,5}(?:(?<full2>[0-2]?[0-9][-,.:][0-6][0-9] ?([apAP][mM])?)|(?<hour2>[0-2]?[0-9] ?[apAP][mM]))\b)|\b)");
+  static final RegExp _regFix = RegExp(r'[-,.:]');
+  static final RegExp _regNum = RegExp(r'[^0-9-,.:]');
   static const int showDayOfWeek = 6;
   static const int showDayTime = 4;
   bool requiresChange = false;
@@ -47,8 +46,7 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
   bool isHappeningOnDayFromNow(int calculatedDay) => daysLeft == calculatedDay;
 
   void _setTimeOfDay() {
-    var match =
-        _completeReg.firstMatch(toDos.toLowerCase().replaceAll(_regFix, _splitString));
+    var match = _completeReg.firstMatch(toDos);
     timeOfDay = _getTime(match, 'full', 'hour');
     timeOfDayEnd = _getTime(match, 'full2', 'hour2');
     if (timeOfDayEnd != -1 && timeOfDayEnd < timeOfDay) {
@@ -62,7 +60,7 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
     var text = match?.namedGroup(full);
     text ??= match?.namedGroup(hour);
     if (text == null) return -1;
-    var split = text.replaceAll(_regNum, '').split(_splitString);
+    var split = text.replaceAll(_regNum, '').split(_regFix);
     return _timeSet(
         int.parse(split.first) * 60 + (split.length > 1 ? int.parse(split.last) : 0),
         text);
@@ -83,18 +81,19 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
 
   String _displayWithTimeJob() {
     return (timeOfDay != -1
-            ? '${timeOfDay ~/ 60}$_splitString${(timeOfDay % 60).toString().padLeft(2, '0')}${timeOfDayEnd != -1 ? '-${timeOfDayEnd ~/ 60}$_splitString${(timeOfDayEnd % 60).toString().padLeft(2, '0')} ~ ' : ' ~ '}'
+            ? '${timeOfDay ~/ 60}:${(timeOfDay % 60).toString().padLeft(2, '0')}${timeOfDayEnd != -1 ? '-${timeOfDayEnd ~/ 60}:${(timeOfDayEnd % 60).toString().padLeft(2, '0')} ~ ' : ' ~ '}'
             : '') +
         super.gettingTheStringShort();
   }
 
-  String _gettingTheStringShortWithTime() =>
+  String _gettingTheStringShortWithTime([bool overrideTime = false]) =>
       (entitied != -1 ? BasicButtonController.entityIndicator : '') +
-      displayGenericText(displayJob(), BasicButtonController.maxValueCheck);
+      displayGenericText(overrideTime ? _displayWithTimeJob() : displayJob(),
+          BasicButtonController.maxValueCheck);
 
   @override
   String gettingTheStringSelected() =>
-      '${_gettingTheStringShortWithTime()}\n\n${todosToString()}'.trim();
+      '${_gettingTheStringShortWithTime(true)}\n\n${todosToString()}'.trim();
 
   String gettingTheStringShortWithDate() =>
       '${dateController.stringFullDisplayWithCal()} - ${_gettingTheStringShortWithTime()}';
@@ -106,23 +105,8 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
   String todosToString() {
     var result = super.todosToString();
     if (timeOfDay != -1) {
-      var results = result.split('\n');
-      for (int i = 0; i < results.length; i++) {
-        //it equals the complete reg
-        var calc = _completeReg
-            .firstMatch(results[i].toLowerCase().replaceAll(_regFix, _splitString));
-        if (calc != null) {
-          if (calc.end != results[i].length) {
-            results.removeAt(i);
-            if (results.length < i && results[i + 1].isEmpty) {
-              results.removeAt(i + 1);
-            }
-            result = results.join('\n');
-            if (result.trim().isEmpty) result = writeEmpty();
-          }
-          break;
-        }
-      }
+      result = result.replaceFirst(_completeReg, '').replaceFirst('\n\n', '\n').trim();
+      if (result.trim().isEmpty) result = writeEmpty();
     }
     return result;
   }

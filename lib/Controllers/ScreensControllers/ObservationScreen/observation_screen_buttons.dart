@@ -120,8 +120,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
         List<EndBasedController> newList = [];
         if (_newThings.isNotEmpty) {
           newList.addAll(_newThings.keys
-              .map((k) => everythingToShow
-                  .firstWhere((e) => e.id == k.id && e.runtimeType == k.t))
+              .map((k) => everythingToShow.firstWhere((e) => k.compare(e)))
               .where((e) => e.daysLeft >= daysToShow));
           newList.sort((a, b) => a.daysLeft.compareTo(b.daysLeft));
         }
@@ -290,8 +289,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     return false;
   }
 
-  bool wasJustAdded(EndBasedController eb) =>
-      _newThings.containsKey(_NewRef(eb.runtimeType, eb.id));
+  bool wasJustAdded(EndBasedController eb) => _newThings.keys.any((e) => e.compare(eb));
 }
 
 class _NewRef {
@@ -299,4 +297,6 @@ class _NewRef {
   final int id;
 
   _NewRef(this.t, this.id);
+
+  bool compare(EndBasedController eb) => t == eb.runtimeType && id == eb.id;
 }
