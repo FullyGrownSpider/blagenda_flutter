@@ -43,7 +43,8 @@ enumToString(dynamic val) => val.toString().split('.').last;
 
 Map<String, dynamic> itemToStoringMap(dynamic button) {
   return Map.fromEntries(
-      _allDataConversion.map((as) => MapEntry(as.butVal, as.toGet(button))));
+      _allDataConversion.map((as) => MapEntry(as.butVal, as.toGet(button))))
+    ..removeWhere((key, value) => value == null);
 }
 
 ///class used to turn the values used by buttons into string and back
