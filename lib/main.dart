@@ -1,5 +1,4 @@
 import 'package:blagenda_flutter_simple/Screens/observation_screen.dart';
-import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter/material.dart';
 
 import 'Loading/mix_loading.dart';
@@ -23,31 +22,9 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
   @override
   void initState() {
     super.initState();
-    syncAction = syncData;
-
-    syncActionLowKey = syncDataLowKey;
   }
 
   bool done = true; //false for sync possiblity true for testing mode
-
-  void syncData() {
-    setState(() {
-      done = false;
-    });
-    downloadDatabaseFiles().then((x) {
-      setState(() {
-        done = true;
-      });
-    });
-  }
-
-  void syncDataLowKey(setState) {
-    downloadDatabaseFilesCarefully().then((x) {
-      if (x) {
-        setState();
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {

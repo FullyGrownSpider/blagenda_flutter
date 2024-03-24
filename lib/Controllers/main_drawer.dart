@@ -1,21 +1,36 @@
 import 'dart:math';
 
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/again.dart';
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/deadline.dart';
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/weird_again.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/end_based_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/entity_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
+import 'package:blagenda_flutter_simple/Loading/data_exporter.dart';
+import 'package:blagenda_flutter_simple/Loading/mix_loading.dart';
 import 'package:blagenda_flutter_simple/Screens/adding_screen.dart';
 import 'package:blagenda_flutter_simple/Screens/search_screen.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 
+import '../Loading/conversion_base.dart';
 import '../Screens/entity_adding_screen.dart';
 import '../common_items.dart';
 import 'ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import 'blagenda_uniform_button.dart';
 
-class MainDrawer {
+class MainDrawer with loading, Export {
   static const TextStyle textStyle = TextStyle(
-      fontSize: 35.0,
+      fontSize: 30.0,
+      height: 1.7,
+      fontWeight: FontWeight.bold,
+      fontStyle: FontStyle.italic,
+      decoration: TextDecoration.underline,
+      color: Colors.grey);
+
+  static const TextStyle textStyleSmall = TextStyle(
+      fontSize: 12.0,
       height: 1.7,
       fontWeight: FontWeight.bold,
       fontStyle: FontStyle.italic,
@@ -68,8 +83,8 @@ class MainDrawer {
               formatDate(MyDateController.today, [D, ', ', M, ' ', d]),
               style: textStyle,
             ),
-            Text('${formatDate(MyDateController.today, ['W:', WW])} - N:$funnyNumber',
-                style: textStyle)
+            Text(formatDate(MyDateController.today, ['Week:', WW]), style: textStyle),
+            const Text('You matter to us', style: textStyleSmall)
           ])),
         ),
         Container(
@@ -141,11 +156,74 @@ class MainDrawer {
               ),
             ])),
         ListTile(
-            title: _dumbJoke('Sync Online Data'),
-            trailing: const Icon(Icons.sync, color: Colors.black),
-            onTap: () => syncAction!())
+            title: _dumbJoke('Export all data'),
+            trailing: const Icon(Icons.upload, color: Colors.black),
+            onTap: () => export()),
+        ListTile(
+            title: _dumbJoke('Import data'),
+            trailing: const Icon(Icons.download, color: Colors.black),
+            onTap: () => import())
       ],
     ));
+  }
+
+  static const String listSepList = "-=-";
+
+  Future<void> export() async {
+    List<String> buttons = [];
+    await getData<BasicButton>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    buttons.add(listSepList);
+    await getData<Deadline>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    buttons.add(listSepList);
+    await getData<AgainAmountDay>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    buttons.add(listSepList);
+    await getData<AgainWeekDay>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    buttons.add(listSepList);
+    await getData<AgainMonthDay>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    buttons.add(listSepList);
+    await getData<AgainYearDay>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    buttons.add(listSepList);
+    await getData<AgainWeird>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    await saveInStorage(buttons);
+  }
+
+  static List<BasicButton Function(dynamic x)> makers = [
+    (x) => importGenerator<BasicButton>(x),
+    (x) => importGenerator<Deadline>(x),
+    (x) => importGenerator<AgainAmountDay>(x),
+    (x) => importGenerator<AgainWeekDay>(x),
+    (x) => importGenerator<AgainMonthDay>(x),
+    (x) => importGenerator<AgainYearDay>(x),
+    (x) => importGenerator<AgainWeird>(x)
+  ];
+
+  Future<void> import() async {
+    var string = await loadFromInStorage();
+    if (string.isEmpty) return;
+    List<List<String>> separated = string
+        .split(listSepList)
+        .map((e) => e.split('\n').where((ee) => ee.isNotEmpty).toList())
+        .toList();
+
+    var results = [];
+    for (int i = 0; i < makers.length; i++) {
+      List<BasicButtonController<BasicButton>> list = separated[i].map((x) {
+        BasicButton but = makers[i](x);
+        BasicButtonController controller = dataToController(but);
+        return controller;
+      }).toList();
+      results.add(updateButtons(list));
+    }
+    for (var result in results) {
+      await result;
+    }
   }
 
   Future<dynamic> _openEntitySearch(int numb, BuildContext context,
@@ -196,7 +274,7 @@ class MainDrawer {
     return Text(s, style: normalTextStyle);
   }
 
-  var dumberJoke = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Delta', 'Zeta'];
+  var dumberJoke = ['🔥', '🌱', '👍', '🌴', '🕯️', '💡'];
 
   Future<dynamic> _openEntityEdit(BuildContext context, EntityController? c) =>
       Navigator.push(

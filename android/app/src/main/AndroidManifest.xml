@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.Blagenda.Blagenda.blagenda_flutter">
    <application
-        android:label="Blagenda"
+        android:label="Éangenda"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

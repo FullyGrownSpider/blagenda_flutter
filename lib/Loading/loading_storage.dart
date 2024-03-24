@@ -186,7 +186,11 @@ class SuperStorage {
     var values = await _readAllData();
     for (int i = 0; i < newItem.length; i++) {
       var index = values.indexWhere((e) => e.contains(uniquePart[i]));
-      values[index] = newItem[i];
+      if (index == -1) {
+        values[index] = newItem[i];
+      } else {
+        values.add(newItem[i]);
+      }
     }
     await _writeStrings(values);
   }

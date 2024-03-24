@@ -9,8 +9,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  #https://pub.dev/packages/http/install
-  http: ^1.2.0
+  external_path: ^1.0.3
   # https://pub.dev/packages/date_format/example
   date_format: ^2.0.7
   # https://pub.dev/packages/path_provider
