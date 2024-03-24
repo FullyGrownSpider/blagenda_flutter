@@ -14,6 +14,7 @@ class EntityController extends SearchAble {
 
   List<Tag> get tags => myEntity.tags!;
 
+  @override
   int get id => myEntity.id!;
 
   EntityController(this.myEntity);
