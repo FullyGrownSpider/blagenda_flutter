@@ -27,7 +27,11 @@ class _OverviewScreenState extends State<OverviewScreen> {
   bool _wentBack = false;
 
   _OverviewScreenState() {
-    _controller = ObservationScreenController(_openEntityEdit);
+    _controller = ObservationScreenController(
+        _openEntityEdit,
+        (button) => _openEdit(currentContext!, button, false, (t) {
+              return addOrUpdate(t);
+            }));
     _drawer = MainDrawer(
         getButton,
         addOrUpdate,

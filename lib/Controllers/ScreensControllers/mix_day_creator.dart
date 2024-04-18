@@ -23,7 +23,8 @@ mixin dayCreator {
       void Function() setStateMethod,
       Widget Function(EndBasedController, void Function()) addEndBasedButton,
       bool showNamesOnly,
-      [bool hideSkips = false]) {
+      [bool hideSkips = false,
+      void Function(int)? clickOnDay]) {
     List<Widget> list = [];
     bool added = false;
     var calcDay = nowDate.addOrRemoveDays(fromNow);
@@ -62,8 +63,10 @@ mixin dayCreator {
       } else {
         toAdd = Text(formatDate(calcDay, _smallDateFormat), style: bigTextStyle);
       }
+      var dayDisplayButton = _createDayButton(clickOnDay, toAdd, fromNow);
       list.add(Row(
-          mainAxisAlignment: MainAxisAlignment.center, children: [left, toAdd, right]));
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [left, dayDisplayButton, right]));
       for (var item in sortableList) {
         if (item is SkippableEndBasedController &&
             hideSkips &&
@@ -111,8 +114,10 @@ mixin dayCreator {
       } else {
         toAdd = Text(formatDate(newDate, _bigDateFormatWithYear), style: bigTextStyle);
       }
+      var dayDisplayButton = _createDayButton(clickOnDay, toAdd, fromNow);
       list.add(Row(
-          mainAxisAlignment: MainAxisAlignment.center, children: [left, toAdd, right]));
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [left, dayDisplayButton, right]));
       list.add(Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         left,
         Text('In ${(fromNow).toString()} days', style: secondaryBigTextStyle),
@@ -163,5 +168,10 @@ mixin dayCreator {
               mainAxisAlignment: MainAxisAlignment.center, children: [medBlankSplit])));
     }
     return list;
+  }
+
+  _createDayButton(void Function(int)? clickOnDay, Text toAdd, int fromNow) {
+    return TextButton(
+        onPressed: clickOnDay == null ? null : () => clickOnDay(fromNow), child: toAdd);
   }
 }

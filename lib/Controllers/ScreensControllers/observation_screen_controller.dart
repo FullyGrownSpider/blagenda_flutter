@@ -20,9 +20,11 @@ class ObservationScreenController {
   final List<EntityController> _entityList = [];
 
   ///needs to load first use doneLoading to check if done
-  ObservationScreenController(Function(BasicButtonController) openEntityScreen) {
+  ObservationScreenController(Future Function(BasicButtonController) openEntityScreen,
+      Future Function(BasicButtonController) openButtonEdit) {
     _observationScreenLoading = ObservationScreenLoading();
-    _observationScreenButtons = ObservationScreenButtons(openEntityScreen);
+    _observationScreenButtons =
+        ObservationScreenButtons(openEntityScreen, openButtonEdit);
     _observationScreenLoading.loadEntityListFromStorage().then((v) {
       _entityList.clear();
       _entityList.addAll(v);
