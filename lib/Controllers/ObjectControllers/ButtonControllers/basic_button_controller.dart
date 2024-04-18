@@ -36,6 +36,7 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
   @override
   int get id => _button.id!;
 
+  ///is -1 if not connected to an entity else its entity ID
   int entitied = -1;
 
   String displayGenericText(String job, int max) => splitByLength(job, max);
