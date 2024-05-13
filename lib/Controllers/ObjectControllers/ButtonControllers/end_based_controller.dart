@@ -280,6 +280,17 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
   }
 
   @override
+  bool extraGoingOn(int currentDay) {
+    if (extraDays == 1) return false;
+    for (int i = 2; i <= extraDays; i++) {
+      if (isHappeningOnDayFromNow(currentDay - i)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @override
   String displayJob() {
     var xtr = '';
     if (isLastTime()) {
