@@ -234,7 +234,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
           lastLeft = button.daysLeft;
           againDeadlineDisplayList.addAll(createADay(
               nowDate,
-              endBasedList,
+              [...justAdded, ...endBasedList],
               lastLeft,
               setStateMethod,
               (controller, setState, isExtra) => _createButtonBase(
