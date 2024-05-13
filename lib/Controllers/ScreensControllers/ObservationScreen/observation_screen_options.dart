@@ -91,7 +91,7 @@ class ObservationScreenOptions with buttonCreator {
 
   bool _shouldGoIn(
           EndBasedController eb, bool Function(EndBasedController) wasJustAdded) =>
-      eb.daysLeft <= daysToShowNow + 7 && eb.daysLeft >= -1 || wasJustAdded(eb);
+      eb.daysLeft <= daysToShowNow + 7 || wasJustAdded(eb);
 
   List<BasicButtonController> goesInList(List<BasicButtonController> allItems,
       bool Function(EndBasedController) wasJustAdded) {

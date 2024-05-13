@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 const TextStyle bigTextStyle = TextStyle(
@@ -12,6 +14,9 @@ const TextStyle normalTextStyleBold = TextStyle(
     fontSize: 14.0, height: 1.1, fontWeight: FontWeight.w900, color: Colors.black);
 const TextStyle smallStyle = TextStyle(fontSize: 2.0, color: Colors.green);
 
+const TextStyle extraDayButton = TextStyle(
+    fontSize: 8.0, height: 1.1, fontWeight: FontWeight.w900, color: Colors.black);
+
 const Text splitterTextField =
     Text('    ', style: TextStyle(fontSize: 8.0, color: Colors.green));
 
@@ -23,6 +28,8 @@ const Text medBlankSplit = Text('\n\n\n\n            ', style: smallStyle);
 
 class BlagendaUniformButton extends StatefulWidget {
   // A standard playing card is 57.1mm x 88.9mm.
+
+  static const String smollButStartText = '©•';
 
   const BlagendaUniformButton(this.isSelected, this.color, this.text, this.pressed,
       {super.key});
@@ -47,6 +54,17 @@ class _BlagendaUniformButton extends State<BlagendaUniformButton> {
   @override
   Widget build(BuildContext context) {
     var text = widget.text.trim();
+    if (text.startsWith(BlagendaUniformButton.smollButStartText)) {
+      text =
+          '${text.replaceAll('\n', '').replaceFirst(BlagendaUniformButton.smollButStartText, '').substring(0, min(4, text.length - BlagendaUniformButton.smollButStartText.length))}..';
+      ElevatedButton(
+          onPressed: widget.pressed,
+          style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.only(left: 13, right: 13),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              backgroundColor: widget.color),
+          child: Text(text, style: normalTextStyle, textAlign: TextAlign.center));
+    }
     return ElevatedButton(
         onPressed: widget.pressed,
         style: ElevatedButton.styleFrom(

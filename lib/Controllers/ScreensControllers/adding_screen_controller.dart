@@ -406,12 +406,18 @@ class AddingScreenController with buttonCreator, dayCreator, inputHandler, loadi
         decoration: const BoxDecoration(
             border: Border(top: BorderSide(color: Colors.lightGreenAccent, width: 4))),
         child: Column(
-            children: createADay(MyDateController.nowDate, everythingList, timeLeftUntil,
-                _setStateMethod, (c, o) => _addEndBasedButton(c), timeLeftUntil < 7)));
+            children: createADay(
+                MyDateController.nowDate,
+                everythingList,
+                timeLeftUntil,
+                _setStateMethod,
+                (c, o, ex) => _addEndBasedButton(c, ex),
+                timeLeftUntil < 7,
+                true)));
     _setStateMethod();
   }
 
-  Container _addEndBasedButton(EndBasedController controller) {
+  Container _addEndBasedButton(EndBasedController controller, bool isExtra) {
     return Container(
         decoration: BoxDecoration(
             border: Border.all(
@@ -419,6 +425,8 @@ class AddingScreenController with buttonCreator, dayCreator, inputHandler, loadi
             ),
             color: controller.color,
             borderRadius: const BorderRadius.all(Radius.circular(5))),
-        child: Text(' ${controller.gettingTheStringShort()} ', style: normalTextStyle));
+        child: Text(
+            '${isExtra ? BlagendaUniformButton.smollButStartText : ''} ${controller.gettingTheStringShort()} ',
+            style: normalTextStyle));
   }
 }

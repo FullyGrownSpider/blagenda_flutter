@@ -21,8 +21,9 @@ mixin dayCreator {
       List<EndBasedController> listWithEverything,
       int fromNow,
       void Function() setStateMethod,
-      Widget Function(EndBasedController, void Function()) addEndBasedButton,
+      Widget Function(EndBasedController, void Function(), bool) addEndBasedButton,
       bool showNamesOnly,
+      bool showFirst,
       [bool hideSkips = false,
       void Function(int)? clickOnDay]) {
     List<Widget> list = [];
@@ -40,9 +41,11 @@ mixin dayCreator {
         '◭',
         calcDay);
     Text toAdd;
-    var sortableList = listWithEverything
-        .where((e) => e.isHappeningOnDayFromNow(fromNow))
-        .toList(growable: false);
+    var sortableList =
+        listWithEverything.where((e) => e.isHappeningOnDayFromNow(fromNow)).toList();
+    var listWithExtra = listWithEverything
+        .where((e) => !e.isHappeningOnDayFromNow(fromNow) && e.extraGoingOn(fromNow))
+        .toList();
     for (int i = 0; i < sortableList.length; i++) {
       if (sortableList[i] is SkippableEndBasedController) {
         sortableList[i] =
@@ -52,8 +55,9 @@ mixin dayCreator {
     sortableList.sort();
     if (showNamesOnly) {
       if (fromNow == -1) {
-        if (_yesterdayShouldShow(
-            listWithEverything.where((e) => e.daysLeft == -1).toList(growable: false))) {
+        if (_yesterdayShouldShow(listWithEverything
+            .where((e) => e.daysLeft == -1 || e.extraGoingOn(-1))
+            .toList(growable: false))) {
           return list;
         }
         toAdd = const Text('Yesterday', style: bigTextStyleYesterday);
@@ -67,6 +71,14 @@ mixin dayCreator {
       list.add(Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [left, dayDisplayButton, right]));
+      for (var item in listWithExtra) {
+        if (showFirst) {
+          list.add(addEndBasedButton(item, setStateMethod, false));
+        } else {
+          list.add(addEndBasedButton(item, setStateMethod, true));
+        }
+        added = true;
+      }
       for (var item in sortableList) {
         if (item is SkippableEndBasedController &&
             hideSkips &&
@@ -74,7 +86,7 @@ mixin dayCreator {
             item.skipCheckNotSure(fromNow, (item.daysLeft))) {
           continue;
         }
-        list.add(addEndBasedButton(item, setStateMethod));
+        list.add(addEndBasedButton(item, setStateMethod, false));
         added = true;
       }
       //yesterday gets a gray box around it and today a green one
@@ -123,6 +135,14 @@ mixin dayCreator {
         Text('In ${(fromNow).toString()} days', style: secondaryBigTextStyle),
         right,
       ]));
+      for (var item in listWithExtra) {
+        if (showFirst) {
+          list.add(addEndBasedButton(item, setStateMethod, false));
+        } else {
+          list.add(addEndBasedButton(item, setStateMethod, true));
+        }
+        added = true;
+      }
       for (var item in sortableList) {
         if (item is SkippableEndBasedController &&
             hideSkips &&
@@ -130,8 +150,7 @@ mixin dayCreator {
             item.skipCheckNotSure(fromNow, (item.daysLeft))) {
           continue;
         }
-        // list.add(smallBlankSplit);
-        list.add(addEndBasedButton(item, setStateMethod));
+        list.add(addEndBasedButton(item, setStateMethod, false));
         added = true;
       }
     }

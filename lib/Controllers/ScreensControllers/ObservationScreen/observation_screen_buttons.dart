@@ -70,7 +70,8 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
           notesList.cast<NoteController>(), BasicButtonController.maxValueCheck);
       items.add(const Text('Notes', style: bigTextStyle));
       items.addAll(addAsRow(
-          (i) => _createButtonBase(notesList[i], setStateMethod), notesList.length, (i) {
+          (i) => _createButtonBase(notesList[i], setStateMethod, false), notesList.length,
+          (i) {
         return notesList[i].theStringLongestLength;
       }, BasicButtonController.maxValueCheck));
     }
@@ -147,12 +148,12 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
       MyDateController nowDate, List<EndBasedController> endBasedList) {
     List<Widget> againDeadlineDisplayList = [];
     int index = 0;
-    if (endBasedList.isNotEmpty && endBasedList.first.daysLeft == -1) {
+    if (endBasedList.isNotEmpty && endBasedList.first.daysLeft < 0) {
       index--;
     }
     for (; index < ObservationScreenOptions.daysToShow; index++) {
       againDeadlineDisplayList.addAll(createADay(nowDate, endBasedList, index,
-          setStateMethod, _createButtonBase, true, false, _openButtonEditMethod()));
+          setStateMethod, _createButtonBase, true, false, true, _openButtonEditMethod()));
     }
     if (endBasedList.any((e) => e.daysLeft >= ObservationScreenOptions.daysToShow)) {
       againDeadlineDisplayList.add(bigSplitterTextField);
@@ -169,6 +170,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
                 _createButtonBase,
                 lastLeft < ObservationScreenOptions.daysToShow,
                 false,
+                endBasedList.first.daysLeft >= 0,
                 _openButtonEditMethod()));
           }
         }
@@ -219,10 +221,10 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     List<Widget> againDeadlineDisplayList = [];
     int i = 0;
     if (endBasedList.isEmpty) return againDeadlineDisplayList;
-    if (endBasedList.first.daysLeft == -1) {
+    if (endBasedList.first.daysLeft < 0) {
       //Yesterday show here
       againDeadlineDisplayList.addAll(createADay(nowDate, endBasedList, -1,
-          setStateMethod, _createButtonBase, true, false, _openButtonEditMethod()));
+          setStateMethod, _createButtonBase, true, false, true, _openButtonEditMethod()));
     }
     //Just added things show here
     if (justAdded.isNotEmpty) {
@@ -232,11 +234,13 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
           lastLeft = button.daysLeft;
           againDeadlineDisplayList.addAll(createADay(
               nowDate,
-              justAdded,
+              endBasedList,
               lastLeft,
               setStateMethod,
-              _createButtonBase,
+              (controller, setState, isExtra) => _createButtonBase(
+                  controller, setState, isExtra, justAdded.contains(controller)),
               lastLeft < daysToShowNow,
+              false,
               false,
               _openButtonEditMethod()));
         }
@@ -255,15 +259,22 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
           _createButtonBase,
           i < ObservationScreenOptions.daysToShow,
           false,
+          endBasedList.first.daysLeft >= 0,
           _openButtonEditMethod()));
     }
     return againDeadlineDisplayList;
   }
 
-  Widget _createButtonBase(BasicButtonController it, void Function() setStateMethod) {
+  Widget _createButtonBase(
+      BasicButtonController it, void Function() setStateMethod, bool isExtra,
+      [bool isNew = false]) {
     _globalCounter++;
     int index = _globalCounter;
-    return BlagendaUniformButton(clicked == index, it.color, _buttonDisplay(index, it),
+    return BlagendaUniformButton(
+        clicked == index,
+        it.color,
+        (isExtra ? BlagendaUniformButton.smollButStartText : (isNew ? '⊚' : '')) +
+            _buttonDisplay(index, it),
         () => _clickOnButton(index, setStateMethod, it));
   }
 
@@ -278,7 +289,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     var list = [];
     for (int i = 0; i < daysToShow; i++) {
       list.add(createADay(MyDateController.today, [], i, () {},
-          (p0, p1) => const Text(''), true, false, _openButtonEditMethod()));
+          (p0, p1, p2) => const Text(''), true, false, false, _openButtonEditMethod()));
     }
   }
 
