@@ -10,6 +10,7 @@ import 'package:blagenda_flutter_simple/Loading/conversion_base.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+///test weather loading of entities works fine (.loading class)
 void main() {
   test('entity conversion', entityTest);
 }

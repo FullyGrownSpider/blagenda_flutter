@@ -9,11 +9,13 @@ import '../../blagenda_uniform_button.dart';
 
 class ObservationScreenOptions with buttonCreator {
   static const int daysToShow = 6;
-  static const List<int> _possibleExtraDays = [30, 14];
+  @visibleForTesting
+  static const List<int> possibleExtraDays = [30, 14];
 
   ///-1 no color selected
   ///-2 show everything in a list
-  int _chosenColor = -1;
+  @visibleForTesting
+  int chosenColor = -1;
 
   ///used to display more days or less days
   int daysToShowNow = daysToShow;
@@ -24,53 +26,54 @@ class ObservationScreenOptions with buttonCreator {
     List<Widget> items = [];
     items.add(const Text('Display Options', style: bigTextStyle));
     items.addAll(globalCreateColorButtons(
-        setStateMethod, (i) => _colorPressed(i, resetCounters), _chosenColor));
+        setStateMethod, (i) => colorPressed(i, resetCounters), chosenColor));
     items.addAll(addAsRow((i) => _createCounterButton(setStateMethod, i, resetCounters),
-        _possibleExtraDays.length));
+        possibleExtraDays.length));
     items.add(_createDisplayAllEndBasedButtonsButton(setStateMethod, resetCounters));
     return items;
   }
 
   Widget _createDisplayAllEndBasedButtonsButton(
           void Function() setStateMethod, Function() resetCounters) =>
-      BlagendaUniformButton(-2 == _chosenColor, usedColors.first, 'Show all', () {
+      BlagendaUniformButton(-2 == chosenColor, usedColors.first, 'Show all', () {
         resetCounters();
         daysToShowNow = daysToShow;
-        if (-2 == _chosenColor) {
-          _chosenColor = -1;
+        if (-2 == chosenColor) {
+          chosenColor = -1;
         } else {
-          _chosenColor = -2;
+          chosenColor = -2;
         }
         setStateMethod();
       });
 
   Widget _createCounterButton(
           void Function() setStateMethod, int index, Function() resetCounters) =>
-      BlagendaUniformButton(daysToShowNow == _possibleExtraDays[index], usedColors.first,
-          'Show next ${_possibleExtraDays[index].toString()} days', () {
-        _chosenColor = -1;
-        if (daysToShowNow == _possibleExtraDays[index]) {
+      BlagendaUniformButton(daysToShowNow == possibleExtraDays[index], usedColors.first,
+          'Show next ${possibleExtraDays[index].toString()} days', () {
+        chosenColor = -1;
+        if (daysToShowNow == possibleExtraDays[index]) {
           daysToShowNow = daysToShow;
         } else {
-          daysToShowNow = _possibleExtraDays[index];
+          daysToShowNow = possibleExtraDays[index];
         }
         resetCounters();
         setStateMethod();
       });
 
-  void _colorPressed(int index, Function() resetCounters) {
+  @visibleForTesting
+  void colorPressed(int index, Function() resetCounters) {
     daysToShowNow = daysToShow;
-    if (_chosenColor == index) {
-      _chosenColor = -1;
+    if (chosenColor == index) {
+      chosenColor = -1;
     } else {
-      _chosenColor = index;
+      chosenColor = index;
     }
     resetCounters();
   }
 
   void resetSearch(void Function() setStateMethod, Function() resetCounters) {
-    if (_chosenColor == -1 && daysToShowNow == daysToShow) return;
-    _chosenColor = -1;
+    if (chosenColor == -1 && daysToShowNow == daysToShow) return;
+    chosenColor = -1;
     daysToShowNow = daysToShow;
     resetCounters();
     setStateMethod();
@@ -80,9 +83,9 @@ class ObservationScreenOptions with buttonCreator {
       void Function() defaultListMaker,
       void Function() showEverythingListMaker,
       void Function(Color) colorChoiceListMaker) {
-    if (_chosenColor > -1) {
-      colorChoiceListMaker(usedColors[_chosenColor]);
-    } else if (_chosenColor == -2) {
+    if (chosenColor > -1) {
+      colorChoiceListMaker(usedColors[chosenColor]);
+    } else if (chosenColor == -2) {
       showEverythingListMaker();
     } else {
       defaultListMaker();

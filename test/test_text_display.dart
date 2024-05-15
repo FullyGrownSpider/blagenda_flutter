@@ -7,9 +7,12 @@ import 'package:blagenda_flutter_simple/Loading/conversion_base.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+///test all difficult time things
 void main() {
   test('deadline', deadline);
   test('basic', basic);
+  //TODO new item (is only done in observation screen
+  //TODO small item because its not the first one of a day (done in create a day via observation screen
 }
 
 void basic() {

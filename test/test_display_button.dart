@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 class MockingCreator with dayCreator {}
 
+///tests if it shows days in createADay the way it should on a basic level
 void main() {
   test('deadline', deadline);
 

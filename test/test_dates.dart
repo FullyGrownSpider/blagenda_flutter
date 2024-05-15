@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 List<String> input = ['jan 2', '02 1', '2 1'];
 List<String> relativeInput = ['1e', '5', '5+', 'ma', 'ma++'];
 
+///test weather the MyDateController.translate works with all input it should work with
 void main() {
   test('test normal input', testInput);
   test('test normal input with a year', testInputWYear);

@@ -1,8 +1,9 @@
-import 'package:blagenda_flutter_simple/Commons/Models/Buttons/deadline.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/deadline_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'screens/defaultButtons.dart';
 
 List<String> inputFalse = [
   ' amsterdam',
@@ -51,6 +52,7 @@ Map<String, List<int>> inputTrueTrue = {
   '18.00 tot 18.10': [1080, 1090],
 };
 
+///test the reading of all different types of time
 void main() {
   test('found time', tesFoundTime);
   test('not found time', tesNotFoundTime);
@@ -58,11 +60,8 @@ void main() {
 }
 
 void tesFoundTime() {
-  var but = Deadline();
+  var but = deadline();
   but.date = MyDateController.nowDate.addOrRemoveDays(4);
-  but.job = '';
-  but.id = 1;
-  but.color = Colors.black;
   for (var key in inputTrue.keys) {
     but.toDos = key;
     var contr = DeadlineController(but);
@@ -74,10 +73,7 @@ void tesFoundTime() {
 }
 
 void tesNotFoundTime() {
-  var but = Deadline();
-  but.date = MyDateController.nowDate.addOrRemoveDays(4);
-  but.job = '';
-  but.id = 1;
+  var but = deadline();
   but.color = Colors.black;
   for (var item in inputFalse) {
     but.toDos = item;
@@ -89,11 +85,8 @@ void tesNotFoundTime() {
 }
 
 void testDoubleFound() {
-  var but = Deadline();
+  var but = deadline();
   but.date = MyDateController.nowDate.addOrRemoveDays(4);
-  but.job = '';
-  but.id = 1;
-  but.color = Colors.black;
   for (var key in inputTrueTrue.keys) {
     but.toDos = key;
     var contr = DeadlineController(but);

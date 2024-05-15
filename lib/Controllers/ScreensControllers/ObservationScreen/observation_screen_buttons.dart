@@ -28,7 +28,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
   ///keep the data of all the new things
   final Map<_NewRef, MyDateController> _newThings = {};
 
-  int hasJustAdded = 0;
+  int amountJustAdded = 0;
 
   ///button type of the selected index
   Type? typeOfSelected;
@@ -120,18 +120,20 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     options.pickCorrectOption(
       () {
         List<EndBasedController> newList = [];
+        List<EndBasedController> newListToRemove = [];
         if (_newThings.isNotEmpty) {
           newList.addAll(_newThings.keys
-              .map((k) => everythingToShow.firstWhere((e) => k.compare(e)))
-              .where((e) => e.daysLeft >= daysToShow));
+              .map((k) => everythingToShow.firstWhere((e) => k.compare(e))));
           newList.sort((a, b) => a.daysLeft.compareTo(b.daysLeft));
+          newListToRemove.addAll(newList.where((e) => e.daysLeft >= daysToShow));
         }
         againDeadlineDisplayList.addAll(_createEndBasedDayList(
             setStateMethod,
             MyDateController.lookTime,
-            everythingToShow..removeWhere((element) => newList.contains(element)),
+            everythingToShow..removeWhere((element) => newListToRemove.contains(element)),
             options.daysToShowNow,
-            newList));
+            newList,
+            daysToShow));
       },
       () => againDeadlineDisplayList.addAll(
           _createFullList(setStateMethod, MyDateController.lookTime, everythingToShow)),
@@ -217,19 +219,20 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
       MyDateController nowDate,
       List<EndBasedController> endBasedList,
       int daysToShowNow,
-      List<EndBasedController> justAdded) {
+      List<EndBasedController> justAdded,
+      int daysToShow) {
     List<Widget> againDeadlineDisplayList = [];
     int i = 0;
     if (endBasedList.isEmpty) return againDeadlineDisplayList;
     if (endBasedList.first.daysLeft < 0) {
       //Yesterday show here
       againDeadlineDisplayList.addAll(createADay(nowDate, endBasedList, -1,
-          setStateMethod, _createButtonBase, true, false, true, _openButtonEditMethod()));
+          setStateMethod, _createButtonBase, true, true, true, _openButtonEditMethod()));
     }
-    //Just added things show here
+    //Just added things show here up top
     if (justAdded.isNotEmpty) {
       var lastLeft = -1;
-      for (var button in justAdded) {
+      for (var button in justAdded.where((element) => element.daysLeft >= daysToShow)) {
         if (!button.isHappeningOnDayFromNow(lastLeft)) {
           lastLeft = button.daysLeft;
           againDeadlineDisplayList.addAll(createADay(
@@ -256,7 +259,8 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
           endBasedList,
           i,
           setStateMethod,
-          _createButtonBase,
+          (controller, setState, isExtra) => _createButtonBase(
+              controller, setState, isExtra, justAdded.contains(controller)),
           i < ObservationScreenOptions.daysToShow,
           false,
           endBasedList.first.daysLeft >= 0,
@@ -265,7 +269,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     return againDeadlineDisplayList;
   }
 
-  Widget _createButtonBase(
+  BlagendaUniformButton _createButtonBase(
       BasicButtonController it, void Function() setStateMethod, bool isExtra,
       [bool isNew = false]) {
     _globalCounter++;
@@ -273,8 +277,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     return BlagendaUniformButton(
         clicked == index,
         it.color,
-        (isExtra ? BlagendaUniformButton.smollButStartText : (isNew ? '⊚' : '')) +
-            _buttonDisplay(index, it),
+        '${isNew ? '⊚' : ''}${isExtra ? it.job.substring(0, 3) + BlagendaUniformButton.smollButStartText : _buttonDisplay(index, it)}',
         () => _clickOnButton(index, setStateMethod, it));
   }
 
@@ -297,6 +300,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     var timeWhenNotNewItemAnymore =
         MyDateController.now().add(const Duration(minutes: 4));
     _newThings[_getKey(id, type)] = timeWhenNotNewItemAnymore;
+    amountJustAdded++;
   }
 
   void removeNew(int id, Type type) {
@@ -310,7 +314,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
   bool justAddedCheck() {
     if (_newThings.isEmpty) return false;
     MyDateController now = MyDateController.now();
-    int hasJustAddedCalc = 0;
+    int hasJustAddedCalc = _newThings.length;
     List toRemove = [];
     for (var butId in _newThings.keys) {
       if (_newThings[butId]!.isBefore(now)) {
@@ -320,8 +324,8 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     for (var ref in toRemove) {
       _newThings.remove(ref);
     }
-    if (hasJustAdded != hasJustAddedCalc) {
-      hasJustAdded = _newThings.length;
+    amountJustAdded = _newThings.length;
+    if (amountJustAdded != hasJustAddedCalc) {
       return true;
     }
     return false;
