@@ -10,73 +10,77 @@ import 'ObservationScreen/observation_screen_loading.dart';
 import 'ObservationScreen/observation_screen_options.dart';
 
 class ObservationScreenController {
-  late final ObservationScreenLoading _observationScreenLoading;
-  final ObservationScreenOptions _observationScreenOptions = ObservationScreenOptions();
-  late final ObservationScreenButtons _observationScreenButtons;
+  @visibleForTesting
+  late ObservationScreenLoading observationScreenLoading;
+  @visibleForTesting
+  final ObservationScreenOptions observationScreenOptions = ObservationScreenOptions();
+  @visibleForTesting
+  late final ObservationScreenButtons observationScreenButtons;
 
   ///lists used to store all buttons and used to .select the ones to display
-  final List<BasicButtonController> _allLists = [];
+  @visibleForTesting
+  final List<BasicButtonController> allLists = [];
 
-  final List<EntityController> _entityList = [];
+  @visibleForTesting
+  final List<EntityController> entityList = [];
 
   ///needs to load first use doneLoading to check if done
   ObservationScreenController(Future Function(BasicButtonController) openEntityScreen,
       Future Function(BasicButtonController) openButtonEdit) {
-    _observationScreenLoading = ObservationScreenLoading();
-    _observationScreenButtons =
-        ObservationScreenButtons(openEntityScreen, openButtonEdit);
-    _observationScreenLoading.loadEntityListFromStorage().then((v) {
-      _entityList.clear();
-      _entityList.addAll(v);
-      _observationScreenLoading.loadListsFromStorage(_allLists, _entityList);
+    observationScreenLoading = ObservationScreenLoading();
+    observationScreenButtons = ObservationScreenButtons(openEntityScreen, openButtonEdit);
+    observationScreenLoading.loadEntityListFromStorage().then((v) {
+      entityList.clear();
+      entityList.addAll(v);
+      observationScreenLoading.loadListsFromStorage(allLists, entityList);
     });
   }
 
   List<Widget> getWidgetListNote(void Function() setStateMethod) =>
-      _observationScreenButtons.getWidgetListNote(setStateMethod,
-          _observationScreenOptions, _allLists.whereType<NoteController>().toList());
+      observationScreenButtons.getWidgetListNote(setStateMethod, observationScreenOptions,
+          allLists.whereType<NoteController>().toList());
 
   List<Widget> getWidgetListEndBased(void Function() setStateMethod) =>
-      _observationScreenButtons.getWidgetListEndBased(setStateMethod,
-          ObservationScreenOptions.daysToShow, _allLists, _observationScreenOptions);
+      observationScreenButtons.getWidgetListEndBased(setStateMethod,
+          ObservationScreenOptions.daysToShow, allLists, observationScreenOptions);
 
   void resetSearch(void Function() setStateMethod) =>
-      _observationScreenOptions.resetSearch(setStateMethod, _resetCounters);
+      observationScreenOptions.resetSearch(setStateMethod, _resetCounters);
 
   Future<void> resetLists() async {
-    while (!_observationScreenLoading.doneLoading()) {
+    while (!observationScreenLoading.doneLoading()) {
       await Future.delayed(const Duration(milliseconds: 10));
     }
-    _observationScreenButtons.updateEndbasedToCurrentDay(_allLists,
-        _observationScreenLoading.deleteList, _observationScreenLoading.updateList);
+    observationScreenButtons.updateEndbasedToCurrentDay(allLists,
+        observationScreenLoading.deleteList, observationScreenLoading.updateList);
   }
 
-  void _resetCounters() => _observationScreenButtons.resetCounters();
+  void _resetCounters() => observationScreenButtons.resetCounters();
 
   BasicButtonController? getSelectedButton() {
-    if (_observationScreenButtons.idSelected == -1) return null;
-    List correctList = _allLists
-        .where((e) => e.runtimeType == _observationScreenButtons.typeOfSelected!)
+    if (observationScreenButtons.idSelected == -1) return null;
+    List correctList = allLists
+        .where((e) => e.runtimeType == observationScreenButtons.typeOfSelected!)
         .toList();
     return correctList
-        .firstWhere((e) => _observationScreenButtons.idSelected == e.button.id);
+        .firstWhere((e) => observationScreenButtons.idSelected == e.button.id);
   }
 
-  bool justAddedCheck() => _observationScreenButtons.justAddedCheck();
+  bool justAddedCheck() => observationScreenButtons.justAddedCheck();
 
-  bool doneLoading() => _observationScreenLoading.doneLoading();
+  bool doneLoading() => observationScreenLoading.doneLoading();
 
   void loadListsFromStorage() =>
-      _observationScreenLoading.loadListsFromStorage(_allLists, _entityList);
+      observationScreenLoading.loadListsFromStorage(allLists, entityList);
 
-  int getNewId(Type t) => _observationScreenLoading.getNewId(t, _allLists);
+  int getNewId(Type t) => observationScreenLoading.getNewId(t, allLists);
 
   void addOrUpdateButton(
       BasicButtonController<BasicButton> c, void Function() resetScreen) {
     if (c is EndBasedController) {
-      _observationScreenButtons.addNew(c.id, c.runtimeType);
+      observationScreenButtons.addNew(c.id, c.runtimeType);
     }
-    _observationScreenLoading.addOrUpdateButton(c, resetScreen, _allLists);
+    observationScreenLoading.addOrUpdateButton(c, resetScreen, allLists);
   }
 
   void deleteSelected(void Function() resetScreen) {
@@ -87,53 +91,52 @@ class ObservationScreenController {
   }
 
   void deleteButton(BasicButtonController<BasicButton> c, void Function() resetScreen) {
-    _observationScreenButtons.removeNew(c.id, c.runtimeType);
-    _observationScreenLoading.deleteSelected(resetScreen, c, _allLists);
+    observationScreenButtons.removeNew(c.id, c.runtimeType);
+    observationScreenLoading.deleteSelected(resetScreen, c, allLists);
   }
 
   void skipButton(void Function() resetScreen) =>
-      _observationScreenLoading.skipButton(resetScreen, getSelectedButton(), _allLists);
+      observationScreenLoading.skipButton(resetScreen, getSelectedButton(), allLists);
 
-  void flipImportant(void Function() resetScreen) => _observationScreenLoading
-      .flipImportant(resetScreen, getSelectedButton(), _allLists);
+  void flipImportant(void Function() resetScreen) =>
+      observationScreenLoading.flipImportant(resetScreen, getSelectedButton(), allLists);
 
-  void addOrRemoveDay(void Function() resetScreen, int amount) =>
-      _observationScreenLoading.changeDays(
-          resetScreen, getSelectedButton(), _allLists, amount);
+  void addOrRemoveDay(void Function() resetScreen, int amount) => observationScreenLoading
+      .changeDays(resetScreen, getSelectedButton(), allLists, amount);
 
   List<Widget> getOptionButtons(void Function() setStateMethod) =>
-      _observationScreenOptions.getOptionButtons(setStateMethod, _resetCounters);
+      observationScreenOptions.getOptionButtons(setStateMethod, _resetCounters);
 
   List<EndBasedController> getEndbasedData() =>
-      _allLists.whereType<EndBasedController>().toList();
+      allLists.whereType<EndBasedController>().toList();
 
-  List<EntityController> getEntities() => _entityList;
+  List<EntityController> getEntities() => entityList;
 
   void addOrUpdateEntity(EntityController c) {
-    int index = _entityList.indexWhere((element) => element.id == c.id);
+    int index = entityList.indexWhere((element) => element.id == c.id);
     if (index != -1) {
-      _entityList.removeAt(index);
+      entityList.removeAt(index);
       if (c.tags.isEmpty) {
-        _observationScreenLoading.deleteEntity(c, getEntities());
+        observationScreenLoading.deleteEntity(c, getEntities());
         return;
       }
       c.tagsAsReferences();
-      _observationScreenLoading.updateData(c.myEntity);
+      observationScreenLoading.updateData(c.myEntity);
     } else {
       if (c.tags.isEmpty) return;
       c.tagsAsReferences();
-      _observationScreenLoading.storeData(c.myEntity);
+      observationScreenLoading.storeData(c.myEntity);
     }
-    _entityList.add(c);
+    entityList.add(c);
   }
 
   int getNewEntityId() {
-    _entityList.sort((a, b) => a.id.compareTo(b.id));
-    for (int i = 0; i < _entityList.length; i++) {
-      if (_entityList[i].id != i) {
+    entityList.sort((a, b) => a.id.compareTo(b.id));
+    for (int i = 0; i < entityList.length; i++) {
+      if (entityList[i].id != i) {
         return i;
       }
     }
-    return _entityList.length;
+    return entityList.length;
   }
 }

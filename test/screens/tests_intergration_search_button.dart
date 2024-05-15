@@ -15,6 +15,7 @@ import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+///test both searching and the adding_screen
 void main() {
   test('buttons testing', addButtons);
   test('searching button testing', searchButtons);

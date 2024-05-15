@@ -29,7 +29,7 @@ const Text medBlankSplit = Text('\n\n\n\n            ', style: smallStyle);
 class BlagendaUniformButton extends StatefulWidget {
   // A standard playing card is 57.1mm x 88.9mm.
 
-  static const String smollButStartText = '©•';
+  static const String smollButStartText = '••';
 
   const BlagendaUniformButton(this.isSelected, this.color, this.text, this.pressed,
       {super.key});
@@ -54,7 +54,7 @@ class _BlagendaUniformButton extends State<BlagendaUniformButton> {
   @override
   Widget build(BuildContext context) {
     var text = widget.text.trim();
-    if (text.startsWith(BlagendaUniformButton.smollButStartText)) {
+    if (text.endsWith(BlagendaUniformButton.smollButStartText)) {
       text =
           '${text.replaceAll('\n', '').replaceFirst(BlagendaUniformButton.smollButStartText, '').substring(0, min(4, text.length - BlagendaUniformButton.smollButStartText.length))}..';
       ElevatedButton(

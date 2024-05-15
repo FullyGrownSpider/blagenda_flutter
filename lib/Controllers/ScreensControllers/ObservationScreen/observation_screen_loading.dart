@@ -2,6 +2,7 @@ import 'package:blagenda_flutter_simple/Commons/Models/Buttons/again.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/deadline.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/entity_controller.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../../Commons/Models/Buttons/weird_again.dart';
 import '../../../Commons/Models/entity.dart';
@@ -73,7 +74,8 @@ class ObservationScreenLoading with loading {
     return correctList.length;
   }
 
-  void _updateButton(BasicButtonController toAdd, void Function() setStateMethod,
+  @visibleForTesting
+  void storeUpdateButton(BasicButtonController toAdd, void Function() setStateMethod,
       List<BasicButtonController> allItems) {
     updateData(toAdd.button);
     var index = allItems
@@ -83,7 +85,8 @@ class ObservationScreenLoading with loading {
     setStateMethod();
   }
 
-  void _addButton(BasicButtonController toAdd, void Function() setStateMethod,
+  @visibleForTesting
+  void storeAddButton(BasicButtonController toAdd, void Function() setStateMethod,
       List<BasicButtonController> allItems) {
     allItems.add(toAdd);
     storeData(toAdd.button);
@@ -97,9 +100,9 @@ class ObservationScreenLoading with loading {
     if (allItems
         .where((e) => e.runtimeType == controller.runtimeType)
         .any((e) => e.id == controller.id)) {
-      _updateButton(controller, setStateMethod, allItems);
+      storeUpdateButton(controller, setStateMethod, allItems);
     } else {
-      _addButton(controller, setStateMethod, allItems);
+      storeAddButton(controller, setStateMethod, allItems);
     }
   }
 
@@ -125,7 +128,7 @@ class ObservationScreenLoading with loading {
       deleteSelected(setStateMethod, selectedButton, allItems);
     } else {
       (selectedButton).makeNewSkip(selectedButton.dateController);
-      _updateButton(selectedButton, setStateMethod, allItems);
+      storeUpdateButton(selectedButton, setStateMethod, allItems);
     }
   }
 
@@ -134,7 +137,7 @@ class ObservationScreenLoading with loading {
     if (selectedButton == null) return;
     selectedButton.touched = true;
     selectedButton.flipImportant();
-    _updateButton(selectedButton, setStateMethod, allItems);
+    storeUpdateButton(selectedButton, setStateMethod, allItems);
   }
 
   void deleteList(List<BasicButtonController> toDelete) => deleteButtons(toDelete);
@@ -149,6 +152,6 @@ class ObservationScreenLoading with loading {
     if (selectedButton == null || selectedButton is! EndBasedController) return;
     selectedButton.touched = true;
     selectedButton.addOrRemoveDays(amount);
-    _updateButton(selectedButton, setStateMethod, allItems);
+    storeUpdateButton(selectedButton, setStateMethod, allItems);
   }
 }

@@ -8,30 +8,30 @@ import 'package:blagenda_flutter_simple/Loading/conversion_base.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+///test weather adding days makes days actually be added or removed correctly
 void main() {
-  test('deadline', deadline);
-  test('week', week);
-  test('year', year);
-  test('month', month);
-  test('day', day);
-  test('weird', weird);
-  // test('test normal input', testInput);
+  test('deadline', _deadline);
+  test('week', _week);
+  test('year', _year);
+  test('month', _month);
+  test('day', _day);
+  test('weird', _weird);
 }
 
-void deadline() {
+void _deadline() {
   var but =
       Deadline('23', '', 1, Colors.black, MyDateController.nowDate.addOrRemoveDays(1));
   EndBasedController one = make(but);
-  badSpects(one);
+  _badSpects(one);
 }
 
-void week() {
+void _week() {
   var but = AgainWeekDay('123', '', 1, Colors.black, MyDateController.nowDate.weekday);
   EndBasedController one = make(but);
-  spects(one);
+  _spects(one);
 }
 
-void year() {
+void _year() {
   var but = AgainYearDay(
       '123',
       '',
@@ -40,48 +40,48 @@ void year() {
       MyDateController.nowDate.addOrRemoveDays(12).day,
       MyDateController.nowDate.addOrRemoveDays(12).month);
   EndBasedController one = make(but);
-  badSpects(one);
+  _badSpects(one);
 }
 
-void month() {
+void _month() {
   var but = AgainMonthDay('123', '', 1, Colors.black, 23);
   EndBasedController one = make(but);
-  spects(one);
+  _spects(one);
 }
 
-void weird() {
+void _weird() {
   var but = AgainWeird('123', '', 1, Colors.black, 1);
   EndBasedController one = make(but);
-  spects(one);
+  _spects(one);
 }
 
-void day() {
+void _day() {
   var but = AgainAmountDay(
       '123', '', 1, Colors.black, MyDateController.nowDate.addOrRemoveDays(10), 11, null);
   EndBasedController one = make(but);
-  badSpects(one);
+  _badSpects(one);
 }
 
-void spects(EndBasedController one) {
+void _spects(EndBasedController one) {
   int prev = one.daysLeft;
   one.addOrRemoveDays(1);
-  addSpect(one.daysLeft, prev, 1);
+  _addSpect(one.daysLeft, prev, 1);
   prev = one.daysLeft;
   one.addOrRemoveDays(-1);
-  addSpect(one.daysLeft, prev, -1);
+  _addSpect(one.daysLeft, prev, -1);
 }
 
-void badSpects(EndBasedController one) {
-  spects(one);
+void _badSpects(EndBasedController one) {
+  _spects(one);
   int prev = one.daysLeft;
   one.addOrRemoveDays(30);
-  addSpect(one.daysLeft, prev, 30);
+  _addSpect(one.daysLeft, prev, 30);
   prev = one.daysLeft;
   one.addOrRemoveDays(-30);
-  addSpect(one.daysLeft, prev, -30);
+  _addSpect(one.daysLeft, prev, -30);
 }
 
-void addSpect(int now, int prev, int added) {
+void _addSpect(int now, int prev, int added) {
   expect(now, prev + added);
 }
 
