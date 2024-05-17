@@ -13,6 +13,9 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
       r"(?:(?<full>[0-2]?[0-9][-,.:][0-6][0-9](?: ?[apAP][mM])?)|(?<hour>[0-2]?[0-9] ?[apAP][mM]))(?:([^0-9]{0,5}(?:(?<full2>[0-2]?[0-9][-,.:][0-6][0-9] ?([apAP][mM])?)|(?<hour2>[0-2]?[0-9] ?[apAP][mM]))\b)|\b)");
   static final RegExp _regFix = RegExp(r'[-,.:]');
   static final RegExp _regNum = RegExp(r'[^0-9-,.:]');
+  static final RegExp _daysReg =
+      RegExp(r"((?:lasts|duurt|D|d) ?\d+)|\d+ ?(?:days|l[oa]ng|dagen|d\b|D\b)");
+
   static const int showDayOfWeek = 6;
   static const int showDayTime = 4;
   bool requiresChange = false;
@@ -20,6 +23,9 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
   int timeOfDayEnd = -1;
   int daysLeft = -20;
   late MyDateController dateController;
+  @visibleForTesting
+  @protected
+  int extraDays = 1;
 
   EndBasedController(super.button) {
     rebuild();
@@ -37,6 +43,7 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
     create();
     daysLeft = howMuchLeft();
     _setTimeOfDay();
+    _setExtraDays();
   }
 
   void create();
@@ -54,6 +61,17 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
       timeOfDay = timeOfDayEnd;
       timeOfDayEnd = calc;
     }
+  }
+
+  bool extraGoingOn(int currentDay) {
+    if (extraDays == 1) return false;
+    int fromNow = dateController.daysLeftUntil();
+    return fromNow < currentDay && fromNow + extraDays >= currentDay;
+  }
+
+  void _setExtraDays() {
+    var match = _daysReg.firstMatch(toDos);
+    if (match != null) extraDays = int.parse(match[0]!.replaceAll(_regNum, ''));
   }
 
   int _getTime(RegExpMatch? match, String full, String hour) {
@@ -191,6 +209,7 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
     var daysDif = daysLeft;
     create();
     _setTimeOfDay();
+    _setExtraDays();
     dateController = dateController.add(const Duration(hours: 4));
 
     while (dateController.isBefore(MyDateController.today)) {
@@ -258,6 +277,17 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
     return (dateToSkip == null || dateToSkip!.daysLeftUntil() != calculatedDay) &&
         (endingDate == null || endingDate!.daysLeftUntil() >= calculatedDay) &&
         (startDate == null || startDate!.daysLeftUntil() <= calculatedDay);
+  }
+
+  @override
+  bool extraGoingOn(int currentDay) {
+    if (extraDays == 1) return false;
+    for (int i = 2; i <= extraDays; i++) {
+      if (isHappeningOnDayFromNow(currentDay - i)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @override

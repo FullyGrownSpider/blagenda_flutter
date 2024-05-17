@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 class MockingCreator with dayCreator {}
 
+///tests if it shows days in createADay the way it should on a basic level
 void main() {
   test('deadline', deadline);
 
@@ -36,8 +37,8 @@ void deadline() {
 void week() {
   var week = make(AgainWeekDay('123', '', 1, Colors.black, 1));
   for (int i = 0; i < 7; i++) {
-    var list = to.createADay(
-        MyDateController.nowDate, [week], i, () {}, (p0, p1) => const Text(''), false);
+    var list = to.createADay(MyDateController.nowDate, [week], i, () {},
+        (p0, p1, p2) => const Text(''), false, false);
     if (list.length > 2) {
       expect(true, true);
       return;
@@ -67,11 +68,11 @@ void skip() {
       '123', '', 1, Colors.black, MyDateController.nowDate.day, MyDateController.today);
   var monthController = make(month);
   var list = to.createADay(MyDateController.today, [monthController], 0, () {},
-      (p0, p1) => const Text(''), false);
+      (p0, p1, p2) => const Text(''), false, false);
   expect(false, listCheck(list));
   MyDateController.today = wowDate;
-  list = to.createADay(
-      wowDate, [monthController], 10, () {}, (p0, p1) => const Text(''), false);
+  list = to.createADay(wowDate, [monthController], 10, () {},
+      (p0, p1, p2) => const Text(''), false, false);
   expect(false, listCheck(list));
   MyDateController.today = wowDate.addOrRemoveDays(10);
 }
@@ -80,7 +81,7 @@ void showIn10<t extends BasicButton>(t button) {
   MyDateController.today = wowDate;
   var correctThing = make(button);
   var list = to.createADay(
-      wowDate, [correctThing], 10, () {}, (p0, p1) => const Text(''), false);
+      wowDate, [correctThing], 10, () {}, (p0, p1, p2) => const Text(''), false, false);
   expect(true, listCheck(list));
   MyDateController.today = wowDate.addOrRemoveDays(10);
 }

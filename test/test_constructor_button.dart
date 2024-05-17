@@ -5,21 +5,22 @@ import 'package:blagenda_flutter_simple/Commons/Models/Buttons/weird_again.dart'
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/again_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/end_based_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
-import 'package:blagenda_flutter_simple/Loading/conversion_base.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'screens/defaultButtons.dart';
+
+///tests for default requires change (delete or edit and store again) and if the date is correct (in x many days) upon creation
 void main() {
-  test('deadline', deadline);
-  test('week', week);
-  test('year', year);
-  test('month', month);
-  test('day', day);
-  test('weird', weird);
-  // test('test normal input', testInput);
+  test('deadline', _deadline);
+  test('week', _week);
+  test('year', _year);
+  test('month', _month);
+  test('day', _day);
+  test('weird', _weird);
 }
 
-void deadline() {
+void _deadline() {
   var deadline =
       Deadline('23', '', 1, Colors.black, MyDateController.nowDate.addOrRemoveDays(10));
   var deadline2 =
@@ -33,12 +34,12 @@ void deadline() {
   MyDateController.today = MyDateController.nowDate.addOrRemoveDays(1);
   d1.rebuild();
   expect(d1.daysLeft % 7, (days - 1) % 7);
-  backToTheFutureTesting(deadline);
-  backToTheFutureTesting(deadline2);
+  _backToTheFutureTesting(deadline);
+  _backToTheFutureTesting(deadline2);
   MyDateController.today = MyDateController.nowDate.addOrRemoveDays(-1);
 }
 
-void week() {
+void _week() {
   var week1 = AgainWeekDay('123', '', 1, Colors.black, MyDateController.nowDate.weekday);
   var week2 = AgainWeekDay(
       '123',
@@ -74,14 +75,14 @@ void week() {
   d1.rebuild();
   expect(d1.daysLeft % 7, (days - 1) % 7);
   expect(7, daysAltAlt);
-  backToTheFutureTesting(week1);
-  backToTheFutureTesting(week2);
-  backToTheFutureTesting(week3);
-  backToTheFutureTesting(week4);
+  _backToTheFutureTesting(week1);
+  _backToTheFutureTesting(week2);
+  _backToTheFutureTesting(week3);
+  _backToTheFutureTesting(week4);
   MyDateController.today = MyDateController.nowDate.addOrRemoveDays(-1);
 }
 
-void year() {
+void _year() {
   var year = AgainYearDay(
       '123',
       '',
@@ -109,12 +110,12 @@ void year() {
   MyDateController.today = MyDateController.nowDate.addOrRemoveDays(1);
   d1.rebuild();
   expect(d1.daysLeft % 7, (days - 1) % 7);
-  backToTheFutureTesting(year);
-  backToTheFutureTesting(year2);
+  _backToTheFutureTesting(year);
+  _backToTheFutureTesting(year2);
   MyDateController.today = MyDateController.nowDate.addOrRemoveDays(-1);
 }
 
-void month() {
+void _month() {
   var month = AgainMonthDay('123', '', 1, Colors.black, 23);
   var month1 = AgainMonthDay(
       '123', '', 1, Colors.black, 23, null, MyDateController.nowDate.addOrRemoveDays(10));
@@ -137,10 +138,10 @@ void month() {
   MyDateController.today = MyDateController.nowDate.addOrRemoveDays(1);
   d1.rebuild();
   expect(d1.daysLeft % 7, (days - 1) % 7);
-  backToTheFutureTesting(month);
-  backToTheFutureTesting(month1);
-  backToTheFutureTesting(month2);
-  backToTheFutureTesting(month3);
+  _backToTheFutureTesting(month);
+  _backToTheFutureTesting(month1);
+  _backToTheFutureTesting(month2);
+  _backToTheFutureTesting(month3);
   MyDateController.today = MyDateController.nowDate.addOrRemoveDays(-1);
 
   var toDay = MyDateController.today;
@@ -151,7 +152,7 @@ void month() {
   MyDateController.today = toDay;
 }
 
-void weird() {
+void _weird() {
   MyDateController.today = MyDateController(2023, 12, 31);
   var weird = AgainWeird('123', '', 1, Colors.black, 1);
   var weirdCheck = AgainWeekDay('123', '', 1, Colors.black, 1);
@@ -182,7 +183,7 @@ void weird() {
   expect(d4.requiresChange, true);
 }
 
-void day() {
+void _day() {
   var day = AgainAmountDay(
       '123', '', 1, Colors.black, MyDateController.nowDate.addOrRemoveDays(10), 11, null);
   var day2 = AgainAmountDay('123', '', 1, Colors.black,
@@ -234,15 +235,15 @@ void day() {
   MyDateController.today = MyDateController.nowDate.addOrRemoveDays(1);
   d1.rebuild();
   expect(d1.daysLeft % 7, (days - 1) % 7);
-  backToTheFutureTesting(day);
-  backToTheFutureTesting(day2);
-  backToTheFutureTesting(day3);
-  backToTheFutureTesting(day4);
+  _backToTheFutureTesting(day);
+  _backToTheFutureTesting(day2);
+  _backToTheFutureTesting(day3);
+  _backToTheFutureTesting(day4);
   MyDateController.today = MyDateController.nowDate.addOrRemoveDays(-1);
 }
 
 ///test if the countdown goes well (from x to zero)
-void backToTheFutureTesting<t extends BasicButton>(t actBut) {
+void _backToTheFutureTesting<t extends BasicButton>(t actBut) {
   var but = make(actBut);
   MyDateController ogNowDate = MyDateController.today;
   if (but.daysLeft < 1) {
@@ -256,10 +257,4 @@ void backToTheFutureTesting<t extends BasicButton>(t actBut) {
     lastCheck = but.daysLeft;
   }
   MyDateController.today = ogNowDate;
-}
-
-///test version of 'turn x into a controller'
-EndBasedController make<t extends BasicButton>(t button) {
-  var controller = dataToController(button) as EndBasedController;
-  return controller;
 }
