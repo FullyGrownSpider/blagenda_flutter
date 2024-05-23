@@ -93,9 +93,9 @@ void _showWeek() {
   expect(buttons[3], '⊚123'); //in the future
   expect(buttons[5], '123');
   expect(buttons[7], '123');
-  expect(buttons[10], '©10:00 ~ long');
-  expect(buttons[12], '©lon••');
-  expect(buttons[14], '©lon••');
+  expect(buttons[10], '⊚10:00 ~ long');
+  expect(buttons[12], '⊚lon••');
+  expect(buttons[14], '⊚lon••');
 }
 
 void _showEverything() {
@@ -182,7 +182,7 @@ void _showLong() {
   for (var item in list) {
     buttons.addAll(textButtonSearch(item, true));
   }
-  expect(buttons.length, 15);
+  expect(buttons.length, 13);
 }
 
 EndBasedController make<t extends BasicButton>(t button) {

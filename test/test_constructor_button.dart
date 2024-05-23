@@ -116,13 +116,13 @@ void _year() {
 }
 
 void _month() {
-  var month = AgainMonthDay('123', '', 1, Colors.black, 23);
-  var month1 = AgainMonthDay(
-      '123', '', 1, Colors.black, 23, null, MyDateController.nowDate.addOrRemoveDays(10));
-  var month2 = AgainMonthDay('123', '', 1, Colors.black, 23, null, null,
-      MyDateController.nowDate.addOrRemoveDays(40));
-  var month3 = AgainMonthDay('123', '', 1, Colors.black, 23, null,
-      MyDateController.nowDate.addOrRemoveDays(-10));
+  var month = AgainMonthDay('123', '', 1, Colors.black, MyDateController.nowDate.day + 1);
+  var month1 = AgainMonthDay('123', '', 1, Colors.black, MyDateController.nowDate.day + 1,
+      null, MyDateController.nowDate.addOrRemoveDays(10));
+  var month2 = AgainMonthDay('123', '', 1, Colors.black, MyDateController.nowDate.day + 1,
+      null, null, MyDateController.nowDate.addOrRemoveDays(40));
+  var month3 = AgainMonthDay('123', '', 1, Colors.black, MyDateController.nowDate.day + 1,
+      null, MyDateController.nowDate.addOrRemoveDays(-10));
   var d1 = make(month);
   expect(d1.requiresChange, false);
   var d2 = make(month1);
