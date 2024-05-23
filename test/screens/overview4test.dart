@@ -165,18 +165,17 @@ class ObservationScreenLoadingTest extends ObservationScreenLoading {
   }
 
   @override
-  void storeUpdateButton(BasicButtonController toAdd, void Function() setStateMethod,
-      List<BasicButtonController> allItems) {
+  void storeUpdateButton(
+      BasicButtonController toAdd, List<BasicButtonController> allItems) {
     allItems.removeWhere(
         (element) => element.id == toAdd.id && element.runtimeType == toAdd.runtimeType);
     buttonsStore.removeWhere(
         (element) => element.id == toAdd.id && element.runtimeType == toAdd.runtimeType);
-    storeAddButton(toAdd, setStateMethod, allItems);
+    storeAddButton(toAdd, allItems);
   }
 
   @override
-  void storeAddButton(BasicButtonController toAdd, void Function() setStateMethod,
-      List<BasicButtonController> allItems) {
+  void storeAddButton(BasicButtonController toAdd, List<BasicButtonController> allItems) {
     buttonsStore.add(toAdd);
     allItems.add(toAdd);
   }

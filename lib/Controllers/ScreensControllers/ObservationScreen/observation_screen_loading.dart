@@ -75,83 +75,75 @@ class ObservationScreenLoading with loading {
   }
 
   @visibleForTesting
-  void storeUpdateButton(BasicButtonController toAdd, void Function() setStateMethod,
-      List<BasicButtonController> allItems) {
+  void storeUpdateButton(
+      BasicButtonController toAdd, List<BasicButtonController> allItems) {
     updateData(toAdd.button);
     var index = allItems
         .indexWhere((e) => toAdd.id == e.id && toAdd.runtimeType == e.runtimeType);
     if (index == -1) return;
     allItems[index] = toAdd;
-    setStateMethod();
   }
 
   @visibleForTesting
-  void storeAddButton(BasicButtonController toAdd, void Function() setStateMethod,
-      List<BasicButtonController> allItems) {
+  void storeAddButton(BasicButtonController toAdd, List<BasicButtonController> allItems) {
     allItems.add(toAdd);
     storeData(toAdd.button);
-    setStateMethod();
   }
 
   ///will update if selected is the same type and same id as thing added
-  void addOrUpdateButton(BasicButtonController controller, void Function() setStateMethod,
-      List<BasicButtonController> allItems) {
+  void addOrUpdateButton(
+      BasicButtonController controller, List<BasicButtonController> allItems) {
     controller.touched = true;
     if (allItems
         .where((e) => e.runtimeType == controller.runtimeType)
         .any((e) => e.id == controller.id)) {
-      storeUpdateButton(controller, setStateMethod, allItems);
+      storeUpdateButton(controller, allItems);
     } else {
-      storeAddButton(controller, setStateMethod, allItems);
+      storeAddButton(controller, allItems);
     }
   }
 
-  void deleteSelected(void Function() setStateMethod,
+  void deleteSelected(
       BasicButtonController selectedButton, List<BasicButtonController> allItems) {
     deleteButton(selectedButton).then((value) {
       //readd if delete didn't do its "thing"
       if (!value) {
         allItems.add(selectedButton);
-        setStateMethod();
       }
     });
     allItems.removeWhere(
         (e) => selectedButton.id == e.id && e.runtimeType == selectedButton.runtimeType);
-    setStateMethod();
   }
 
-  void skipButton(void Function() setStateMethod, BasicButtonController? selectedButton,
-      List<BasicButtonController> allItems) {
+  void skipButton(
+      BasicButtonController? selectedButton, List<BasicButtonController> allItems) {
     if (selectedButton == null) {
       return;
     } else if (selectedButton is! SkippableEndBasedController) {
-      deleteSelected(setStateMethod, selectedButton, allItems);
+      deleteSelected(selectedButton, allItems);
     } else {
       (selectedButton).makeNewSkip(selectedButton.dateController);
-      storeUpdateButton(selectedButton, setStateMethod, allItems);
+      storeUpdateButton(selectedButton, allItems);
     }
   }
 
-  void flipImportant(void Function() setStateMethod,
+  void flipImportant(
       BasicButtonController? selectedButton, List<BasicButtonController> allItems) {
     if (selectedButton == null) return;
     selectedButton.touched = true;
     selectedButton.flipImportant();
-    storeUpdateButton(selectedButton, setStateMethod, allItems);
+    storeUpdateButton(selectedButton, allItems);
   }
 
   void deleteList(List<BasicButtonController> toDelete) => deleteButtons(toDelete);
 
   void updateList(List<BasicButtonController> toUpdate) => updateButtons(toUpdate);
 
-  void changeDays(
-      void Function() setStateMethod,
-      BasicButtonController<BasicButton>? selectedButton,
-      List<BasicButtonController> allItems,
-      int amount) {
+  void changeDays(BasicButtonController<BasicButton>? selectedButton,
+      List<BasicButtonController> allItems, int amount) {
     if (selectedButton == null || selectedButton is! EndBasedController) return;
     selectedButton.touched = true;
     selectedButton.addOrRemoveDays(amount);
-    storeUpdateButton(selectedButton, setStateMethod, allItems);
+    storeUpdateButton(selectedButton, allItems);
   }
 }

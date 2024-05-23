@@ -245,6 +245,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                   AddingScreen(it, doWith, getNewId, getEndbasedData, withNote)));
 
   void _onWillPop(bool boolean) async {
+    if (Navigator.canPop(context)) return;
     if (_wentBack) {
       _wentBack = !_wentBack;
     }

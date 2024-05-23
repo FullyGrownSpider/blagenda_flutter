@@ -78,7 +78,10 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     return items;
   }
 
-  void resetCounters() => clicked = idSelected = -1;
+  void resetCounters() {
+    typeOfSelected = null;
+    previouslyClicked = clicked = idSelected = -1;
+  }
 
   void _clickOnButton(
       int index, void Function() setStateMethod, BasicButtonController e) {
@@ -125,7 +128,8 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
           newList.addAll(_newThings.keys
               .map((k) => everythingToShow.firstWhere((e) => k.compare(e))));
           newList.sort((a, b) => a.daysLeft.compareTo(b.daysLeft));
-          newListToRemove.addAll(newList.where((e) => e.daysLeft >= daysToShow));
+          newListToRemove
+              .addAll(newList.where((e) => e.daysLeft >= options.daysToShowNow));
         }
         againDeadlineDisplayList.addAll(_createEndBasedDayList(
             setStateMethod,
@@ -232,7 +236,8 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     //Just added things show here up top
     if (justAdded.isNotEmpty) {
       var lastLeft = -1;
-      for (var button in justAdded.where((element) => element.daysLeft >= daysToShow)) {
+      for (var button
+          in justAdded.where((element) => element.daysLeft >= daysToShowNow)) {
         if (!button.isHappeningOnDayFromNow(lastLeft)) {
           lastLeft = button.daysLeft;
           againDeadlineDisplayList.addAll(createADay(

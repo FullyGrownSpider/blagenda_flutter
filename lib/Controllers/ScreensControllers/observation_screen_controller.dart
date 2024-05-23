@@ -36,6 +36,8 @@ class ObservationScreenController {
     });
   }
 
+  void deselect() => observationScreenButtons.resetCounters();
+
   List<Widget> getWidgetListNote(void Function() setStateMethod) =>
       observationScreenButtons.getWidgetListNote(setStateMethod, observationScreenOptions,
           allLists.whereType<NoteController>().toList());
@@ -80,29 +82,40 @@ class ObservationScreenController {
     if (c is EndBasedController) {
       observationScreenButtons.addNew(c.id, c.runtimeType);
     }
-    observationScreenLoading.addOrUpdateButton(c, resetScreen, allLists);
+    observationScreenLoading.addOrUpdateButton(c, allLists);
+    deselect();
+    resetScreen();
   }
 
   void deleteSelected(void Function() resetScreen) {
     var selectedBut = getSelectedButton();
     if (selectedBut != null) {
       deleteButton(selectedBut, resetScreen);
+      deselect();
     }
   }
 
   void deleteButton(BasicButtonController<BasicButton> c, void Function() resetScreen) {
     observationScreenButtons.removeNew(c.id, c.runtimeType);
-    observationScreenLoading.deleteSelected(resetScreen, c, allLists);
+    observationScreenLoading.deleteSelected(c, allLists);
+    deselect();
+    resetScreen();
   }
 
-  void skipButton(void Function() resetScreen) =>
-      observationScreenLoading.skipButton(resetScreen, getSelectedButton(), allLists);
+  void skipButton(void Function() resetScreen) {
+    observationScreenLoading.skipButton(getSelectedButton(), allLists);
+    resetScreen();
+  }
 
-  void flipImportant(void Function() resetScreen) =>
-      observationScreenLoading.flipImportant(resetScreen, getSelectedButton(), allLists);
+  void flipImportant(void Function() resetScreen) {
+    observationScreenLoading.flipImportant(getSelectedButton(), allLists);
+    resetScreen();
+  }
 
-  void addOrRemoveDay(void Function() resetScreen, int amount) => observationScreenLoading
-      .changeDays(resetScreen, getSelectedButton(), allLists, amount);
+  void addOrRemoveDay(void Function() resetScreen, int amount) {
+    observationScreenLoading.changeDays(getSelectedButton(), allLists, amount);
+    resetScreen();
+  }
 
   List<Widget> getOptionButtons(void Function() setStateMethod) =>
       observationScreenOptions.getOptionButtons(setStateMethod, _resetCounters);
@@ -128,6 +141,7 @@ class ObservationScreenController {
       observationScreenLoading.storeData(c.myEntity);
     }
     entityList.add(c);
+    deselect();
   }
 
   int getNewEntityId() {
