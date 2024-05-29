@@ -103,7 +103,8 @@ class ObservationScreenController {
   }
 
   void skipButton(void Function() resetScreen) {
-    observationScreenLoading.skipButton(getSelectedButton(), allLists);
+    observationScreenLoading.skipButton(
+        getSelectedButton(), allLists, observationScreenButtons.fromNowSelect);
     resetScreen();
   }
 

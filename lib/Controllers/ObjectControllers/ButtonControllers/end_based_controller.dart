@@ -299,14 +299,15 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
     return xtr + super.displayJob();
   }
 
-//returns true if you should skip
+  //returns true if you should skip
   static bool skipCheck(SkippableButton button, DateTime date) =>
       MyDateController.aboutEqual(button.dateToSkip!, date);
 
-//returns true if you should skip the copy
-  bool skipCheckNotSure(int calc, int left) =>
+  //check if you are checking the "today" is the copy's today too then check if the skipDate is the actually same date as the skipDate
+  ///returns true if you should skip the copy
+  bool skipCheckNotSure(int calc) =>
       button.dateToSkip != null &&
-      calc == left &&
+      calc == altLeft &&
       skipCheck(button, DateTime.now().add(Duration(days: calc)));
 
   @override

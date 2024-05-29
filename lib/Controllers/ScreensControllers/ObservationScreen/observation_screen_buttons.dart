@@ -25,6 +25,9 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
   ///id of button to update when updating
   int idSelected = -1;
 
+  ///if the selected is again the actual from now that is has (the altLeft)
+  int fromNowSelect = -1;
+
   ///keep the data of all the new things
   final Map<_NewRef, MyDateController> _newThings = {};
 
@@ -107,6 +110,9 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
       clicked = -1;
       idSelected = -1;
       typeOfSelected = null;
+    }
+    if (e is SkippableEndBasedController) {
+      fromNowSelect = e.altLeft;
     }
     setStateMethod();
   }

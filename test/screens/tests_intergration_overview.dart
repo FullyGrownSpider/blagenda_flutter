@@ -1,5 +1,7 @@
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/again.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/entity.dart';
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/again_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/end_based_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/note_controller.dart';
@@ -21,6 +23,7 @@ void main() {
   test('show more days', _showMoreDays);
   test('show Everything', _showEverything);
   test('show long', _showLong);
+  test('skipping', _skipThisTime);
 }
 
 void _createADayAndEntity() {
@@ -76,6 +79,50 @@ Overview4Test makeItFullForTesting() {
       ..id = 7
       ..date = MyDateController.fromDaysFromNow(3)))
     ..controller.observationScreenButtons.justAddedCheck();
+}
+
+void _skipThisTime() {
+  var theScreen = buildOverview([
+    NoteController(note()),
+    make(AgainMonthDay('this', '', 1, usedColors.first, MyDateController.today.day)),
+    make(AgainAmountDay('that', '', 1, usedColors.first, MyDateController.today, 3))
+  ], [])
+    ..controller.observationScreenButtons.justAddedCheck();
+  var list = theScreen.controller.getWidgetListEndBased(() {});
+  var buttons = [];
+  for (var item in list) {
+    buttons.addAll(textButtonSearch(item, false));
+    buttons.addAll(textButtonSearch(item, true));
+  }
+  expect(buttons.contains('this'), true);
+  //...
+  theScreen.controller.observationScreenButtons.typeOfSelected = AgainMonthController;
+  theScreen.controller.observationScreenButtons.idSelected = 1;
+  theScreen.controller.observationScreenButtons.fromNowSelect = 0;
+  theScreen.controller.skipButton(() {});
+  list = theScreen.controller.getWidgetListEndBased(() {});
+  buttons.clear();
+  for (var item in list) {
+    buttons.addAll(textButtonSearch(item, false));
+    buttons.addAll(textButtonSearch(item, true));
+  }
+  expect(buttons.contains('this'), false);
+  expect(buttons.where((e) => e == 'that').length, 2);
+
+  //,,
+  theScreen.controller.observationScreenButtons.typeOfSelected = AgainAmountController;
+  theScreen.controller.observationScreenButtons.idSelected = 1;
+  theScreen.controller.observationScreenButtons.fromNowSelect = 3;
+  theScreen.controller.skipButton(() {});
+
+  list = theScreen.controller.getWidgetListEndBased(() {});
+  buttons.clear();
+  for (var item in list) {
+    buttons.addAll(textButtonSearch(item, false));
+    buttons.addAll(textButtonSearch(item, true));
+  }
+  expect(buttons.contains('this'), false);
+  expect(buttons.where((e) => e == 'that').length, 1);
 }
 
 void _showWeek() {

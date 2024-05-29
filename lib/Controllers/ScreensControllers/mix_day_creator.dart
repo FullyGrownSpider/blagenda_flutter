@@ -24,7 +24,7 @@ mixin dayCreator {
       Widget Function(EndBasedController, void Function(), bool) addEndBasedButton,
       bool showNamesOnly,
       bool showFirst,
-      [bool hideSkips = false,
+      [bool shouldHideSkips = false,
       void Function(int)? clickOnDay]) {
     List<Widget> list = [];
     bool added = false;
@@ -81,9 +81,8 @@ mixin dayCreator {
       }
       for (var item in sortableList) {
         if (item is SkippableEndBasedController &&
-            hideSkips &&
-            fromNow == item.daysLeft &&
-            item.skipCheckNotSure(fromNow, (item.daysLeft))) {
+            shouldHideSkips &&
+            item.skipCheckNotSure(fromNow)) {
           continue;
         }
         list.add(addEndBasedButton(item, setStateMethod, false));
@@ -145,9 +144,8 @@ mixin dayCreator {
       }
       for (var item in sortableList) {
         if (item is SkippableEndBasedController &&
-            hideSkips &&
-            fromNow == item.daysLeft &&
-            item.skipCheckNotSure(fromNow, (item.daysLeft))) {
+            shouldHideSkips &&
+            item.skipCheckNotSure(fromNow)) {
           continue;
         }
         list.add(addEndBasedButton(item, setStateMethod, false));

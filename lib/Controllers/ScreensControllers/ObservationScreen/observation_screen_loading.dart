@@ -2,6 +2,7 @@ import 'package:blagenda_flutter_simple/Commons/Models/Buttons/again.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/deadline.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/entity_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../../Commons/Models/Buttons/weird_again.dart';
@@ -115,14 +116,14 @@ class ObservationScreenLoading with loading {
         (e) => selectedButton.id == e.id && e.runtimeType == selectedButton.runtimeType);
   }
 
-  void skipButton(
-      BasicButtonController? selectedButton, List<BasicButtonController> allItems) {
+  void skipButton(BasicButtonController? selectedButton,
+      List<BasicButtonController> allItems, int fromNow) {
     if (selectedButton == null) {
       return;
     } else if (selectedButton is! SkippableEndBasedController) {
       deleteSelected(selectedButton, allItems);
     } else {
-      (selectedButton).makeNewSkip(selectedButton.dateController);
+      (selectedButton).makeNewSkip(MyDateController.fromDaysFromNow(fromNow));
       storeUpdateButton(selectedButton, allItems);
     }
   }
