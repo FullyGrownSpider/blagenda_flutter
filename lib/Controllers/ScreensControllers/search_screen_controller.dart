@@ -7,20 +7,21 @@ import '../blagenda_uniform_button.dart';
 import 'mix_day_creator.dart';
 import 'mix_input_handler.dart.dart';
 
-class SearchScreenController<T extends SearchAble> with dayCreator, searchField {
+class SearchScreenController<T extends SearchAble> with DayCreator, SearchField {
   ///needs to be sorted
   final List<T> _everything;
 
   String _searchingText = '';
-  final void Function() _setStateMethod;
   final Future<dynamic> Function(T) _doActionWithClickedItem;
   @visibleForTesting
-  late final Map<SearchTypes, InputObject> searches = {};
+  final Map<SearchTypes, InputObject> searches = {};
   @visibleForTesting
   final List<T> foundItems = [];
-  final Future<T> Function(T) _reAdd;
+  final ValueNotifier<List<Widget>> list = ValueNotifier([]);
+  DateRange date = const DateRange(0, -1);
+  final void Function(T) _reAdd;
 
-  SearchScreenController(this._setStateMethod, this._doActionWithClickedItem,
+  SearchScreenController(this._doActionWithClickedItem,
       this._everything, this._reAdd) {
     Set searchesSet = {};
     for (var e in _everything) {
@@ -28,7 +29,7 @@ class SearchScreenController<T extends SearchAble> with dayCreator, searchField 
     }
     for (var key in searchesSet) {
       if (key == SearchTypes.date) {
-        searches[key] = dateFinder(onConfirmed);
+        searches[key] = dateFinder(onConfirmed, () => date, (s) => date = s);
       } else if (key == SearchTypes.string) {
         searches[key] = stringFinder(onConfirmed);
       } else if (key == SearchTypes.tag) {
@@ -49,7 +50,6 @@ class SearchScreenController<T extends SearchAble> with dayCreator, searchField 
   void resetSearch() {
     if (_everything.isEmpty) {
       _searchingText = 'no items';
-      _setStateMethod();
       return;
     }
     _searchingText = '';
@@ -58,7 +58,7 @@ class SearchScreenController<T extends SearchAble> with dayCreator, searchField 
     List<int> notScored = [];
     if (searches.containsKey(SearchTypes.date)) {
       var data = searches[SearchTypes.date]!.getValue() as DateRange;
-      searches[SearchTypes.date]!.onReset(searches[SearchTypes.date]!);
+      searches[SearchTypes.date]!.setValue(searches[SearchTypes.date]!);
       if (data.range > -1) {
         var from = MyDateController.fromDaysFromNow(data.myDateFromNow);
         if (data.range == 0) {
@@ -77,7 +77,7 @@ class SearchScreenController<T extends SearchAble> with dayCreator, searchField 
     }
     if (searches.containsKey(SearchTypes.string)) {
       var data = searches[SearchTypes.string]!.getValue() as String;
-      searches[SearchTypes.string]!.onReset(searches[SearchTypes.string]!);
+      searches[SearchTypes.string]!.setValue(searches[SearchTypes.string]!);
       if (data.isNotEmpty) {
         if (_searchingText.isNotEmpty) _searchingText += '\n and \n';
         _searchingText += data;
@@ -105,7 +105,6 @@ class SearchScreenController<T extends SearchAble> with dayCreator, searchField 
     if (notScored.length == _everything.length || scoreMap.isEmpty) {
       foundItems.addAll(_everything.where((e) => e.shouldShowWhenStarting()));
       foundItems.sort();
-      _setStateMethod();
       return;
     }
     for (int i = 0; i < _everything.length; i++) {
@@ -113,12 +112,18 @@ class SearchScreenController<T extends SearchAble> with dayCreator, searchField 
       foundItems.add(_everything[i]);
     }
     foundItems.sort((a, b) => scoreMap[b]!.compareTo(scoreMap[a]!));
-    _setStateMethod();
   }
 
   //Default widgets
   List<Widget> getScreenWidgets() {
-    if (_everything.isEmpty) return [const Center(child: Text('No items'))];
+    return searches.values.map((e) => e.displayWidget).toList()..addAll(list.value);
+  }
+
+  void setScreenSearch() {
+    if (_everything.isEmpty) {
+      list.value = [const Center(child: Text('No items'))];
+      return;
+    }
     List<Widget> toFill = [];
     for (var item in searches.values) {
       toFill.add(item.displayWidget);
@@ -146,10 +151,8 @@ class SearchScreenController<T extends SearchAble> with dayCreator, searchField 
                     resetSearch();
                   } else if (false == value) {
                     _everything.remove(item);
-                    _reAdd(item).then((value) {
-                      _everything.add(value);
+                    _reAdd(item);
                       resetSearch();
-                    });
                   }
                 })));
       }
@@ -172,12 +175,12 @@ class SearchScreenController<T extends SearchAble> with dayCreator, searchField 
                 })));
       }
     }
-    return toFill;
+    list.value = toFill;
   }
 
   void fullSearchReset() {
     for (var item in searches.values) {
-      item.onReset(item);
+      item.setValue(null);
     }
     resetSearch();
   }

@@ -13,8 +13,7 @@ class CountDownDrawerController {
       List<EndBasedController> Function() getEndBasedButtons,
       Widget Function(List<Widget> list) style,
       void Function(BasicButtonController) addOrUpdateButton,
-      void Function() resetScreen,
-      Future<List<dynamic>> Function() getData) async {
+      List<dynamic> Function() getData) async {
     List<Widget> widgetList = [];
     List<EndBasedController> endButtons = [];
     List<BasicButtonController> notes = [];
@@ -38,12 +37,12 @@ class CountDownDrawerController {
 
     endButtons.sort();
     notes.addAll(
-        (await getData()).where((e) => e.important).toList().cast<NoteController>());
+        (getData()).where((e) => e.important).toList().cast<NoteController>());
     widgetList.clear();
     for (var note in notes) {
       widgetList.add(style([
         BlagendaUniformButton(false, note.color, note.displayGenericText(note.job, 25),
-            () => _createUnimportantButton(note, addOrUpdateButton, resetScreen))
+            () => _createUnimportantButton(note, addOrUpdateButton))
       ]));
       widgetList.add(bigSplitterTextField);
       widgetList.add(splitterTextField);
@@ -58,7 +57,7 @@ class CountDownDrawerController {
             false,
             displayAble ? but.color : lerpIt(but.color),
             but.displayGenericText(but.gettingTheStringShort(), 25),
-            () => _createUnimportantButton(but, addOrUpdateButton, resetScreen)),
+            () => _createUnimportantButton(but, addOrUpdateButton)),
         if (displayAble) _createCountDownText(but)
       ]));
       widgetList.add(bigSplitterTextField);
@@ -73,12 +72,10 @@ class CountDownDrawerController {
 
   Function _createUnimportantButton(
       BasicButtonController it,
-      void Function(BasicButtonController) addOrUpdateButton,
-      void Function() resetScreen) {
+      void Function(BasicButtonController) addOrUpdateButton) {
     return () {
       it.flipImportant();
       addOrUpdateButton(it);
-      resetScreen();
     };
   }
 

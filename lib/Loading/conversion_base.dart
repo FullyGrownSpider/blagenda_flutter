@@ -39,7 +39,7 @@ class ImportExportLogic {
   const ImportExportLogic(this.type, this._toAssign, this.butVal, this._toGet);
 }
 
-enumToString(dynamic val) => val.toString().split('.').last;
+String enumToString(dynamic val) => val.toString().split('.').last;
 
 Map<String, dynamic> itemToStoringMap(dynamic button) {
   return Map.fromEntries(
@@ -268,7 +268,7 @@ List<ImportExportLogic> _allDataConversion = [
       enumToString(PossibleValues.list), (entity) => entity.tags),
 ];
 
-enum PossibleValues { job, todo, id, col, mon, dat, day, skp, end, str, imp, list }
+enum PossibleValues { job, dat, id, col, mon, day, skp, str, end, todo, imp, list }
 
 String typeToFile(Type t) {
   if (!typeList.contains(t)) {

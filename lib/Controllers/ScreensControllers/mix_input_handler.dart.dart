@@ -12,43 +12,36 @@ const TextStyle inputTextStyle = TextStyle(
     decoration: TextDecoration.none,
     color: Colors.white);
 
-mixin inputHandler on buttonCreator {
+mixin InputHandler on ButtonCreator {
   InputObject<String> itemForStringAutoComplete(
-      String preObject,
       String hint,
-      Map<String, dynamic> storedValues,
-      void Function() doWhenPossible,
-      String index,
-      List<String> autoComp,
-      void Function() setState) {
-    var initValue = TextEditingValue(text: preObject);
+      String Function() get,
+      void Function(String) set,
+      List<String> autoComp) {
+    var initValue = TextEditingValue(text: get());
     var autoComplete = notQuiteFull(Autocomplete(
         initialValue: initValue,
         optionsBuilder: (TextEditingValue textEditingValue) async {
           if (textEditingValue.text.length < 3) {
             return const Iterable<String>.empty();
           }
-          var list = autoComp.where((String option) =>
-              option.toLowerCase().startsWith(textEditingValue.text.toLowerCase()));
-          storedValues[index] = textEditingValue.text;
-
+          var list = autoComp.where((String option) => option
+              .toLowerCase()
+              .startsWith(textEditingValue.text.toLowerCase()));
+          set(textEditingValue.text);
           return list;
         },
-        onSelected: (String selection) {
-          storedValues[index] = selection;
-        },
+        onSelected: set,
         fieldViewBuilder: (BuildContext context,
             TextEditingController textEditingController,
             FocusNode focusNode,
             VoidCallback onFieldSubmitted) {
-          return _defaultTextField(
-              textEditingController, storedValues, index, doWhenPossible, hint,
-              onChanged: (_) {
-            setState();
-          }, focusNode: focusNode);
+          return _defaultTextField(textEditingController, set, hint,
+              focusNode: focusNode);
         },
         optionsViewBuilder: (BuildContext context,
-            AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+            AutocompleteOnSelected<String> onSelected,
+            Iterable<String> options) {
           return Align(
               alignment: Alignment.topLeft,
               child: Material(
@@ -69,146 +62,115 @@ mixin inputHandler on buttonCreator {
                                 ));
                           }))));
         }));
-    return InputObject<String>(autoComplete, () {
-      return storedValues[index];
-    }, index, (_) {});
+    return InputObject<String>(autoComplete, get, set);
   }
 
   TextField _defaultTextField(
     TextEditingController stringController,
-    Map<String, dynamic> storedValues,
-    String index,
-    void Function() doWhenPossible,
+    void Function(String) set,
     String hint, {
-    void Function(String)? onChanged,
     int maxLines = 1,
     keyboardType,
     FocusNode? focusNode,
   }) {
-    onChanged ??= (s) {
-      storedValues[index] = s;
-    };
     return TextField(
         keyboardType: keyboardType,
         style: inputTextStyle,
         controller: stringController,
-        onChanged: onChanged,
-        onTap: () => doWhenPossible(),
+        onChanged: set,
         maxLines: maxLines,
         decoration: InputDecoration(hintText: hint),
         focusNode: focusNode);
   }
 
-  InputObject<String> itemForString(String preObject, String hint,
-      Map<String, dynamic> storedValues, void Function() doWhenPossible, String index) {
-    TextEditingController stringController = TextEditingController(text: preObject);
-    Widget displayWidget = notQuiteFull(
-        _defaultTextField(stringController, storedValues, index, doWhenPossible, hint));
-    return InputObject<String>(displayWidget, () {
-      return stringController.text;
-    }, index, (_) {});
+  InputObject<String> itemForString(String hint,
+      String Function() get, void Function(String) set) {
+    TextEditingController stringController =
+        TextEditingController(text: get());
+    Widget displayWidget =
+        notQuiteFull(_defaultTextField(stringController, set, hint));
+    set = (s) {
+      set(s);
+      stringController.text = s;
+    };
+    return InputObject<String>(displayWidget, get, set);
   }
 
-  InputObject<MyDateController?> itemForMyDate(
-      String hint,
-      String text,
-      Map<String, dynamic> storedValues,
-      void Function() createMyDateDayToShow,
-      String index) {
-    TextEditingController stringController = TextEditingController(text: text);
+  InputObject<MyDateController?> itemForMyDate(String hint,
+      MyDateController? Function() get, void Function(MyDateController?) set) {
+    TextEditingController stringController =
+        TextEditingController(text: _dateDisplay(get()));
     var displayWidget = notQuiteFull(_defaultTextField(
-        stringController, storedValues, index, createMyDateDayToShow, hint));
+        stringController, (s) => set(MyDateController.translate(s)), hint));
+    return InputObject<MyDateController?>(displayWidget, get, set);
+  }
 
-    return InputObject<MyDateController?>(displayWidget, () {
-      return MyDateController.translate(stringController.text);
-    }, index, (_) {});
+  String _dateDisplay(MyDateController? controller) {
+    if (controller == null) return '';
+    var toStore = controller.daysLeftUntil();
+    if (toStore < 14) {
+      return toStore.toString();
+    } else if (toStore < 30) {
+      StringBuffer weekdayString =
+          StringBuffer(MyDateController.daysEn[controller.weekday - 1]);
+      int days = controller.difference(MyDateController.today).inDays - 7;
+      for (int i = 0; i < days; i += 7) {
+        weekdayString.write('+');
+      }
+      return weekdayString.toString();
+    } else {
+      return controller
+          .inputDisplayString(MyDateController.nowDate.year != controller.year);
+    }
   }
 
   InputObject<bool> itemForBoolean(
-      bool preObject,
-      String hint,
-      String index,
-      Map<String, dynamic> storedValues,
-      Function setStateMethod,
-      Function doWhenPossible) {
+      String hint, bool Function() get, void Function(bool) set) {
     return InputObject<bool>(
-        _booleanButton(
-            preObject, hint, index, storedValues, setStateMethod, doWhenPossible),
-        () {
-          //just in case its like 45 or '9' or whatever don't remove the == true
-          return storedValues[index] == true;
-        },
-        index,
-        (input) {
-          input.displayWidget = _booleanButton(
-              preObject, hint, index, storedValues, setStateMethod, doWhenPossible);
-        });
+        BlagendaUniformButton(
+            get(), usedColors.first, '${get() ? '⬤' : '◯'} - $hint', () {
+          set(!get());
+        }),
+        get,
+        set);
   }
 
-  Widget _booleanButton(
-      bool preObject,
-      String hint,
-      String index,
-      Map<String, dynamic> storedValues,
-      Function setStateMethod,
-      Function doWhenPossible) {
-    return BlagendaUniformButton(
-        preObject, usedColors.first, '${preObject ? '⬤' : '◯'} - $hint', () {
-      storedValues[index] = !preObject;
-      setStateMethod();
-    });
-  }
-
-  InputObject<String> itemForStringList(String stringList, String hint, String index,
-      void Function() doWhenPossible, Map<String, dynamic> storedValues) {
-    var stringController = TextEditingController(text: stringList);
+  InputObject<String> itemForStringList(String hint,
+      String Function() get, void Function(String) set) {
+    var stringController = TextEditingController(text: get());
     Widget displayWidget = notQuiteFull(_defaultTextField(
-        stringController, storedValues, index, doWhenPossible, hint,
+        stringController, set, hint,
         maxLines: 5, keyboardType: TextInputType.multiline));
-    return InputObject<String>(displayWidget, () {
-      return '${stringController.text.trim()}\n';
-    }, index, (_) {});
+    return InputObject<String>(displayWidget, get, (s) => '${s.trim()}\n');
   }
 
-  InputObject<int> itemForInt(int preObject, String hint, String index,
-      Map<String, dynamic> storedValues, void Function() doWhenPossible) {
-    var stringController = TextEditingController(text: preObject.toString());
-    var displayWidget = notQuiteFull(_defaultTextField(
-        stringController, storedValues, index, doWhenPossible, hint, onChanged: (s) {
-      storedValues[index] = int.tryParse(s);
-    }, keyboardType: TextInputType.number));
-    return InputObject<int>(displayWidget, () {
-      return int.parse(stringController.text);
-    }, index, (_) {});
+  InputObject<int> itemForInt(
+      String hint, int Function() get, void Function(int) set) {
+    var stringController = TextEditingController(text: get().toString());
+    var displayWidget = notQuiteFull(_defaultTextField(stringController, (s) {
+      var value = int.tryParse(s);
+      if (value == null) {
+        set(0);
+      } else {
+        set(value);
+      }
+    }, hint, keyboardType: TextInputType.number));
+    return InputObject<int>(displayWidget, get, set);
   }
 
-  InputObject<int> itemForIntFromList(
-      List<String> listToShow,
-      String hint,
-      String index,
-      Map<String, dynamic> storedValues,
-      Function setStateMethod,
-      Function doWhenPossible) {
-    return InputObject<int>(
-        _createDropDown(
-            listToShow, hint, index, storedValues, setStateMethod, doWhenPossible), () {
-      return storedValues[index] as int;
-    },
-        index,
-        (input) => input.displayWidget = _createDropDown(
-            listToShow, hint, index, storedValues, setStateMethod, doWhenPossible));
+  InputObject<int?> itemForIntFromList(List<String> listToShow, String hint,
+      int? Function() get, void Function(int?) set) {
+    return InputObject<int?>(
+        _createDropDown(listToShow, hint, () => get(), (s) => set(s)),
+        get,
+        set);
   }
 
-  Widget _createDropDown(
-      List<String> listToShow,
-      String hint,
-      String index,
-      Map<String, dynamic> storedValues,
-      Function setStateMethod,
-      Function doWhenPossible) {
-    var text = Text(storedValues[index] == null
-        ? hint
-        : listToShow[(storedValues[index] - 1) % listToShow.length]);
+  Widget _createDropDown(List<String> listToShow, String hint,
+      int? Function() get, void Function(int) set) {
+    int? value = get();
+    var text = Text(
+        value == null ? hint : listToShow[(value - 1) % listToShow.length]);
     return notQuiteFull(DropdownButton<String>(
         hint: text,
         items: listToShow.map((String value) {
@@ -217,82 +179,60 @@ mixin inputHandler on buttonCreator {
             child: Text(value),
           );
         }).toList(),
-        onChanged: (s) {
-          storedValues[index] = listToShow.indexOf(s ?? '') + 1;
-          setStateMethod();
-        },
-        onTap: () => doWhenPossible()));
+        onChanged: (s) => set(listToShow.indexOf(s ?? '') + 1)));
   }
 
   InputObject<Color> itemForColor(
-      Function() setStateMethod,
-      void Function(int) colorButtonPressed,
-      Map<String, dynamic> storedValues,
-      String index) {
+      Color Function() get, void Function(Color) set) {
     return InputObject<Color>(
-        _widgetForColor(setStateMethod, colorButtonPressed, storedValues, index), () {
-      return usedColors[storedValues[index]];
-    },
-        index,
-        (input) => input.displayWidget =
-            _widgetForColor(setStateMethod, colorButtonPressed, storedValues, index));
+        _widgetForColor(() => usedColors.indexOf(get()), set), get, set);
   }
 
-  Widget _widgetForColor(Function() setStateMethod, void Function(int) colorButtonPressed,
-      Map<String, dynamic> storedValues, String index) {
-    return Column(
-        children: globalCreateColorButtons(
-            setStateMethod, colorButtonPressed, storedValues[index]));
+  Widget _widgetForColor(int Function() get, void Function(Color) set) {
+    return Column(children: globalCreateColorButtons(get(), set));
   }
 
   InputObject<dynamic> itemForReferenceAbleList(
-      String index,
-      Map<String, dynamic> storedValues,
+      dynamic Function() get,
+      void Function(dynamic) set,
       void Function() onThingClick,
       String Function(dynamic) getNickname) {
-    var but = BlagendaUniformButton(
-        false,
-        usedColors.first,
-        storedValues[index] == null ? "???" : getNickname(storedValues[index]),
-        onThingClick);
-    return InputObject<dynamic>(but, () {
-      return storedValues[index];
-    }, index, (_) {});
+    var but = BlagendaUniformButton(false, usedColors.first,
+        get() == null ? "???" : getNickname(get()), onThingClick);
+    return InputObject<dynamic>(but, get, set);
   }
 }
 
-mixin searchField {
-  InputObject<DateRange> dateFinder(void Function() onConfirmed) {
+mixin SearchField {
+  InputObject<DateRange> dateFinder(void Function() onConfirmed,
+      DateRange Function() get, void Function(DateRange) set) {
     TextEditingController dateController = TextEditingController(),
         rangeController = TextEditingController();
     return InputObject(
         notQuiteFull(Row(children: [
           Expanded(flex: 3, child: _dateFinder(onConfirmed, dateController)),
-          Expanded(flex: 2, child: _extraDatesFinder(onConfirmed, rangeController))
+          Expanded(
+              flex: 2, child: _extraDatesFinder(onConfirmed, rangeController))
         ])),
-        () {
-          var dateBefore = MyDateController.translate(dateController.text);
-          if (dateBefore == null && rangeController.text.isEmpty) {
-            return const DateRange(0, -1);
-          }
-          var date = dateBefore ?? MyDateController.today;
-          var dateRange = DateRange(
-              date.daysLeftUntil(), _rangeCalculator(rangeController.text, date) ?? 0);
-          return dateRange;
-        },
-        '',
-        (_) {
-          dateController.clear();
-          rangeController.clear();
-        });
+        get, (s) {
+      var dateBefore = MyDateController.translate(dateController.text);
+      if (dateBefore == null && rangeController.text.isEmpty) {
+        set(const DateRange(0, -1));
+        return;
+      }
+      var date = dateBefore ?? MyDateController.today;
+      var dateRange = DateRange(date.daysLeftUntil(),
+          _rangeCalculator(rangeController.text, date) ?? 0);
+      set(dateRange);
+    });
   }
 
   InputObject<String> stringFinder(void Function() onConfirmed) {
     var textController = TextEditingController();
-    return InputObject(notQuiteFull(_textFinder(textController, onConfirmed)), () {
-      var toReturn = textController.text.toLowerCase();
-      return toReturn;
-    }, '', (_) => textController.clear());
+    return InputObject(notQuiteFull(_textFinder(textController, onConfirmed)),
+        () => textController.text.toLowerCase(), (s) {
+      textController.text = s;
+    });
   }
 
   InputObject<List<String>> tagFinder(void Function() onConfirmed) {
@@ -302,25 +242,29 @@ mixin searchField {
         Row(children: [
           const Spacer(),
           Expanded(
-              flex: 7, child: _textFinder(nameController, onConfirmed, 'Tag name', 3)),
+              flex: 7,
+              child: _textFinder(nameController, onConfirmed, 'Tag name', 3)),
           Expanded(
-              flex: 7, child: _textFinder(dataController, onConfirmed, 'Tag data', 3)),
+              flex: 7,
+              child: _textFinder(dataController, onConfirmed, 'Tag data', 3)),
           const Spacer()
-        ]),
-        () {
-          return [
-            nameController.text.toLowerCase().trim(),
-            dataController.text.toLowerCase().trim()
-          ];
-        },
-        '',
-        (_) {
-          nameController.clear();
-          dataController.clear();
-        });
+        ]), () {
+      return [
+        nameController.text.toLowerCase().trim(),
+        dataController.text.toLowerCase().trim()
+      ];
+    }, (list) {
+      if (list.isEmpty) {
+        nameController.text = dataController.text = '';
+      } else {
+        nameController.text = list.first;
+        dataController.text = list.last;
+      }
+    });
   }
 
-  Widget _dateFinder(Function() onConfirmed, TextEditingController dateController) {
+  Widget _dateFinder(
+      Function() onConfirmed, TextEditingController dateController) {
     return TextField(
         style: inputTextStyle,
         controller: dateController,
@@ -328,7 +272,8 @@ mixin searchField {
           onConfirmed();
         },
         decoration: const InputDecoration(
-            hintText: 'date to look up', border: OutlineInputBorder(gapPadding: 2)));
+            hintText: 'date to look up',
+            border: OutlineInputBorder(gapPadding: 2)));
   }
 
   Widget _extraDatesFinder(
@@ -336,15 +281,19 @@ mixin searchField {
     return TextField(
         style: inputTextStyle,
         controller: rangeController,
-        inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]?[mw+]?'))],
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp('[0-9]?[mw+]?'))
+        ],
         onSubmitted: (s) {
           onConfirmed();
         },
         decoration: const InputDecoration(
-            hintText: '+ numb or m/w', border: OutlineInputBorder(gapPadding: 3)));
+            hintText: '+ numb or m/w',
+            border: OutlineInputBorder(gapPadding: 3)));
   }
 
-  Widget _textFinder(TextEditingController stringController, Function() onConfirmed,
+  Widget _textFinder(
+      TextEditingController stringController, Function() onConfirmed,
       [String hint = 'text finder', int maxLines = 1]) {
     return TextField(
         style: inputTextStyle,
@@ -358,12 +307,13 @@ mixin searchField {
   }
 
   int? _rangeCalculator(String text, MyDateController date) {
-    var total =
-        int.tryParse(text.replaceAll('m', '').replaceAll('w', '').replaceAll('+', ''));
+    var total = int.tryParse(
+        text.replaceAll('m', '').replaceAll('w', '').replaceAll('+', ''));
     if (total == null) return null;
     var months = text.allMatches('m').length;
     if (months != 0) {
-      months = MyDateController(date.year, date.month + months, date.day).daysLeftUntil();
+      months = MyDateController(date.year, date.month + months, date.day)
+          .daysLeftUntil();
     }
     return total +
         months +
@@ -371,17 +321,18 @@ mixin searchField {
   }
 }
 
-Row notQuiteFull(Widget widget) => Row(
-    children: [const Spacer(flex: 1), Expanded(flex: 14, child: widget), const Spacer()]);
+Row notQuiteFull(Widget widget) => Row(children: [
+      const Spacer(flex: 1),
+      Expanded(flex: 14, child: widget),
+      const Spacer()
+    ]);
 
 class InputObject<t> {
-  InputObject(this.displayWidget, this.getValue, this.toFill, this.onReset);
+  InputObject(this.displayWidget, this.getValue, this.setValue);
 
   Widget displayWidget;
   t Function() getValue;
-  String toFill;
-
-  void Function(InputObject) onReset;
+  void Function(t) setValue;
 }
 
 final class DateRange {

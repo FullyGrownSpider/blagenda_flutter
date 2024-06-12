@@ -1,42 +1,25 @@
-import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
-import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/countdown_Drawer_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/note_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/countdown_drawer_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/month_day_widet.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
+import 'package:blagenda_flutter_simple/Loading/button_notifier.dart';
 import 'package:flutter/material.dart';
 
-import '../Loading/mix_loading.dart';
 import 'ObjectControllers/ButtonControllers/basic_button_controller.dart';
-import 'ObjectControllers/ButtonControllers/end_based_controller.dart';
 import 'blagenda_uniform_button.dart';
 
 class CountdownDrawer extends StatefulWidget {
-  final void Function() addToButton;
-
-  final void Function() removeFromButton;
-
-  const CountdownDrawer(
-      this.addOrUpdateButton,
-      this.resetScreen,
-      this.getEndBasedButtons,
-      this._flipImportant,
-      this._getSelectedButton,
-      this.addToButton,
-      this.removeFromButton)
+  const CountdownDrawer(this._getSelectedButton, this._notifier)
       : super(key: null);
 
-  final void Function(BasicButtonController) addOrUpdateButton;
-  final void Function() _flipImportant;
-
   final BasicButtonController? Function() _getSelectedButton;
-
-  final void Function() resetScreen;
-  final List<EndBasedController> Function() getEndBasedButtons;
+  final ButtonNotifier _notifier;
 
   @override
   State<CountdownDrawer> createState() => _CountdownDrawerState();
 }
 
-class _CountdownDrawerState extends State<CountdownDrawer> with loading, MonthDayWidget {
+class _CountdownDrawerState extends State<CountdownDrawer> with MonthDayWidget {
   CountDownDrawerController countDownController = CountDownDrawerController();
 
   List<Widget> widgetList = [];
@@ -45,8 +28,11 @@ class _CountdownDrawerState extends State<CountdownDrawer> with loading, MonthDa
   void initState() {
     super.initState();
     countDownController
-        .loadSortFillImportant(widget.getEndBasedButtons, containWidgetsPretty,
-            widget.addOrUpdateButton, widget.resetScreen, () => getData<BasicButton>())
+        .loadSortFillImportant(
+            widget._notifier.getEndbasedData,
+            containWidgetsPretty,
+            widget._notifier.addOrUpdate,
+            widget._notifier.getData().whereType<NoteController>().toList)
         .then((value) {
       widgetList.clear();
       widgetList.addAll(value);
@@ -62,9 +48,13 @@ class _CountdownDrawerState extends State<CountdownDrawer> with loading, MonthDa
         width: double.infinity,
         decoration: const BoxDecoration(
             color: Colors.black26,
-            border:
-                Border(top: border, left: fakeBorder, right: fakeBorder, bottom: border)),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: list));
+            border: Border(
+                top: border,
+                left: fakeBorder,
+                right: fakeBorder,
+                bottom: border)),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center, children: list));
   }
 
   @override
@@ -75,28 +65,34 @@ class _CountdownDrawerState extends State<CountdownDrawer> with loading, MonthDa
       bigSplitterTextField,
       containWidgetsPretty([
         smallBlankSplit,
-        buildMonthDayWidgets(MyDateController.today.year, MyDateController.today.month),
+        buildMonthDayWidgets(
+            MyDateController.today.year, MyDateController.today.month),
       ]),
       bigSplitterTextField,
       containWidgetsPretty([
         smallBlankSplit,
         countDownController.updateButtonsButtons(() {
-          widget._flipImportant();
           var but = widget._getSelectedButton();
+          widget._notifier.flipImportant(but);
           if (but == null) return;
           countDownController
               .loadSortFillImportant(
-                  widget.getEndBasedButtons,
+                  widget._notifier.getEndbasedData,
                   containWidgetsPretty,
-                  widget.addOrUpdateButton,
-                  widget.resetScreen,
-                  () => getData<BasicButton>())
+                  widget._notifier.addOrUpdate,
+                  widget._notifier.getData().whereType<NoteController>().toList)
               .then((value) {
             widgetList.clear();
             widgetList.addAll(value);
             setState(() {});
           });
-        }, widget.addToButton, widget.removeFromButton),
+        }, () {
+          var but = widget._getSelectedButton();
+          widget._notifier.changeDays(but, 1);
+        }, () {
+          var but = widget._getSelectedButton();
+          widget._notifier.changeDays(but, -1);
+        }),
       ]),
       bigSplitterTextField,
       ...widgetList

@@ -40,9 +40,7 @@ class BlagendaUniformButton extends StatefulWidget {
   final void Function() pressed;
 
   @override
-  State<StatefulWidget> createState() {
-    return _BlagendaUniformButton();
-  }
+  State<StatefulWidget> createState() => _BlagendaUniformButton();
 }
 
 class _BlagendaUniformButton extends State<BlagendaUniformButton> {
@@ -58,7 +56,7 @@ class _BlagendaUniformButton extends State<BlagendaUniformButton> {
       text =
           '${text.replaceAll('\n', '').replaceFirst(BlagendaUniformButton.smollButStartText, '').substring(0, min(4, text.length - BlagendaUniformButton.smollButStartText.length))}..';
       ElevatedButton(
-          onPressed: widget.pressed,
+          onPressed: pressed,
           style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.only(left: 13, right: 13),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -66,7 +64,7 @@ class _BlagendaUniformButton extends State<BlagendaUniformButton> {
           child: Text(text, style: normalTextStyle, textAlign: TextAlign.center));
     }
     return ElevatedButton(
-        onPressed: widget.pressed,
+        onPressed: pressed,
         style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.only(left: 13, right: 13),
             shape: RoundedRectangleBorder(
@@ -88,5 +86,10 @@ class _BlagendaUniformButton extends State<BlagendaUniformButton> {
                 )
               ])
             : Text(text, style: normalTextStyle, textAlign: TextAlign.center));
+  }
+
+  void pressed() {
+    widget.pressed();
+    setState(() {});
   }
 }

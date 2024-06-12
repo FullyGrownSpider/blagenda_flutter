@@ -15,13 +15,12 @@ const List<String> _bigDateFormatWithYear = [D, ', ', M, ' ', d, ', ', yyyy];
 
 const List<String> _smallDateFormat = [D];
 
-mixin dayCreator {
+mixin DayCreator {
   List<Widget> createADay(
       MyDateController nowDate,
       List<EndBasedController> listWithEverything,
       int fromNow,
-      void Function() setStateMethod,
-      Widget Function(EndBasedController, void Function(), bool) addEndBasedButton,
+      Widget Function(EndBasedController, bool) addEndBasedButton,
       bool showNamesOnly,
       bool showFirst,
       [bool shouldHideSkips = false,
@@ -73,9 +72,9 @@ mixin dayCreator {
           children: [left, dayDisplayButton, right]));
       for (var item in listWithExtra) {
         if (showFirst) {
-          list.add(addEndBasedButton(item, setStateMethod, false));
+          list.add(addEndBasedButton(item, false));
         } else {
-          list.add(addEndBasedButton(item, setStateMethod, true));
+          list.add(addEndBasedButton(item, true));
         }
         added = true;
       }
@@ -85,7 +84,7 @@ mixin dayCreator {
             item.skipCheckNotSure(fromNow)) {
           continue;
         }
-        list.add(addEndBasedButton(item, setStateMethod, false));
+        list.add(addEndBasedButton(item, false));
         added = true;
       }
       //yesterday gets a gray box around it and today a green one
@@ -136,9 +135,9 @@ mixin dayCreator {
       ]));
       for (var item in listWithExtra) {
         if (showFirst) {
-          list.add(addEndBasedButton(item, setStateMethod, false));
+          list.add(addEndBasedButton(item, false));
         } else {
-          list.add(addEndBasedButton(item, setStateMethod, true));
+          list.add(addEndBasedButton(item, true));
         }
         added = true;
       }
@@ -148,7 +147,7 @@ mixin dayCreator {
             item.skipCheckNotSure(fromNow)) {
           continue;
         }
-        list.add(addEndBasedButton(item, setStateMethod, false));
+        list.add(addEndBasedButton(item, false));
         added = true;
       }
     }
