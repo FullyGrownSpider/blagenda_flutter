@@ -12,7 +12,7 @@ import '../../my_date_controller.dart';
 import '../mix_button_creator.dart';
 import '../mix_day_creator.dart';
 
-class ObservationScreenButtons with dayCreator, buttonCreator {
+class ObservationScreenButtons with DayCreator, ButtonCreator {
   ///the index used to give every button a selection ID
   int _globalCounter = -1;
 
@@ -64,17 +64,16 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
         .toList());
   }
 
-  List<Widget> getWidgetListNote(void Function() setStateMethod,
+  List<Widget> getWidgetListNote(
       ObservationScreenOptions options, List<BasicButtonController> notesList) {
     notesList = options.goesInList(notesList, wasJustAdded);
     List<Widget> items = [];
     if (notesList.isNotEmpty) {
-      notesList = NoteController.chosenSort(
-          notesList.cast<NoteController>(), BasicButtonController.maxValueCheck);
+      notesList = NoteController.chosenSort(notesList.cast<NoteController>(),
+          BasicButtonController.maxValueCheck);
       items.add(const Text('Notes', style: bigTextStyle));
       items.addAll(addAsRow(
-          (i) => _createButtonBase(notesList[i], setStateMethod, false), notesList.length,
-          (i) {
+          (i) => _createButtonBase(notesList[i], false), notesList.length, (i) {
         return notesList[i].theStringLongestLength;
       }, BasicButtonController.maxValueCheck));
     }
@@ -87,7 +86,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
   }
 
   void _clickOnButton(
-      int index, void Function() setStateMethod, BasicButtonController e) {
+      int index, BasicButtonController e, ValueNotifier<bool> yourBool) {
     if (idSelected != e.id &&
         typeOfSelected != e.runtimeType &&
         previouslyClicked == e.id &&
@@ -114,13 +113,14 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     if (e is SkippableEndBasedController) {
       fromNowSelect = e.altLeft;
     }
-    setStateMethod();
+    yourBool.value = idSelected == e.id && typeOfSelected == e.runtimeType;
   }
 
-  List<Widget> getWidgetListEndBased(void Function() setStateMethod, int daysToShow,
-      List<dynamic> allLists, ObservationScreenOptions options) {
+  List<Widget> getWidgetListEndBased(int daysToShow, List<dynamic> allLists,
+      ObservationScreenOptions options) {
     List<EndBasedController> everythingToShow = options
-        .goesInList(allLists.whereType<EndBasedController>().toList(), wasJustAdded)
+        .goesInList(
+            allLists.whereType<EndBasedController>().toList(), wasJustAdded)
         .whereType<EndBasedController>()
         .toList();
     List<Widget> againDeadlineDisplayList = [];
@@ -134,29 +134,29 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
           newList.addAll(_newThings.keys
               .map((k) => everythingToShow.firstWhere((e) => k.compare(e))));
           newList.sort((a, b) => a.daysLeft.compareTo(b.daysLeft));
-          newListToRemove
-              .addAll(newList.where((e) => e.daysLeft >= options.daysToShowNow));
+          newListToRemove.addAll(
+              newList.where((e) => e.daysLeft >= options.displayState.days));
         }
         againDeadlineDisplayList.addAll(_createEndBasedDayList(
-            setStateMethod,
             MyDateController.lookTime,
-            everythingToShow..removeWhere((element) => newListToRemove.contains(element)),
-            options.daysToShowNow,
+            everythingToShow
+              ..removeWhere((element) => newListToRemove.contains(element)),
+            options.displayState.days,
             newList,
             daysToShow));
       },
-      () => againDeadlineDisplayList.addAll(
-          _createFullList(setStateMethod, MyDateController.lookTime, everythingToShow)),
-      (_) => againDeadlineDisplayList.addAll(_createWidgetEndBased(
-              setStateMethod, MyDateController.lookTime, everythingToShow)
-          .toList()),
+      () => againDeadlineDisplayList
+          .addAll(_createFullList(MyDateController.lookTime, everythingToShow)),
+      (_) => againDeadlineDisplayList.addAll(
+          _createWidgetEndBased(MyDateController.lookTime, everythingToShow)
+              .toList()),
     );
     _globalCounter = -1;
     return againDeadlineDisplayList;
   }
 
   ///adding special color days
-  List<Widget> _createWidgetEndBased(void Function() setStateMethod,
+  List<Widget> _createWidgetEndBased(
       MyDateController nowDate, List<EndBasedController> endBasedList) {
     List<Widget> againDeadlineDisplayList = [];
     int index = 0;
@@ -165,9 +165,10 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     }
     for (; index < ObservationScreenOptions.daysToShow; index++) {
       againDeadlineDisplayList.addAll(createADay(nowDate, endBasedList, index,
-          setStateMethod, _createButtonBase, true, false, true, _openButtonEditMethod()));
+          _createButtonBase, true, false, true, _openButtonEditMethod()));
     }
-    if (endBasedList.any((e) => e.daysLeft >= ObservationScreenOptions.daysToShow)) {
+    if (endBasedList
+        .any((e) => e.daysLeft >= ObservationScreenOptions.daysToShow)) {
       againDeadlineDisplayList.add(bigSplitterTextField);
       var lastLeft = 0;
       for (var button in endBasedList) {
@@ -178,7 +179,6 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
                 nowDate,
                 endBasedList,
                 lastLeft,
-                setStateMethod,
                 _createButtonBase,
                 lastLeft < ObservationScreenOptions.daysToShow,
                 false,
@@ -193,31 +193,32 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
 
   void Function(int) _openButtonEditMethod() {
     return (int number) {
-      _openButtonEdit(DeadlineController(Deadline(
-          '!', '', -1, usedColors.first, MyDateController.fromDaysFromNow(number))));
+      _openButtonEdit(DeadlineController(Deadline('!', '', -1, usedColors.first,
+          MyDateController.fromDaysFromNow(number))));
     };
   }
 
-  List<Widget> _createFullList(void Function() setStateMethod, MyDateController nowDate,
-      List<EndBasedController> endBasedList) {
+  List<Widget> _createFullList(
+      MyDateController nowDate, List<EndBasedController> endBasedList) {
     endBasedList.sort();
     return endBasedList
-        .map((e) => _createListItemEverythingEndBased(e, setStateMethod))
+        .map((e) => _createListItemEverythingEndBased(e))
         .toList();
   }
 
-  Widget _createListItemEverythingEndBased(
-      EndBasedController e, void Function() setStateMethod) {
+  Widget _createListItemEverythingEndBased(EndBasedController e) {
     _globalCounter++;
     int index = _globalCounter;
+    final myBool =
+        ValueNotifier(idSelected == e.id && typeOfSelected == e.runtimeType);
     return Column(children: [
       BlagendaUniformButton(
-          (idSelected == e.id && typeOfSelected == e.runtimeType),
           e.color,
-          (idSelected == e.id && typeOfSelected == e.runtimeType)
+          () => (myBool.value) //TODO
               ? e.gettingTheStringSelected()
               : e.gettingTheStringShortWithDate(),
-          () => _clickOnButton(index, setStateMethod, e)),
+          () => _clickOnButton(index, e, myBool),
+          isSelected: myBool),
       smallBlankSplit
     ]);
   }
@@ -225,7 +226,6 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
   ///days
   ///requires a sorted list based on .left
   List<Widget> _createEndBasedDayList(
-      void Function() setStateMethod,
       MyDateController nowDate,
       List<EndBasedController> endBasedList,
       int daysToShowNow,
@@ -237,7 +237,7 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     if (endBasedList.first.daysLeft < 0) {
       //Yesterday show here
       againDeadlineDisplayList.addAll(createADay(nowDate, endBasedList, -1,
-          setStateMethod, _createButtonBase, true, true, true, _openButtonEditMethod()));
+          _createButtonBase, true, true, true, _openButtonEditMethod()));
     }
     //Just added things show here up top
     if (justAdded.isNotEmpty) {
@@ -250,9 +250,8 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
               nowDate,
               [...justAdded, ...endBasedList],
               lastLeft,
-              setStateMethod,
-              (controller, setState, isExtra) => _createButtonBase(
-                  controller, setState, isExtra, justAdded.contains(controller)),
+              (controller, isExtra) => _createButtonBase(
+                  controller, isExtra, justAdded.contains(controller)),
               lastLeft < daysToShowNow,
               false,
               false,
@@ -269,9 +268,8 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
           nowDate,
           endBasedList,
           i,
-          setStateMethod,
-          (controller, setState, isExtra) => _createButtonBase(
-              controller, setState, isExtra, justAdded.contains(controller)),
+          (controller, isExtra) => _createButtonBase(
+              controller, isExtra, justAdded.contains(controller)),
           i < ObservationScreenOptions.daysToShow,
           false,
           endBasedList.first.daysLeft >= 0,
@@ -281,15 +279,17 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
   }
 
   BlagendaUniformButton _createButtonBase(
-      BasicButtonController it, void Function() setStateMethod, bool isExtra,
+      BasicButtonController it, bool isExtra,
       [bool isNew = false]) {
     _globalCounter++;
     int index = _globalCounter;
+    ValueNotifier<bool> myBool = ValueNotifier<bool>(clicked == index);
     return BlagendaUniformButton(
-        clicked == index,
         it.color,
-        '${isNew ? '⊚' : ''}${isExtra ? it.job.substring(0, 3) + BlagendaUniformButton.smollButStartText : _buttonDisplay(index, it)}',
-        () => _clickOnButton(index, setStateMethod, it));
+        () => '${isNew ? '⊚' : ''}${_buttonDisplay(index, it)}',
+        () => _clickOnButton(index, it, myBool),
+        isSelected: myBool,
+        isSmall: isExtra);
   }
 
   String _buttonDisplay(int index, BasicButtonController it) {
@@ -302,8 +302,15 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
   void _emptyDay(int daysToShow) {
     var list = [];
     for (int i = 0; i < daysToShow; i++) {
-      list.add(createADay(MyDateController.today, [], i, () {},
-          (p0, p1, p2) => const Text(''), true, false, false, _openButtonEditMethod()));
+      list.add(createADay(
+          MyDateController.today,
+          [],
+          i,
+          (p0, p2) => const Text(''),
+          true,
+          false,
+          false,
+          _openButtonEditMethod()));
     }
   }
 
@@ -318,8 +325,9 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     _newThings.remove(_getKey(id, type));
   }
 
-  _NewRef _getKey(int id, Type type) => _newThings.keys
-      .firstWhere((e) => e.t == type && e.id == id, orElse: () => _NewRef(type, id));
+  _NewRef _getKey(int id, Type type) =>
+      _newThings.keys.firstWhere((e) => e.t == type && e.id == id,
+          orElse: () => _NewRef(type, id));
 
   /// if there have been updates form or away from new just added sends true
   bool justAddedCheck() {
@@ -342,7 +350,8 @@ class ObservationScreenButtons with dayCreator, buttonCreator {
     return false;
   }
 
-  bool wasJustAdded(EndBasedController eb) => _newThings.keys.any((e) => e.compare(eb));
+  bool wasJustAdded(EndBasedController eb) =>
+      _newThings.keys.any((e) => e.compare(eb));
 }
 
 class _NewRef {

@@ -39,7 +39,7 @@ class ImportExportLogic {
   const ImportExportLogic(this.type, this._toAssign, this.butVal, this._toGet);
 }
 
-enumToString(dynamic val) => val.toString().split('.').last;
+String enumToString(dynamic val) => val.toString().split('.').last;
 
 Map<String, dynamic> itemToStoringMap(dynamic button) {
   return Map.fromEntries(
@@ -72,7 +72,8 @@ final Map<Type, dynamic Function(String?)> dataImportGeneratorMap = {
       return usedColors.first;
     }
     List<String> x = s.split(storageListSep);
-    return Color.fromARGB(255, int.parse(x[0]), int.parse(x[1]), int.parse(x[2]));
+    return Color.fromARGB(
+        255, int.parse(x[0]), int.parse(x[1]), int.parse(x[2]));
   },
   String: (s) {
     if (s == null) {
@@ -115,7 +116,8 @@ final Map<Type, dynamic Function(String?)> dataImportGeneratorMap = {
 final Map<Type, void Function(dynamic, StringBuffer)> _dataExportMap = {
   MaterialColor: (value, buf) => _dataExportMap[Color]!(value, buf),
   MaterialAccentColor: (value, buf) => _dataExportMap[Color]!(value, buf),
-  String: (value, buf) => buf.write(value.toString().replaceAll('\n', storageListSep)),
+  String: (value, buf) =>
+      buf.write(value.toString().replaceAll('\n', storageListSep)),
   Color: (value, buf) {
     buf.write(value.red);
     buf.write(storageListSep);
@@ -123,7 +125,8 @@ final Map<Type, void Function(dynamic, StringBuffer)> _dataExportMap = {
     buf.write(storageListSep);
     buf.write(value.blue);
   },
-  //sometimes you have this one sometimes the other one it switches based on unknown vairables so why not just make sure its always working?
+  //sometimes you have this one sometimes the other one it switches based on unknown vars so why not just make sure its always working?
+
   MyDateController: (value, buf) {
     buf.write(value.year);
     buf.write(storageListSep);
@@ -152,14 +155,15 @@ final Map<Type, void Function(dynamic, StringBuffer)> _dataExportMap = {
 String uniquePart<t extends StoreAble>(t line) =>
     dataExportGenerator(line.id, StringBuffer(), 'id').toString() + storageSep;
 
-StringBuffer dataExportGenerator(dynamic value, StringBuffer buf, String keyName) {
+StringBuffer dataExportGenerator(
+    dynamic value, StringBuffer buf, String keyName) {
   if (value == null) return buf;
   buf.write(storageSep + keyName + storageIdentifier);
   var correctType = value.runtimeType;
   if (_dataExportMap.containsKey(correctType)) {
     _dataExportMap[correctType]!(value, buf);
   } else {
-    throw Exception('Unkown type is asked for');
+    throw Exception('Unknown type is asked for');
   }
   return buf;
 }
@@ -178,7 +182,8 @@ t itemImportGenerator<t extends StoreAble>(
   for (var assignable in importExportLogic) {
     var stringVal = assignable.butVal;
     if (value.containsKey(stringVal)) {
-      assignable.toAssign(toFill, dataImportGenerator(value[stringVal], assignable.type));
+      assignable.toAssign(
+          toFill, dataImportGenerator(value[stringVal], assignable.type));
     }
   }
   return toFill;
@@ -256,19 +261,41 @@ List<ImportExportLogic> _allDataConversion = [
       enumToString(PossibleValues.dat), (button) => button.date),
   ImportExportLogic(int, (button, value) => button.day = value,
       enumToString(PossibleValues.day), (button) => button.day),
-  ImportExportLogic(MyDateController, (button, value) => button.dateToSkip = value,
-      enumToString(PossibleValues.skp), (button) => button.dateToSkip),
-  ImportExportLogic(MyDateController, (button, value) => button.endingDate = value,
-      enumToString(PossibleValues.end), (button) => button.endingDate),
-  ImportExportLogic(MyDateController, (button, value) => button.startDate = value,
-      enumToString(PossibleValues.str), (button) => button.startDate),
+  ImportExportLogic(
+      MyDateController,
+      (button, value) => button.dateToSkip = value,
+      enumToString(PossibleValues.skp),
+      (button) => button.dateToSkip),
+  ImportExportLogic(
+      MyDateController,
+      (button, value) => button.endingDate = value,
+      enumToString(PossibleValues.end),
+      (button) => button.endingDate),
+  ImportExportLogic(
+      MyDateController,
+      (button, value) => button.startDate = value,
+      enumToString(PossibleValues.str),
+      (button) => button.startDate),
   ImportExportLogic(bool, (button, value) => button.important = value,
       enumToString(PossibleValues.imp), (button) => button.important),
   ImportExportLogic(List<Tag>, (entity, value) => entity.tags = value,
       enumToString(PossibleValues.list), (entity) => entity.tags),
 ];
 
-enum PossibleValues { job, todo, id, col, mon, dat, day, skp, end, str, imp, list }
+enum PossibleValues {
+  job,
+  id,
+  mon,
+  day,
+  skp,
+  str,
+  end,
+  dat,
+  todo,
+  col,
+  imp,
+  list
+}
 
 String typeToFile(Type t) {
   if (!typeList.contains(t)) {

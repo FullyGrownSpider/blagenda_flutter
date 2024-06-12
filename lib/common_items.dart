@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-Function()? syncAction;
-Function(Function())? syncActionLowKey;
-
 const List<Color> usedColors = [
   Colors.green,
   Colors.amber,

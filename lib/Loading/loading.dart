@@ -7,7 +7,7 @@ import '../Commons/store_able.dart';
 import '../Controllers/ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import 'conversion_base.dart';
 
-mixin loading {
+class Loading {
   static const DropboxClient _client = DropboxClient();
   static const LoadingFromStorage _local = LoadingFromStorage();
   static final List<Type> _uploader = [];

@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/note_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/mix_button_creator.dart';
+import 'package:blagenda_flutter_simple/Controllers/color_buttons.dart';
 import 'package:flutter/material.dart';
 
 import '../../../common_items.dart';
@@ -7,94 +10,98 @@ import '../../ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import '../../ObjectControllers/ButtonControllers/end_based_controller.dart';
 import '../../blagenda_uniform_button.dart';
 
-class ObservationScreenOptions with buttonCreator {
+class ObservationScreenOptions with ButtonCreator {
   static const int daysToShow = 6;
   @visibleForTesting
   static const List<int> possibleExtraDays = [30, 14];
 
-  ///-1 no color selected
-  ///-2 show everything in a list
-  @visibleForTesting
-  int chosenColor = -1;
+  //TODO test
+  DisplayState displayState = DisplayState();
 
-  ///used to display more days or less days
-  int daysToShowNow = daysToShow;
+  ValueNotifier getNotifier() => displayState._actuallyCurrent;
 
   ///the buttons to select the color to only show
-  List<Widget> getOptionButtons(
-      void Function() setStateMethod, Function() resetCounters) {
+  List<Widget> getOptionButtons(Function() resetCounters) {
     List<Widget> items = [];
     items.add(const Text('Display Options', style: bigTextStyle));
-    items.addAll(globalCreateColorButtons(
-        setStateMethod, (i) => colorPressed(i, resetCounters), chosenColor));
-    items.addAll(addAsRow((i) => _createCounterButton(setStateMethod, i, resetCounters),
+    items.add(ColorButtons(displayState._actuallyCurrent,
+        (dClick) => colorPressed(dClick, resetCounters)));
+    items.addAll(addAsRow((i) => _createCounterButton(i, resetCounters),
         possibleExtraDays.length));
-    items.add(_createDisplayAllEndBasedButtonsButton(setStateMethod, resetCounters));
+    items.add(_createDisplayAllEndBasedButtonsButton(resetCounters));
     return items;
   }
 
-  Widget _createDisplayAllEndBasedButtonsButton(
-          void Function() setStateMethod, Function() resetCounters) =>
-      BlagendaUniformButton(-2 == chosenColor, usedColors.first, 'Show all', () {
-        resetCounters();
-        daysToShowNow = daysToShow;
-        if (-2 == chosenColor) {
-          chosenColor = -1;
-        } else {
-          chosenColor = -2;
-        }
-        setStateMethod();
-      });
+//TODO only make this once
+  Widget _createDisplayAllEndBasedButtonsButton(Function() resetCounters) {
+    var myBool = _makeBool(() => displayState._state == _States.everything);
+    return BlagendaUniformButton(usedColors.first, () => 'Show all',
+        () {
+      resetCounters();
+      //should reset?
+      myBool.value = displayState._state != _States.everything;
+      if (myBool.value) {
+        displayState.showEverything();
+      } else {
+        displayState.days = daysToShow;
+      }
+    },isSelected: myBool);
+  }
 
-  Widget _createCounterButton(
-          void Function() setStateMethod, int index, Function() resetCounters) =>
-      BlagendaUniformButton(daysToShowNow == possibleExtraDays[index], usedColors.first,
-          'Show next ${possibleExtraDays[index].toString()} days', () {
-        chosenColor = -1;
-        if (daysToShowNow == possibleExtraDays[index]) {
-          daysToShowNow = daysToShow;
-        } else {
-          daysToShowNow = possibleExtraDays[index];
-        }
-        resetCounters();
-        setStateMethod();
-      });
+//todo reset all clicked buttons
+  Widget _createCounterButton(int index, Function() resetCounters) {
+    var myBool = _makeBool(() => displayState.days == possibleExtraDays[index]);
+    return BlagendaUniformButton(usedColors.first,
+        () => 'Show next ${possibleExtraDays[index].toString()} days', () {
+      if (myBool.value) {
+        displayState.days = daysToShow;
+      } else {
+        displayState.days = possibleExtraDays[index];
+      }
+      resetCounters();
+    },isSelected: myBool);
+  }
+
+  ValueNotifier<bool> _makeBool(Function() action) {
+    ValueNotifier<bool> yourBool = ValueNotifier(action());
+    displayState.addListener(() {
+      yourBool.value = action();
+    });
+    return yourBool;
+  }
 
   @visibleForTesting
-  void colorPressed(int index, Function() resetCounters) {
-    daysToShowNow = daysToShow;
-    if (chosenColor == index) {
-      chosenColor = -1;
-    } else {
-      chosenColor = index;
+  void colorPressed(bool dClick, Function() resetCounters) {
+    if (dClick) {
+      displayState.days = daysToShow;
     }
     resetCounters();
   }
 
-  void resetSearch(void Function() setStateMethod, Function() resetCounters) {
-    if (chosenColor == -1 && daysToShowNow == daysToShow) return;
-    chosenColor = -1;
-    daysToShowNow = daysToShow;
+  void resetSearch(Function() resetCounters) {
+    if (displayState.days == daysToShow) return;
+    displayState.days = daysToShow;
     resetCounters();
-    setStateMethod();
   }
 
   void pickCorrectOption(
       void Function() defaultListMaker,
       void Function() showEverythingListMaker,
       void Function(Color) colorChoiceListMaker) {
-    if (chosenColor > -1) {
-      colorChoiceListMaker(usedColors[chosenColor]);
-    } else if (chosenColor == -2) {
+    var chosenState = displayState._state;
+    if (chosenState == _States.colors) {
+      colorChoiceListMaker(usedColors[displayState.color]);
+    } else if (chosenState == _States.everything) {
       showEverythingListMaker();
     } else {
       defaultListMaker();
     }
   }
 
-  bool _shouldGoIn(
-          EndBasedController eb, bool Function(EndBasedController) wasJustAdded) =>
-      eb.daysLeft <= daysToShowNow + 7 || wasJustAdded(eb);
+  ///only for check about days
+  bool _shouldGoIn(EndBasedController eb,
+          bool Function(EndBasedController) wasJustAdded) =>
+      eb.daysLeft <= displayState.days + 7 || wasJustAdded(eb);
 
   List<BasicButtonController> goesInList(List<BasicButtonController> allItems,
       bool Function(EndBasedController) wasJustAdded) {
@@ -103,7 +110,7 @@ class ObservationScreenOptions with buttonCreator {
       //show x days
       var list = allItems.whereType<EndBasedController>();
       returnList.addAll(list.where((e) => _shouldGoIn(e, wasJustAdded)));
-      if (daysToShow == daysToShowNow) {
+      if (displayState.days == daysToShow) {
         returnList.addAll(allItems.whereType<NoteController>());
       }
     }, () {
@@ -116,3 +123,34 @@ class ObservationScreenOptions with buttonCreator {
     return returnList;
   }
 }
+
+class DisplayState {
+  final ValueNotifier<int> _actuallyCurrent =
+      ValueNotifier(ObservationScreenOptions.daysToShow + usedColors.length);
+
+  //-2 is show EVERYTHING
+  // 0 - usedColors.length is that color
+  _States get _state {
+    return _actuallyCurrent.value == -2
+        ? _States.everything
+        : _actuallyCurrent.value >= usedColors.length
+            ? _States.days
+            : _States.colors;
+  }
+
+  int get color => _actuallyCurrent.value;
+
+  void showEverything() => _actuallyCurrent.value = -2;
+
+  set colorMode(int color) => _actuallyCurrent.value = color;
+
+  int get days => max(ObservationScreenOptions.daysToShow,
+      _actuallyCurrent.value - (usedColors.length));
+
+  set days(int value) => _actuallyCurrent.value = value + (usedColors.length);
+
+  void addListener(void Function() listener) =>
+      _actuallyCurrent.addListener(listener);
+}
+
+enum _States { everything, colors, days }

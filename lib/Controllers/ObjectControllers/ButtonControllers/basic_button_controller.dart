@@ -8,7 +8,7 @@ import '../../ObjectControllers/mix_search_able.dart';
 import '../../ScreensControllers/mix_input_handler.dart.dart';
 
 abstract class BasicButtonController<t extends BasicButton> extends SearchAble
-    with searchField {
+    with SearchField {
   ///if this was edited but is also used if it was deleted while coming from the edit screen
   bool touched = false;
 

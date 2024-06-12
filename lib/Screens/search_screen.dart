@@ -1,38 +1,27 @@
+import 'package:blagenda_flutter_simple/Commons/store_able.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/search_screen_controller.dart';
+import 'package:blagenda_flutter_simple/Loading/button_notifier.dart';
 import 'package:flutter/material.dart';
 
 import '../Controllers/ObjectControllers/mix_search_able.dart';
-import '../Loading/mix_loading.dart';
 
 class SearchScreen<T extends SearchAble> extends StatefulWidget {
-  final int Function(Type) getNewId;
-  final List<T> listToUse;
-  final bool closeOnAction;
-  final Future<T> Function(T) _reAdd;
+  final StoreAbleNotifier<StoreAble> notifier;
+  final Future<dynamic> Function(SearchAble) doWithClicked;
 
-  const SearchScreen(
-      this.doWithClicked, this.getNewId, this.listToUse, this.closeOnAction, this._reAdd,
-      {super.key});
+  const SearchScreen(this.doWithClicked, this.notifier, {super.key});
 
   @override
   State<StatefulWidget> createState() => _SearchScreenState<T>();
-
-  final Future<dynamic> Function(SearchAble) doWithClicked;
 }
 
-class _SearchScreenState<T extends SearchAble> extends State<SearchScreen<T>>
-    with loading {
-  late final SearchScreenController _controller = SearchScreenController<T>(
-      setStateMethod,
-      widget.closeOnAction
-          ? (s) {
-              var page = widget.doWithClicked(s);
-              pop();
-              return page;
-            }
-          : widget.doWithClicked,
-      widget.listToUse,
-      widget._reAdd);
+class _SearchScreenState<T extends SearchAble> extends State<SearchScreen<T>> {
+  late final SearchScreenController _controller =
+      SearchScreenController<T>((s) {
+    var page = widget.doWithClicked(s);
+    pop();
+    return page;
+  }, widget.notifier.getData().whereType<T>().toList(), widget.notifier.addOrUpdate);
 
   BuildContext? _currentContext;
 
@@ -52,16 +41,14 @@ class _SearchScreenState<T extends SearchAble> extends State<SearchScreen<T>>
             child: AppBar(
               backgroundColor: Colors.green,
             )),
-        body: SingleChildScrollView(
-          // child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: _controller.getScreenWidgets(),
-          ),
-        ));
-  }
-
-  void setStateMethod() {
-    setState(() {});
+        body: ListenableBuilder(
+            listenable: _controller.list,
+            builder: (BuildContext context, Widget? child) =>
+                SingleChildScrollView(
+                    // child: Center(
+                    child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: _controller.getScreenWidgets(),
+                ))));
   }
 }

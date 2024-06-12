@@ -1,22 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../common_items.dart';
 import '../blagenda_uniform_button.dart';
 
-mixin buttonCreator {
-  Widget _createColorButton(int index, void Function() setStateMethod,
-          void Function(int) onPressed, int chosenIndex) =>
-      BlagendaUniformButton(chosenIndex == index, usedColors[index], '', () {
-        onPressed(index);
-        setStateMethod();
-      });
-
-  List<Widget> globalCreateColorButtons(
-      void Function() setStateMethod, void Function(int) onPressed, int chosenIndex) {
-    return addAsRow((i) => _createColorButton(i, setStateMethod, onPressed, chosenIndex),
-        usedColors.length);
-  }
-
+mixin ButtonCreator {
   List<Row> addAsRow(Widget Function(int index) addWidget, int size,
       [int Function(int)? getLength, int rowLength = 27]) {
     getLength ??= (_) => 0;

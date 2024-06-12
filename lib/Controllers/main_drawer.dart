@@ -8,6 +8,8 @@ import 'package:blagenda_flutter_simple/Screens/search_screen.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 
+import '../Loading/button_notifier.dart';
+import '../Loading/entity_notifier.dart';
 import '../Screens/entity_adding_screen.dart';
 import '../common_items.dart';
 import 'ObjectControllers/ButtonControllers/basic_button_controller.dart';
@@ -23,35 +25,18 @@ class MainDrawer {
       color: Colors.grey);
 
   static const ListTile listSep = ListTile(
-      title:
-          Text('--------------------------------------------', style: normalTextStyle));
+      title: Text('--------------------------------------------',
+          style: normalTextStyle));
 
-  MainDrawer(
-      this._getSelectedButton,
-      this._addOrUpdateItem,
-      this._deleteButton,
-      this._skipButton,
-      this._getNewId,
-      this._getNewEntityID,
-      this._fullReset,
-      this._getEndbasedButtons,
-      this._getEntitiesButtons,
-      this._getButtonCopy,
-      this._getEntityCopy);
+  MainDrawer(this._buttonNotifier, this._entityNotifier,
+      this._getSelectedButton);
 
-  final Future<EndBasedController> Function(EndBasedController) _getButtonCopy;
-  final Future<EntityController> Function(EntityController) _getEntityCopy;
+  final EntityNotifier _entityNotifier;
+  final ButtonNotifier _buttonNotifier;
   final BasicButtonController? Function() _getSelectedButton;
-  final void Function(dynamic) _addOrUpdateItem;
-  final void Function() _deleteButton;
-  final void Function() _skipButton;
-  final void Function() _fullReset;
-  final List<EndBasedController> Function() _getEndbasedButtons;
-  final List<EntityController> Function() _getEntitiesButtons;
-  final int Function(Type) _getNewId;
-  final int Function() _getNewEntityID;
   static const Color sepColor = Colors.black54;
-  final int funnyNumber = Random(MyDateController.today.hashCode).nextInt(100) + 1;
+  final int funnyNumber =
+      Random(MyDateController.today.hashCode).nextInt(100) + 1;
 
   Drawer createDrawer(BuildContext context) {
     return Drawer(
@@ -68,7 +53,11 @@ class MainDrawer {
               formatDate(MyDateController.today, [D, ', ', M, ' ', d]),
               style: textStyle,
             ),
-            Text('${formatDate(MyDateController.today, ['W:', WW])} - N:$funnyNumber',
+            Text(
+                '${formatDate(MyDateController.today, [
+                      'W:',
+                      WW
+                    ])} - N:$funnyNumber',
                 style: textStyle)
           ])),
         ),
@@ -76,109 +65,106 @@ class MainDrawer {
             width: double.infinity,
             decoration: const BoxDecoration(
                 border: Border(bottom: BorderSide(color: sepColor, width: 7))),
-            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-              ListTile(
-                  title: _dumbJoke('Add Button'),
-                  trailing: const Icon(Icons.add, color: Colors.black),
-                  onTap: () => _openEdit(context, null, true, _addOrUpdateItem)
-                      .then((v) => Navigator.pop(context))),
-              ListTile(
-                  title: _dumbJoke('Update Button'),
-                  trailing: const Icon(Icons.edit, color: Colors.black),
-                  onTap: () {
-                    var button = _getSelectedButton();
-                    if (button != null) {
-                      _openEdit(context, button, true, _addOrUpdateItem)
-                          .then((v) => Navigator.pop(context));
-                    }
-                  }),
-              ListTile(
-                title: _dumbJoke('Delete Button'),
-                trailing: const Icon(Icons.delete, color: Colors.black),
-                onTap: () {
-                  _deleteButton();
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: _dumbJoke('Skip this time'),
-                trailing: const Icon(Icons.next_plan_outlined, color: Colors.black),
-                onTap: () {
-                  _skipButton();
-                  Navigator.pop(context);
-                },
-              ),
-            ])),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  ListTile(
+                      title: _dumbJoke('Add Button'),
+                      trailing: const Icon(Icons.add, color: Colors.black),
+                      onTap: () => _openEdit(context, null, true)
+                          .then((v) => Navigator.pop(context))),
+                  ListTile(
+                      title: _dumbJoke('Update Button'),
+                      trailing: const Icon(Icons.edit, color: Colors.black),
+                      onTap: () {
+                        var button = _getSelectedButton();
+                        if (button != null) {
+                          _openEdit(context, button, true)
+                              .then((v) => Navigator.pop(context));
+                        }
+                      }),
+                  ListTile(
+                    title: _dumbJoke('Delete Button'),
+                    trailing: const Icon(Icons.delete, color: Colors.black),
+                    onTap: () {
+                      var button = _getSelectedButton();
+                      if (button != null) {
+                        _buttonNotifier.delete(button);
+                      }
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    title: _dumbJoke('Skip this time'),
+                    trailing: const Icon(Icons.next_plan_outlined,
+                        color: Colors.black),
+                    onTap: () {
+                      var button = _getSelectedButton();
+                      if (button == null) return;
+                      if (button is SkippableEndBasedController) {
+                        _buttonNotifier.skipButton(button, button.altLeft);
+                      } else {
+                        _buttonNotifier.delete(button);
+                      }
+                      Navigator.pop(context);
+                    },
+                  ),
+                ])),
         ListTile(
             title: _dumbJoke('Find Appointment'),
             trailing: const Icon(Icons.search, color: Colors.black),
-            onTap: () => _openButtonSearch(
-                    context, (it) => _openEdit(context, it, false, _addOrUpdateItem))
+            onTap: () => _openButtonSearch(context)
                 .then((v) => Navigator.pop(context))),
         ListTile(
           title: _dumbJoke('Add Entity'),
           trailing: const Icon(Icons.add_circle_outline, color: Colors.black),
-          onTap: () => _openEntityEdit(context, null).then((v) => Navigator.pop(context)),
+          onTap: () => _openEntityEdit(context, null)
+              .then((v) => Navigator.pop(context)),
         ),
         ListTile(
             title: _dumbJoke('Entities Search'),
             trailing: const Icon(Icons.manage_search, color: Colors.black),
             onTap: () =>
-                _openEntitySearch(-1, context, (it) => _openEntityEdit(context, it))
-                    .then((v) => Navigator.pop(context))),
+                _openEntitySearch(context).then((v) => Navigator.pop(context))),
         Container(
             width: double.infinity,
             decoration: const BoxDecoration(
                 border: Border(top: BorderSide(color: sepColor, width: 9))),
-            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-              ListTile(
-                title: _dumbJoke('Reset Display'),
-                trailing: const Icon(Icons.restart_alt_rounded, color: Colors.black),
-                onTap: () {
-                  _fullReset();
-                  Navigator.pop(context);
-                },
-              ),
-            ])),
-        ListTile(
-            title: _dumbJoke('Sync Online Data'),
-            trailing: const Icon(Icons.sync, color: Colors.black),
-            onTap: () => syncAction!())
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  ListTile(
+                      title: _dumbJoke('Sync Online Data'),
+                      trailing: const Icon(Icons.sync, color: Colors.black),
+                      onTap: () => _buttonNotifier.dataSync())
+                ])),
       ],
     ));
   }
 
-  Future<dynamic> _openEntitySearch(int numb, BuildContext context,
-      [Future<dynamic> Function(dynamic)? addOrUpdateItem, bool closeOnAction = false]) {
-    addOrUpdateItem ??= (item) async {
-      _addOrUpdateItem(item);
-    };
+  //TODO make sure you cant add yourself?
+  Future<dynamic> _openEntitySearch(BuildContext context) {
     return Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => SearchScreen(
-                addOrUpdateItem!,
-                _getNewId,
-                _getEntitiesButtons().where((e) => e.id != numb).toList(),
-                closeOnAction,
-                _getEntityCopy)));
+                (c) => _openEntityEdit(context, c as EntityController),
+                _entityNotifier)));
   }
 
-  Future<dynamic> _openButtonSearch(BuildContext context,
-      [Future<dynamic> Function(dynamic)? addOrUpdateItem, bool closeOnAction = false]) {
-    addOrUpdateItem ??= (item) async {
-      _addOrUpdateItem(item);
-    };
+  Future<dynamic> _openButtonSearch(BuildContext context) {
     return Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => SearchScreen(addOrUpdateItem!, _getNewId,
-                _getEndbasedButtons(), closeOnAction, _getButtonCopy)));
+            builder: (context) => SearchScreen(
+                (it) => _openEdit(context, it as BasicButtonController, false),
+                _buttonNotifier)));
   }
 
   Widget _dumbJoke(String s) {
     if (s.hashCode % funnyNumber == 0) {
-      var calc = Random(MyDateController.today.hashCode).nextInt(dumberJoke.length);
+      var calc =
+          Random(MyDateController.today.hashCode).nextInt(dumberJoke.length);
       var usdCol = usedColors[calc % (usedColors.length - 1) + 1];
       return Row(children: [
         Text('$s  ', style: normalTextStyle),
@@ -204,21 +190,16 @@ class MainDrawer {
           MaterialPageRoute(
               builder: (context) => AddingEntityScreen(
                   c,
-                  _addOrUpdateItem,
-                  _getNewEntityID,
-                  _getEndbasedButtons,
-                  _getEntitiesButtons,
-                  (toUse) => _openButtonSearch(context, toUse, true),
-                  (toGet) => _openEdit(context, null, false, (t) {
-                        toGet(t);
-                        return _addOrUpdateItem(t);
-                      }))));
+                  _buttonNotifier,
+                  _entityNotifier,
+                  () => _openButtonSearch(context),
+                  (toGet) => _openEdit(context, toGet, false))));
 
-  Future<dynamic> _openEdit(BuildContext context, BasicButtonController? it,
-          bool withNote, dynamic Function(dynamic) doWith) =>
+  Future<dynamic> _openEdit(
+          BuildContext context, BasicButtonController? it, bool withNote) =>
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  AddingScreen(it, doWith, _getNewId, _getEndbasedButtons, withNote)));
+                  AddingScreen(it, _buttonNotifier, withNote)));
 }

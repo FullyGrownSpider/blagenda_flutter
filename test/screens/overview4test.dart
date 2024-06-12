@@ -148,45 +148,6 @@ class ObservationScreenLoadingTest extends ObservationScreenLoading {
   List<BasicButtonController> buttonsStore = [];
   List<EntityController> entitiesStore = [];
   bool started = false;
-
-  @override
-  void loadListsFromStorage(
-      List<BasicButtonController> allLists, List<EntityController> entities) {
-    if (!started) {
-      buttonsStore.addAll(allLists);
-      entitiesStore.addAll(entities);
-      started = true;
-      return;
-    }
-    allLists.clear();
-    allLists.addAll(buttonsStore);
-    entities.clear();
-    entities.addAll(entitiesStore);
-  }
-
-  @override
-  void storeUpdateButton(
-      BasicButtonController toAdd, List<BasicButtonController> allItems) {
-    allItems.removeWhere(
-        (element) => element.id == toAdd.id && element.runtimeType == toAdd.runtimeType);
-    buttonsStore.removeWhere(
-        (element) => element.id == toAdd.id && element.runtimeType == toAdd.runtimeType);
-    storeAddButton(toAdd, allItems);
-  }
-
-  @override
-  void storeAddButton(BasicButtonController toAdd, List<BasicButtonController> allItems) {
-    buttonsStore.add(toAdd);
-    allItems.add(toAdd);
-  }
-
-  @override
-  bool doneLoading() => true;
-
-  @override
-  Future<List<EntityController>> loadEntityListFromStorage() async {
-    return entitiesStore;
-  }
 }
 
 ///agressivly search for text in text buttons in the given widget (the dynamic is to do sneaky reflection)
