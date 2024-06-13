@@ -41,7 +41,7 @@ class CountDownDrawerController {
     widgetList.clear();
     for (var note in notes) {
       widgetList.add(style([
-        BlagendaUniformButton(false, note.color, note.displayGenericText(note.job, 25),
+        BlagendaUniformButton(note.color, () => note.displayGenericText(note.job, 25),
             () => _createUnimportantButton(note, addOrUpdateButton))
       ]));
       widgetList.add(bigSplitterTextField);
@@ -54,9 +54,8 @@ class CountDownDrawerController {
               ObservationScreenOptions.daysToShow < but.altLeft + 1);
       widgetList.add(style([
         BlagendaUniformButton(
-            false,
-            displayAble ? but.color : lerpIt(but.color),
-            but.displayGenericText(but.gettingTheStringShort(), 25),
+                        displayAble ? but.color : lerpIt(but.color),
+                () => but.displayGenericText(but.gettingTheStringShort(), 25),
             () => _createUnimportantButton(but, addOrUpdateButton)),
         if (displayAble) _createCountDownText(but)
       ]));
@@ -81,19 +80,19 @@ class CountDownDrawerController {
 
   Widget _createCountDownText(EndBasedController it) {
     if (it is SkippableEndBasedController) {
-      return BlagendaUniformButton(false, usedColors[4], 'In ${it.altLeft} days.', () {});
+      return BlagendaUniformButton(usedColors[4], () => 'In ${it.altLeft} days.', () {});
     }
-    return BlagendaUniformButton(false, usedColors[4], 'In ${it.daysLeft} days.', () {});
+    return BlagendaUniformButton(usedColors[4], () => 'In ${it.daysLeft} days.', () {});
   }
 
   Widget updateButtonsButtons(void Function() flipImportant, addDays, removeDays) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        BlagendaUniformButton(false, usedColors[4], 'Important Flip', flipImportant),
+        BlagendaUniformButton(usedColors[4], () => 'Important Flip', flipImportant),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          BlagendaUniformButton(false, usedColors[4], '↑ Day ↑', removeDays),
-          BlagendaUniformButton(false, usedColors[4], '↓ Day ↓', addDays),
+          BlagendaUniformButton(usedColors[4], () => '↑ Day ↑', removeDays),
+          BlagendaUniformButton(usedColors[4], () => '↓ Day ↓', addDays),
         ])
       ],
     );

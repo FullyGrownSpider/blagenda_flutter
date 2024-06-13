@@ -24,9 +24,6 @@ class _AddingScreenState extends State<AddingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _itemList.clear();
-    _itemList.addAll(_screenController.createScreenWidgets());
-
     return Scaffold(
         backgroundColor: Colors.white24,
         appBar: AppBar(title: const Text('Adding'), actions: <Widget>[
@@ -56,13 +53,16 @@ class _AddingScreenState extends State<AddingScreen> {
                 Navigator.pop(context, false);
               }),
         ]),
-        body: ListenableBuilder(
-            listenable: _screenController.buttonType,
-            builder: (BuildContext context, Widget? child) =>
-                SingleChildScrollView(
-                    child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: _itemList,
-                ))));
+        body: SingleChildScrollView(
+            child: ListenableBuilder(
+                listenable: _screenController.buttonType,
+                builder: (BuildContext context, Widget? child) {
+                  _itemList.clear();
+                  _itemList.addAll(_screenController.createScreenWidgets());
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: _itemList,
+                  );
+                })));
   }
 }

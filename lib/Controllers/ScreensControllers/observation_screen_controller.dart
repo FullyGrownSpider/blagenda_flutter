@@ -32,7 +32,7 @@ class ObservationScreenController {
       observationScreenButtons.getWidgetListEndBased(
           ObservationScreenOptions.daysToShow, _notifier.getData(), observationScreenOptions);
 
-  void resetSearch() =>
+  void resetSelects() =>
       observationScreenOptions.resetSearch(_resetCounters);
 
   void _resetCounters() => observationScreenButtons.resetCounters();

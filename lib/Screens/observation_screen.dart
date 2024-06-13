@@ -83,7 +83,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
         body: ListenableBuilder(
             listenable: widget._buttonNotifier,
             builder: (BuildContext context, Widget? child) => ListenableBuilder(
-                listenable: _controller.observationScreenOptions,
+                listenable: _controller.observationScreenOptions.getNotifier(),
                 builder: (BuildContext context, Widget? child) {
                   _resetScreen();
                   return PopScope(
@@ -178,6 +178,6 @@ class _OverviewScreenState extends State<OverviewScreen> {
       _wentBack = !_wentBack;
     }
     _wentBack = !_wentBack;
-    _controller.resetSearch();
+    _controller.resetSelects();
   }
 }

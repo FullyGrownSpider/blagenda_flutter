@@ -24,27 +24,8 @@ class AddingScreenController with ButtonCreator, InputHandler {
   static const int _againWeekColor = 3;
   static const int _againYearColor = 6;
 
-  static const Map<Type, String> _buttonTypesPart1 = {
-    BasicButton: 'Note',
-    Deadline: 'Deadline',
-    AgainWeekDay: 'Weekly',
-    AgainAmountDay: 'Every x days'
-  };
-  static const Map<Type, String> _buttonTypesPart1NoNote = {
-    Deadline: 'Deadline',
-    AgainWeekDay: 'Weekly',
-    AgainAmountDay: 'Every x days'
-  };
-  static const Map<Type, String> _buttonTypesPart2 = {
-    AgainYearDay: 'Yearly',
-    AgainMonthDay: 'Monthly',
-    AgainWeird: 'Every xday of month'
-  };
-
   final ValueNotifier<Type> buttonType = ValueNotifier(BasicButton);
-  final ValueNotifier<MyDateController?> date =
-      ValueNotifier(null);
-  final ValueNotifier<bool> showFist = ValueNotifier(true);
+  final ValueNotifier<MyDateController?> date = ValueNotifier(null);
 
   final bool _withNote;
 
@@ -52,7 +33,6 @@ class AddingScreenController with ButtonCreator, InputHandler {
 
   bool Function(Map<PossibleValues, dynamic>) _checksAndChanges = _noCheck;
   late final Widget _myDateDayToShow = DayShow(date, _notifier);
-  late final InputObject<bool> _chosenStateIsOne = itemForBoolean('Type of Item', () => showFist.value, (s) => showFist.value = s);
 
   final Map<PossibleValues, InputObject> widgetsOnScreen = {};
   final Map<PossibleValues, dynamic> _storedValues = {};
@@ -125,7 +105,8 @@ class AddingScreenController with ButtonCreator, InputHandler {
   }
 
   List<Widget> createScreenWidgets() {
-    List<Widget> widgetList = _id == -1 ? _buttonTypeSelection() : [];
+    List<Widget> widgetList = [];
+    if (_id == -1) widgetList.add(SelectorShow(_withNote, buttonType));
     for (var item in PossibleValues.values) {
       var it = widgetsOnScreen[item];
       if (it == null) continue;
@@ -199,19 +180,6 @@ class AddingScreenController with ButtonCreator, InputHandler {
           data.map(((k, e) => MapEntry(enumToString(k), e.getValue()))),
           buttonType.value));
     };
-  }
-
-  List<Widget> _addButtonsForButtonType(Map<Type, String> typeList) {
-    List<Widget> widgetList = [];
-    typeList.forEach((type, stringValue) =>
-        widgetList.add(BlagendaUniformButton(
-            buttonType.value == type, _getDefaultTypeColor(type), stringValue,
-            () {
-          switchButtonType(type);
-        })));
-    var valuesList = typeList.values.toList();
-    return addAsRow((i) => widgetList[i], typeList.values.length,
-        (i) => valuesList[i].length, 35);
   }
 
   static Color _getDefaultTypeColor(Type type) {
@@ -352,16 +320,72 @@ class AddingScreenController with ButtonCreator, InputHandler {
     _skippableFillerList();
     _defaultFillerList();
   }
+}
 
-  List<Widget> _buttonTypeSelection() {
+class SelectorShow extends StatefulWidget {
+  static const Map<Type, String> _buttonTypesPart1 = {
+    BasicButton: 'Note',
+    Deadline: 'Deadline',
+    AgainWeekDay: 'Weekly',
+    AgainAmountDay: 'Every x days'
+  };
+  static const Map<Type, String> _buttonTypesPart1NoNote = {
+    Deadline: 'Deadline',
+    AgainWeekDay: 'Weekly',
+    AgainAmountDay: 'Every x days'
+  };
+  static const Map<Type, String> _buttonTypesPart2 = {
+    AgainYearDay: 'Yearly',
+    AgainMonthDay: 'Monthly',
+    AgainWeird: 'Every xday of month'
+  };
+
+  final ValueNotifier<bool> _page = ValueNotifier(false);
+  final ValueNotifier<Type> _currentType;
+  final bool _showNote;
+
+  SelectorShow(this._showNote, this._currentType, {super.key});
+
+  @override
+  State<StatefulWidget> createState() => _SelectorShow();
+}
+
+class _SelectorShow extends State<SelectorShow>
+    with ButtonCreator, InputHandler {
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+        valueListenable: widget._page,
+        builder: (context, value, child) {
+          List<Widget> widgetList = [_chosenStateIsOne.displayWidget];
+          // widgetList.add(_chosenStateIsOne.displayWidget);
+          widgetList.addAll(_addButtonsForButtonType(value
+              ? SelectorShow._buttonTypesPart2
+              : widget._showNote
+                  ? SelectorShow._buttonTypesPart1
+                  : SelectorShow._buttonTypesPart1NoNote));
+          return Column(children: widgetList);
+        });
+  }
+
+  late final InputObject<bool> _chosenStateIsOne = itemForBoolean(
+      'Type of Item',
+      () => widget._page.value,
+      (s) => widget._page.value = s);
+
+  List<Widget> _addButtonsForButtonType(Map<Type, String> typeList) {
     List<Widget> widgetList = [];
-    widgetList.add(_chosenStateIsOne.displayWidget);
-    widgetList.addAll(_addButtonsForButtonType(_chosenStateIsOne.getValue()
-        ? _buttonTypesPart2
-        : _withNote
-            ? _buttonTypesPart1
-            : _buttonTypesPart1NoNote));
-    return widgetList;
+    typeList.forEach((type, stringValue) {
+      final myBool = ValueNotifier(widget._currentType.value == type);
+      widgetList.add(BlagendaUniformButton(
+          AddingScreenController._getDefaultTypeColor(type), () => stringValue, () {
+        widget._currentType.value = type;
+        myBool.value = widget._currentType.value == type;
+      }, isSelected: myBool));
+    });
+    var valuesList = typeList.values.toList();
+    return addAsRow((i) => widgetList[i], typeList.values.length,
+        (i) => valuesList[i].length, 35);
   }
 }
 
@@ -404,7 +428,8 @@ class _DayShow extends State<DayShow> with DayCreator {
         });
   }
 
-  Container _addEndBasedButton(EndBasedController controller, bool isExtra) {
+  //used to create a single day, in single days there will never be a value that "isExtra"
+  Container _addEndBasedButton(EndBasedController controller, bool _) {
     return Container(
         decoration: BoxDecoration(
             border: Border.all(
@@ -412,8 +437,7 @@ class _DayShow extends State<DayShow> with DayCreator {
             ),
             color: controller.color,
             borderRadius: const BorderRadius.all(Radius.circular(5))),
-        child: Text(
-            '${isExtra ? BlagendaUniformButton.smollButStartText : ''} ${controller.gettingTheStringShort()} ',
-            style: normalTextStyle));
+        child:
+            Text(controller.gettingTheStringShort(), style: normalTextStyle));
   }
 }

@@ -81,7 +81,7 @@ class AddingEntityScreenController
         0, //only one item
         inputObject,
         BlagendaUniformButton(
-            false, usedColors.first, _storedValues['n0'], () => _deleteTag(0)),
+            usedColors.first, _storedValues['n0'], () => _deleteTag(0)),
         _storedValues['n0'],
         0));
     _id = -1;
@@ -119,8 +119,8 @@ class AddingEntityScreenController
       _info.add(TagCreateInfo(
           i,
           inputObject,
-          BlagendaUniformButton(false, usedColors.first, _storedValues['n$i'],
-              () => _deleteTag(i)),
+          BlagendaUniformButton(
+              usedColors.first, _storedValues['n$i'], () => _deleteTag(i)),
           _storedValues['n$i'],
           type));
     }
@@ -182,7 +182,7 @@ class AddingEntityScreenController
         i,
         inputObject,
         BlagendaUniformButton(
-            false, usedColors.first, _storedValues['n$i'], () => _deleteTag(i)),
+            usedColors.first, _storedValues['n$i'], () => _deleteTag(i)),
         _storedValues['n$i'],
         toMake));
     ();
@@ -225,8 +225,8 @@ class AddingEntityScreenController
       _info[i] = (TagCreateInfo(
           i,
           _info[i].destinedInput,
-          BlagendaUniformButton(false, usedColors.first, _storedValues['n$i'],
-              () => _deleteTag(i)),
+          BlagendaUniformButton(
+              usedColors.first, _storedValues['n$i'], () => _deleteTag(i)),
           _storedValues['n$i'],
           _info[i].type));
     }

@@ -129,21 +129,20 @@ class SearchScreenController<T extends SearchAble> with DayCreator, SearchField 
       toFill.add(item.displayWidget);
     }
     toFill.add(smallBlankSplit);
-    toFill.add(BlagendaUniformButton(false, usedColors.last, 'Search', resetSearch));
+    toFill.add(BlagendaUniformButton(usedColors.last, () => 'Search', resetSearch));
     if (_searchingText.isNotEmpty) {
       toFill.add(smallBlankSplit);
       //you searched for X
       toFill.add(
-          BlagendaUniformButton(false, usedColors.last, _searchingText, fullSearchReset));
+          BlagendaUniformButton(usedColors.last, () =>_searchingText, fullSearchReset));
 
       toFill.add(bigSplitterTextField);
       //fill all found items
       for (var item in foundItems) {
         toFill.add(smallBlankSplit);
         toFill.add(BlagendaUniformButton(
-            false,
             item.displayColor(),
-            item.searchDisplay(),
+            item.searchDisplay,
             () => _doActionWithClickedItem(item).then((value) {
                   //if (null) is possible with if (value)
                   if (true == value) {
@@ -158,14 +157,14 @@ class SearchScreenController<T extends SearchAble> with DayCreator, SearchField 
       }
     } else if (foundItems.isNotEmpty) {
       toFill.add(bigSplitterTextField);
-      toFill.add(BlagendaUniformButton(false, usedColors.last, 'Suggestions', () {}));
+      toFill.add(BlagendaUniformButton(
+          usedColors.last, () => 'Suggestions', () {}));
       toFill.add(bigSplitterTextField);
       for (var item in foundItems) {
         toFill.add(smallBlankSplit);
         toFill.add(BlagendaUniformButton(
-            false,
             item.displayColor(),
-            item.searchDisplay(),
+            item.searchDisplay,
             () => _doActionWithClickedItem(item).then((value) {
                   //if (null) is possible with if (value)
                   if (true == value) {

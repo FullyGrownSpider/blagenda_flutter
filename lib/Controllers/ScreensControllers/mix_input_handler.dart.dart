@@ -1,3 +1,4 @@
+import 'package:blagenda_flutter_simple/Controllers/color_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -13,11 +14,8 @@ const TextStyle inputTextStyle = TextStyle(
     color: Colors.white);
 
 mixin InputHandler on ButtonCreator {
-  InputObject<String> itemForStringAutoComplete(
-      String hint,
-      String Function() get,
-      void Function(String) set,
-      List<String> autoComp) {
+  InputObject<String> itemForStringAutoComplete(String hint,
+      String Function() get, void Function(String) set, List<String> autoComp) {
     var initValue = TextEditingValue(text: get());
     var autoComplete = notQuiteFull(Autocomplete(
         initialValue: initValue,
@@ -83,10 +81,9 @@ mixin InputHandler on ButtonCreator {
         focusNode: focusNode);
   }
 
-  InputObject<String> itemForString(String hint,
-      String Function() get, void Function(String) set) {
-    TextEditingController stringController =
-        TextEditingController(text: get());
+  InputObject<String> itemForString(
+      String hint, String Function() get, void Function(String) set) {
+    TextEditingController stringController = TextEditingController(text: get());
     Widget displayWidget =
         notQuiteFull(_defaultTextField(stringController, set, hint));
     set = (s) {
@@ -126,17 +123,20 @@ mixin InputHandler on ButtonCreator {
 
   InputObject<bool> itemForBoolean(
       String hint, bool Function() get, void Function(bool) set) {
+    final myBool = ValueNotifier(get());
     return InputObject<bool>(
         BlagendaUniformButton(
-            get(), usedColors.first, '${get() ? '⬤' : '◯'} - $hint', () {
-          set(!get());
-        }),
+            usedColors.first, () => '${get() ? '⬤' : '◯'} - $hint', () {
+          var newBool = !get();
+          set(newBool);
+          myBool.value = newBool;
+        },isSelected: myBool),
         get,
         set);
   }
 
-  InputObject<String> itemForStringList(String hint,
-      String Function() get, void Function(String) set) {
+  InputObject<String> itemForStringList(
+      String hint, String Function() get, void Function(String) set) {
     var stringController = TextEditingController(text: get());
     Widget displayWidget = notQuiteFull(_defaultTextField(
         stringController, set, hint,
@@ -184,12 +184,14 @@ mixin InputHandler on ButtonCreator {
 
   InputObject<Color> itemForColor(
       Color Function() get, void Function(Color) set) {
-    return InputObject<Color>(
-        _widgetForColor(() => usedColors.indexOf(get()), set), get, set);
+    return InputObject<Color>(_widgetForColor(get, set), get, set);
   }
 
-  Widget _widgetForColor(int Function() get, void Function(Color) set) {
-    return Column(children: globalCreateColorButtons(get(), set));
+  Widget _widgetForColor(Color Function() get, void Function(Color) set) {
+    ValueNotifier<int> colorValue = ValueNotifier(usedColors.indexOf(get()));
+    return ColorButtons(colorValue, (_) {
+      set(usedColors[colorValue.value]);
+    });
   }
 
   InputObject<dynamic> itemForReferenceAbleList(
@@ -197,8 +199,10 @@ mixin InputHandler on ButtonCreator {
       void Function(dynamic) set,
       void Function() onThingClick,
       String Function(dynamic) getNickname) {
-    var but = BlagendaUniformButton(false, usedColors.first,
-        get() == null ? "???" : getNickname(get()), onThingClick);
+    var but = BlagendaUniformButton(
+        usedColors.first,
+        () => get() == null ? "???" : getNickname(get()),
+        onThingClick);
     return InputObject<dynamic>(but, get, set);
   }
 }
