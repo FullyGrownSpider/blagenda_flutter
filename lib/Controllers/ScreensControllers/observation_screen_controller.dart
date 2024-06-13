@@ -14,10 +14,11 @@ class ObservationScreenController {
   final ButtonNotifier _notifier;
 
   ///needs to load first use doneLoading to check if done
-  ObservationScreenController(Future Function(BasicButtonController) openEntityScreen,
+  ObservationScreenController(
       Future Function(BasicButtonController) openButtonEdit, this._notifier) {
-    observationScreenButtons = ObservationScreenButtons(openEntityScreen, openButtonEdit);
+    observationScreenButtons = ObservationScreenButtons(openButtonEdit);
     _notifier.addListener(() {
+      if (_notifier.getData().last.touched) observationScreenButtons.addNew(_notifier.getData().last.id, _notifier.getData().last.runtimeType);
       if (_notifier.hardPoint) deselect();
     });
   }
@@ -37,14 +38,7 @@ class ObservationScreenController {
 
   void _resetCounters() => observationScreenButtons.resetCounters();
 
-  BasicButtonController? getSelectedButton() {
-    if (observationScreenButtons.idSelected == -1) return null;
-    List correctList = _notifier.getData()
-        .where((e) => e.runtimeType == observationScreenButtons.typeOfSelected!)
-        .toList();
-    return correctList
-        .firstWhere((e) => observationScreenButtons.idSelected == e.button.id);
-  }
+  BasicButtonController? getSelectedButton() => observationScreenButtons.getSelected(_notifier.getData());
 
   bool justAddedCheck() => observationScreenButtons.justAddedCheck();
 

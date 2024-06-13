@@ -15,24 +15,24 @@ class ObservationScreenOptions with ButtonCreator {
   @visibleForTesting
   static const List<int> possibleExtraDays = [30, 14];
 
-  //TODO test
   DisplayState displayState = DisplayState();
 
   ValueNotifier getNotifier() => displayState._actuallyCurrent;
+  final List<Widget> _items = [];
 
   ///the buttons to select the color to only show
   List<Widget> getOptionButtons(Function() resetCounters) {
-    List<Widget> items = [];
-    items.add(const Text('Display Options', style: bigTextStyle));
-    items.add(ColorButtons(displayState._actuallyCurrent,
-        (dClick) => colorPressed(dClick, resetCounters)));
-    items.addAll(addAsRow((i) => _createCounterButton(i, resetCounters),
-        possibleExtraDays.length));
-    items.add(_createDisplayAllEndBasedButtonsButton(resetCounters));
-    return items;
+    if (_items.isEmpty) {
+      _items.add(const Text('Display Options', style: bigTextStyle));
+      _items.add(ColorButtons(displayState._actuallyCurrent,
+          (dClick) => colorPressed(dClick, resetCounters)));
+      _items.addAll(addAsRow((i) => _createCounterButton(i, resetCounters),
+          possibleExtraDays.length));
+      _items.add(_createDisplayAllEndBasedButtonsButton(resetCounters));
+    }
+    return _items;
   }
 
-//TODO only make this once
   Widget _createDisplayAllEndBasedButtonsButton(Function() resetCounters) {
     var myBool = _makeBool(() => displayState._state == _States.everything);
     return BlagendaUniformButton(usedColors.first, () => 'Show all',
@@ -48,7 +48,6 @@ class ObservationScreenOptions with ButtonCreator {
     },isSelected: myBool);
   }
 
-//todo reset all clicked buttons
   Widget _createCounterButton(int index, Function() resetCounters) {
     var myBool = _makeBool(() => displayState.days == possibleExtraDays[index]);
     return BlagendaUniformButton(usedColors.first,

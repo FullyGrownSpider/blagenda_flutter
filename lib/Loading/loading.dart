@@ -41,11 +41,6 @@ class Loading {
     await _upload(buts.first.button.runtimeType);
   }
 
-  Future<void> storeData(StoreAble but) async {
-    await _local.addItem(but);
-    await _upload(but.runtimeType);
-  }
-
   Future<List<t>> _getButtons<t extends StoreAble>() async {
     return (await _local.getItems(t)).map((e) => importGenerator<t>(e)).toList();
   }

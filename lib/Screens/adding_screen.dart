@@ -1,3 +1,4 @@
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/end_based_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/adding_screen_controller.dart';
 import 'package:blagenda_flutter_simple/Loading/button_notifier.dart';
 import 'package:flutter/material.dart';
@@ -20,8 +21,6 @@ class _AddingScreenState extends State<AddingScreen> {
   late final AddingScreenController _screenController = AddingScreenController(
       widget.button?.button, widget._notifier, widget._withNote);
 
-  late final List<Widget> _itemList = [];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,8 +36,7 @@ class _AddingScreenState extends State<AddingScreen> {
                       Navigator.pop(context, true);
                       return;
                     }
-                    controller.touched = true;
-                    widget._notifier.addOrUpdate(controller);
+                    widget._notifier.delete(controller);
                     Navigator.pop(context, true);
                   })
               : const Text(''),
@@ -48,7 +46,7 @@ class _AddingScreenState extends State<AddingScreen> {
                 BasicButtonController? controller =
                     _screenController.getButton();
                 if (controller == null) return;
-                controller.touched = false;
+                controller.touched = true;
                 widget._notifier.addOrUpdate(controller);
                 Navigator.pop(context, false);
               }),
@@ -57,11 +55,9 @@ class _AddingScreenState extends State<AddingScreen> {
             child: ListenableBuilder(
                 listenable: _screenController.buttonType,
                 builder: (BuildContext context, Widget? child) {
-                  _itemList.clear();
-                  _itemList.addAll(_screenController.createScreenWidgets());
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: _itemList,
+                    children: _screenController.createScreenWidgets(),
                   );
                 })));
   }

@@ -13,38 +13,16 @@ import '../mix_button_creator.dart';
 import '../mix_day_creator.dart';
 
 class ObservationScreenButtons with DayCreator, ButtonCreator {
-  ///the index used to give every button a selection ID
-  int _globalCounter = -1;
-
-  ///the selected counter
-  int clicked = -1;
-
-  ///the previous selected counter
-  int previouslyClicked = -1;
-
-  ///id of button to update when updating
-  int idSelected = -1;
-
-  ///if the selected is again the actual from now that is has (the altLeft)
-  int fromNowSelect = -1;
-
   ///keep the data of all the new things
   final Map<_NewRef, MyDateController> _newThings = {};
 
-  int amountJustAdded = 0;
+  final ButSelectorData _butSelectorData = ButSelectorData();
 
-  ///button type of the selected index
-  Type? typeOfSelected;
-
-  ///button type of the selected index
-  Type? previousTypeOfSelected;
-
-  final Future Function(BasicButtonController) _openEntityEdit;
   final Future Function(BasicButtonController) _openButtonEdit;
 
-  ObservationScreenButtons(this._openEntityEdit, this._openButtonEdit);
+  ObservationScreenButtons(this._openButtonEdit);
 
-  void updateEndbasedToCurrentDay(
+  void updateEndBasedToCurrentDay(
       List<BasicButtonController> allItems,
       void Function(List<BasicButtonController>) delete,
       void Function(List<BasicButtonController>) update) {
@@ -80,41 +58,11 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
     return items;
   }
 
-  void resetCounters() {
-    typeOfSelected = null;
-    previouslyClicked = clicked = idSelected = -1;
-  }
+  void resetCounters() => _butSelectorData.reset();
 
-  void _clickOnButton(
-      int index, BasicButtonController e, ValueNotifier<bool> yourBool) {
-    if (idSelected != e.id &&
-        typeOfSelected != e.runtimeType &&
-        previouslyClicked == e.id &&
-        previousTypeOfSelected == e.runtimeType) {
-      //double click
-      if (e.entitied != -1) {
-        _openEntityEdit(e);
-      } else {
-        _openButtonEdit(e);
-      }
-      previouslyClicked = -1;
-      previousTypeOfSelected = null;
-    } else if (idSelected != e.id || typeOfSelected != e.runtimeType) {
-      //selecting click
-      clicked = index;
-      previouslyClicked = idSelected = e.id;
-      previousTypeOfSelected = typeOfSelected = e.runtimeType;
-    } else {
-      //deselecting click
-      clicked = -1;
-      idSelected = -1;
-      typeOfSelected = null;
-    }
-    if (e is SkippableEndBasedController) {
-      fromNowSelect = e.altLeft;
-    }
-    yourBool.value = idSelected == e.id && typeOfSelected == e.runtimeType;
-  }
+  void _clickOnButton(BasicButtonController e) =>
+    _butSelectorData.select(e, _openButtonEdit);
+
 
   List<Widget> getWidgetListEndBased(int daysToShow, List<dynamic> allLists,
       ObservationScreenOptions options) {
@@ -151,7 +99,6 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
           _createWidgetEndBased(MyDateController.lookTime, everythingToShow)
               .toList()),
     );
-    _globalCounter = -1;
     return againDeadlineDisplayList;
   }
 
@@ -207,17 +154,14 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
   }
 
   Widget _createListItemEverythingEndBased(EndBasedController e) {
-    _globalCounter++;
-    int index = _globalCounter;
-    final myBool =
-        ValueNotifier(idSelected == e.id && typeOfSelected == e.runtimeType);
+    final myBool = _butSelectorData.makeWorkingBool(e);
     return Column(children: [
       BlagendaUniformButton(
           e.color,
-          () => (myBool.value) //TODO
+          () => (myBool.value)
               ? e.gettingTheStringSelected()
               : e.gettingTheStringShortWithDate(),
-          () => _clickOnButton(index, e, myBool),
+          () => _clickOnButton(e),
           isSelected: myBool),
       smallBlankSplit
     ]);
@@ -281,19 +225,17 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
   BlagendaUniformButton _createButtonBase(
       BasicButtonController it, bool isExtra,
       [bool isNew = false]) {
-    _globalCounter++;
-    int index = _globalCounter;
-    ValueNotifier<bool> myBool = ValueNotifier<bool>(clicked == index);
+    ValueNotifier<bool> myBool = _butSelectorData.makeWorkingBool(it);
     return BlagendaUniformButton(
         it.color,
-        () => '${isNew ? '⊚' : ''}${_buttonDisplay(index, it)}',
-        () => _clickOnButton(index, it, myBool),
+        () => '${isNew ? '⊚' : ''}${_buttonDisplay(it)}',
+        () => _clickOnButton(it),
         isSelected: myBool,
         isSmall: isExtra);
   }
 
-  String _buttonDisplay(int index, BasicButtonController it) {
-    if (it.job.startsWith('!') || clicked == index) {
+  String _buttonDisplay(BasicButtonController it) {
+    if (it.job.startsWith('!') || _butSelectorData.isItMe(it)) {
       return it.gettingTheStringSelected().replaceFirst(r'^!', '');
     }
     return it.gettingTheStringShort();
@@ -318,7 +260,6 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
     var timeWhenNotNewItemAnymore =
         MyDateController.now().add(const Duration(minutes: 4));
     _newThings[_getKey(id, type)] = timeWhenNotNewItemAnymore;
-    amountJustAdded++;
   }
 
   void removeNew(int id, Type type) {
@@ -343,7 +284,7 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
     for (var ref in toRemove) {
       _newThings.remove(ref);
     }
-    amountJustAdded = _newThings.length;
+    var amountJustAdded = _newThings.length;
     if (amountJustAdded != hasJustAddedCalc) {
       return true;
     }
@@ -352,6 +293,68 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
 
   bool wasJustAdded(EndBasedController eb) =>
       _newThings.keys.any((e) => e.compare(eb));
+
+  BasicButtonController? getSelected(List<BasicButtonController> all) => all.cast<BasicButtonController?>().firstWhere((e) => _butSelectorData.isItMe(e!), orElse: () => null);
+}
+
+class ButSelectorData extends ChangeNotifier {
+  int _id = -1;
+  Type? _type;
+  int _prevId = -1;
+  Type? _prevType;
+  bool doubleClicked = false;
+
+  ///if the selected is again the actual from now that is has (the altLeft)
+  int fromNowSelect = -1;
+
+  ButSelectorData();
+
+  void reset() {
+    _id = _prevId = -1;
+    _type = _prevType = null;
+  }
+
+  bool isItMe(BasicButtonController e) {
+    if (e.id == _id && e.runtimeType == _type){
+      if (e is SkippableEndBasedController){
+        return e.altLeft == fromNowSelect;
+      }
+      return true;
+    }
+    return false;
+  }
+  ValueNotifier<bool> makeWorkingBool(BasicButtonController e) {
+    var newValue = ValueNotifier(isItMe(e));
+    addListener(() =>
+    newValue.value = isItMe(e));
+    return newValue;
+  }
+
+  void select(BasicButtonController e,
+      Function(BasicButtonController) doOnDoubleClick) {
+    if (_id != e.id &&
+        _type != e.runtimeType &&
+        _prevId == e.id &&
+        _prevType == e.runtimeType &&
+        (e is! SkippableEndBasedController ||
+          fromNowSelect == e.altLeft)) {
+      //double click
+      doOnDoubleClick(e);
+      reset();
+    } else if (_id != e.id || _type != e.runtimeType) {
+      //selecting click
+      _prevId = _id = e.id;
+      _prevType = _type = e.runtimeType;
+      if (e is SkippableEndBasedController){
+        fromNowSelect = e.altLeft;
+      }
+    } else {
+      //deselecting click
+      _id = -1;
+      _type = null;
+    }
+    notifyListeners();
+  }
 }
 
 class _NewRef {

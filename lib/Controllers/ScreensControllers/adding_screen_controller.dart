@@ -29,6 +29,7 @@ class AddingScreenController with ButtonCreator, InputHandler {
 
   final bool _withNote;
 
+
   static bool _noCheck(Map<PossibleValues, dynamic> map) => true;
 
   bool Function(Map<PossibleValues, dynamic>) _checksAndChanges = _noCheck;
@@ -39,6 +40,7 @@ class AddingScreenController with ButtonCreator, InputHandler {
   late int _id;
   late BasicButtonController? Function() getButton;
   final ButtonNotifier _notifier;
+  late final Widget buttonSelector = SelectorShow(_withNote, buttonType);
 
   AddingScreenController(BasicButton? button, this._notifier, this._withNote) {
     if (button == null) {
@@ -49,13 +51,14 @@ class AddingScreenController with ButtonCreator, InputHandler {
       }
       _id = -1;
       _storedValues[PossibleValues.col] =
-          usedColors.indexOf(_getDefaultTypeColor(buttonType.value));
+          _getDefaultTypeColor(buttonType.value);
     } else {
       buttonType.value = button.runtimeType;
       fillStoredValues(button);
       _id = button.id!;
     }
     reCreateScreenWidgets(buttonType.value);
+    buttonType.addListener(() => reCreateScreenWidgets(buttonType.value));
   }
 
   @visibleForTesting
@@ -63,8 +66,6 @@ class AddingScreenController with ButtonCreator, InputHandler {
     _storedValues.addAll(itemToStoringMap(button).map((key, value) => MapEntry(
         PossibleValues.values.firstWhere((nm) => enumToString(nm) == key),
         value)));
-    _storedValues[PossibleValues.col] = usedColors
-        .indexWhere((e) => e.value == _storedValues[PossibleValues.col].value);
     if (button is SkippableButton) {
       if (button is AgainWeird) {
         int value = _storedValues[PossibleValues.day] % 7;
@@ -81,7 +82,7 @@ class AddingScreenController with ButtonCreator, InputHandler {
   }
 
   t _getFromStoredValue<t>(PossibleValues it, t defaultValue) {
-    if (_storedValues[it] == null || _storedValues[it].runtimeType != t) {
+    if (_storedValues[it] == null) {
       return defaultValue;
     }
     return _storedValues[it];
@@ -99,14 +100,14 @@ class AddingScreenController with ButtonCreator, InputHandler {
     date.value = null;
     _id = -1;
     _storedValues[PossibleValues.col] =
-        usedColors.indexOf(_getDefaultTypeColor(newType));
+        _getDefaultTypeColor(newType);
     reCreateScreenWidgets(newType);
     buttonType.value = newType;
   }
 
   List<Widget> createScreenWidgets() {
     List<Widget> widgetList = [];
-    if (_id == -1) widgetList.add(SelectorShow(_withNote, buttonType));
+    if (_id == -1) widgetList.add(buttonSelector);
     for (var item in PossibleValues.values) {
       var it = widgetsOnScreen[item];
       if (it == null) continue;
@@ -177,7 +178,7 @@ class AddingScreenController with ButtonCreator, InputHandler {
             _id == -1 ? _notifier.getNewId(correctController) : _id
       });
       return dataToController(map2Data(
-          data.map(((k, e) => MapEntry(enumToString(k), e.getValue()))),
+          data.map(((k, e) => MapEntry(enumToString(k), e))),
           buttonType.value));
     };
   }
@@ -377,10 +378,10 @@ class _SelectorShow extends State<SelectorShow>
     List<Widget> widgetList = [];
     typeList.forEach((type, stringValue) {
       final myBool = ValueNotifier(widget._currentType.value == type);
+      widget._currentType.addListener(() => myBool.value = widget._currentType.value == type);
       widgetList.add(BlagendaUniformButton(
           AddingScreenController._getDefaultTypeColor(type), () => stringValue, () {
         widget._currentType.value = type;
-        myBool.value = widget._currentType.value == type;
       }, isSelected: myBool));
     });
     var valuesList = typeList.values.toList();

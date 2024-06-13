@@ -1,20 +1,16 @@
 import 'dart:async';
 
-import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/end_based_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/observation_screen_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/countdown_drawer.dart';
 import 'package:blagenda_flutter_simple/Controllers/main_drawer.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
-import 'package:blagenda_flutter_simple/Screens/search_screen.dart';
 import 'package:flutter/material.dart';
 
-import '../Commons/Models/entity.dart';
 import '../Controllers/ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import '../Loading/button_notifier.dart';
 import '../Loading/entity_notifier.dart';
 import '../common_items.dart';
 import 'adding_screen.dart';
-import 'entity_adding_screen.dart';
 
 class OverviewScreen extends StatefulWidget {
   const OverviewScreen(this._buttonNotifier, this._entityNotifier, {super.key});
@@ -43,15 +39,15 @@ class _OverviewScreenState extends State<OverviewScreen> {
   void _timerTick([bool force = false]) {
     bool awns = MyDateController.didDayPass();
     //requiresResetDate also resets last look time its semi important that its run
-    if (_controller.justAddedCheck() || awns || force) {
-      if (awns || force) {
-        MyDateController.resetDate();
-        lastHour = MyDateController.lookTime.hour;
-      }
+    if (awns || force) {
+      MyDateController.resetDate();
+      lastHour = MyDateController.lookTime.hour;
       widget._buttonNotifier.dataSyncLowKey();
     } else if (MyDateController.didHourPass(lastHour)) {
       lastHour = MyDateController.lookTime.hour;
       widget._buttonNotifier.dataSyncLowKey();
+    } else if (_controller.justAddedCheck()) {
+      setState(() {});
     }
   }
 
@@ -63,7 +59,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
       CountdownDrawer(getButton, widget._buttonNotifier);
   late final ObservationScreenController _controller =
       ObservationScreenController(
-          _openEntityEdit, (e) => _openEdit(e, false), widget._buttonNotifier);
+          (e) => _openEdit(e, false), widget._buttonNotifier);
   final List<Widget> _centerChildren = [];
 
   BuildContext? currentContext;
@@ -131,39 +127,6 @@ class _OverviewScreenState extends State<OverviewScreen> {
   }
 
   BasicButtonController? getButton() => _controller.getSelectedButton();
-
-  Future<dynamic> _openEntityEdit(BasicButtonController b) async {
-    var c = widget._entityNotifier
-        .getData()
-        .firstWhere((ent) => ent.tags.any((tag) {
-              if (tag.data is TagObjectReference) {
-                return (tag.data.type == b.runtimeType.toString() &&
-                    b.id == tag.data.itd);
-              }
-              return BasicButtonController.equals(tag.data.button, b.button);
-            }));
-    if (currentContext == null) return;
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => AddingEntityScreen(
-                c,
-                widget._buttonNotifier,
-                widget._entityNotifier,
-                () => _openButtonSearch(context, true),
-                (toGet) => _openEdit(toGet, false))));
-  }
-
-  Future<dynamic> _openButtonSearch(BuildContext context, bool closeOnAction) {
-    return Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                SearchScreen<EndBasedController>((update) async {
-                  widget._buttonNotifier
-                      .addOrUpdate(update as EndBasedController);
-                }, widget._buttonNotifier)));
-  }
 
   Future<dynamic> _openEdit(BasicButtonController? it, bool withNote) =>
       Navigator.push(

@@ -188,7 +188,7 @@ mixin InputHandler on ButtonCreator {
   }
 
   Widget _widgetForColor(Color Function() get, void Function(Color) set) {
-    ValueNotifier<int> colorValue = ValueNotifier(usedColors.indexOf(get()));
+    ValueNotifier<int> colorValue = ValueNotifier(usedColors.indexWhere((c) => c.value == get().value));
     return ColorButtons(colorValue, (_) {
       set(usedColors[colorValue.value]);
     });

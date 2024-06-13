@@ -72,7 +72,7 @@ class ButtonNotifier
   @override
   void addOrUpdate(BasicButtonController but) {
     _buttons.add(but);
-    _loading.updateData(but);
+    _loading.updateData(but.button);
     hardPoint = true;
     notifyListeners();
   }
