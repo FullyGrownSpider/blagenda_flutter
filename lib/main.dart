@@ -17,7 +17,6 @@ class TabBarInsideAppBarPage extends StatefulWidget {
 
 class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
     with SingleTickerProviderStateMixin {
-
   final EntityNotifier entityNotifier = EntityNotifier();
   late final ButtonNotifier buttonNotifier = ButtonNotifier(entityNotifier);
 

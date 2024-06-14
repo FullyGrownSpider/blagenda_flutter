@@ -35,8 +35,7 @@ class ObservationScreenOptions with ButtonCreator {
 
   Widget _createDisplayAllEndBasedButtonsButton(Function() resetCounters) {
     var myBool = _makeBool(() => displayState._state == _States.everything);
-    return BlagendaUniformButton(usedColors.first, () => 'Show all',
-        () {
+    return BlagendaUniformButton(usedColors.first, () => 'Show all', () {
       resetCounters();
       //should reset?
       myBool.value = displayState._state != _States.everything;
@@ -45,7 +44,7 @@ class ObservationScreenOptions with ButtonCreator {
       } else {
         displayState.days = daysToShow;
       }
-    },isSelected: myBool);
+    }, isSelected: myBool);
   }
 
   Widget _createCounterButton(int index, Function() resetCounters) {
@@ -58,7 +57,7 @@ class ObservationScreenOptions with ButtonCreator {
         displayState.days = possibleExtraDays[index];
       }
       resetCounters();
-    },isSelected: myBool);
+    }, isSelected: myBool);
   }
 
   ValueNotifier<bool> _makeBool(Function() action) {

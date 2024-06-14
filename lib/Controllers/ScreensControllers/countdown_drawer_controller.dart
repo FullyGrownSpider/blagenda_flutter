@@ -20,14 +20,15 @@ class CountDownDrawerController {
     var walkList = getEndBasedButtons();
     endButtons.addAll(walkList.where((e) => e.important && e.daysLeft > -1));
     var complicatedList = walkList
-        .where((e) => e.important && e.daysLeft == -1 && e is SkippableEndBasedController)
+        .where((e) =>
+            e.important && e.daysLeft == -1 && e is SkippableEndBasedController)
         .toList();
     if (complicatedList.isNotEmpty) {
       for (int i = 0; i < 400; i++) {
         for (int ii = 0; ii < complicatedList.length; ii++) {
           if (complicatedList[ii].isHappeningOnDayFromNow(i)) {
-            endButtons
-                .add((complicatedList[ii] as SkippableEndBasedController).createNew(i));
+            endButtons.add((complicatedList[ii] as SkippableEndBasedController)
+                .createNew(i));
             complicatedList.removeAt(ii);
           }
         }
@@ -41,7 +42,9 @@ class CountDownDrawerController {
     widgetList.clear();
     for (var note in notes) {
       widgetList.add(style([
-        BlagendaUniformButton(note.color, () => note.displayGenericText(note.job, 25),
+        BlagendaUniformButton(
+            note.color,
+            () => note.displayGenericText(note.job, 25),
             () => _createUnimportantButton(note, addOrUpdateButton))
       ]));
       widgetList.add(bigSplitterTextField);
@@ -49,13 +52,14 @@ class CountDownDrawerController {
       widgetList.add(splitterTextField);
     }
     for (var but in endButtons) {
-      bool displayAble = ObservationScreenOptions.daysToShow < but.daysLeft + 1 ||
-          (but is SkippableEndBasedController &&
-              ObservationScreenOptions.daysToShow < but.altLeft + 1);
+      bool displayAble =
+          ObservationScreenOptions.daysToShow < but.daysLeft + 1 ||
+              (but is SkippableEndBasedController &&
+                  ObservationScreenOptions.daysToShow < but.altLeft + 1);
       widgetList.add(style([
         BlagendaUniformButton(
-                        displayAble ? but.color : lerpIt(but.color),
-                () => but.displayGenericText(but.gettingTheStringShort(), 25),
+            displayAble ? but.color : lerpIt(but.color),
+            () => but.displayGenericText(but.gettingTheStringShort(), 25),
             () => _createUnimportantButton(but, addOrUpdateButton)),
         if (displayAble) _createCountDownText(but)
       ]));
@@ -69,8 +73,7 @@ class CountDownDrawerController {
     return widgetList;
   }
 
-  Function _createUnimportantButton(
-      BasicButtonController it,
+  Function _createUnimportantButton(BasicButtonController it,
       void Function(BasicButtonController) addOrUpdateButton) {
     return () {
       it.flipImportant();
@@ -80,16 +83,20 @@ class CountDownDrawerController {
 
   Widget _createCountDownText(EndBasedController it) {
     if (it is SkippableEndBasedController) {
-      return BlagendaUniformButton(usedColors[4], () => 'In ${it.altLeft} days.', () {});
+      return BlagendaUniformButton(
+          usedColors[4], () => 'In ${it.altLeft} days.', () {});
     }
-    return BlagendaUniformButton(usedColors[4], () => 'In ${it.daysLeft} days.', () {});
+    return BlagendaUniformButton(
+        usedColors[4], () => 'In ${it.daysLeft} days.', () {});
   }
 
-  Widget updateButtonsButtons(void Function() flipImportant, addDays, removeDays) {
+  Widget updateButtonsButtons(
+      void Function() flipImportant, addDays, removeDays) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        BlagendaUniformButton(usedColors[4], () => 'Important Flip', flipImportant),
+        BlagendaUniformButton(
+            usedColors[4], () => 'Important Flip', flipImportant),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           BlagendaUniformButton(usedColors[4], () => '↑ Day ↑', removeDays),
           BlagendaUniformButton(usedColors[4], () => '↓ Day ↓', addDays),

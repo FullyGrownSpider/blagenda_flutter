@@ -130,7 +130,7 @@ mixin InputHandler on ButtonCreator {
           var newBool = !get();
           set(newBool);
           myBool.value = newBool;
-        },isSelected: myBool),
+        }, isSelected: myBool),
         get,
         set);
   }
@@ -188,7 +188,8 @@ mixin InputHandler on ButtonCreator {
   }
 
   Widget _widgetForColor(Color Function() get, void Function(Color) set) {
-    ValueNotifier<int> colorValue = ValueNotifier(usedColors.indexWhere((c) => c.value == get().value));
+    ValueNotifier<int> colorValue =
+        ValueNotifier(usedColors.indexWhere((c) => c.value == get().value));
     return ColorButtons(colorValue, (_) {
       set(usedColors[colorValue.value]);
     });
@@ -199,10 +200,8 @@ mixin InputHandler on ButtonCreator {
       void Function(dynamic) set,
       void Function() onThingClick,
       String Function(dynamic) getNickname) {
-    var but = BlagendaUniformButton(
-        usedColors.first,
-        () => get() == null ? "???" : getNickname(get()),
-        onThingClick);
+    var but = BlagendaUniformButton(usedColors.first,
+        () => get() == null ? "???" : getNickname(get()), onThingClick);
     return InputObject<dynamic>(but, get, set);
   }
 }

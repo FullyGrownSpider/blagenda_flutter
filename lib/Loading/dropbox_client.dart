@@ -23,7 +23,8 @@ class DropboxClient {
   }
 
   Future<bool> downloadFile(String filename) async {
-    var downloadURL = Uri.parse('https://content.dropboxapi.com/2/files/download');
+    var downloadURL =
+        Uri.parse('https://content.dropboxapi.com/2/files/download');
     try {
       var file = File(await pathEr(filename));
       if (file.existsSync()) {
@@ -50,7 +51,8 @@ class DropboxClient {
       await client.post(uploadURL, body: valueC, headers: {
         HttpHeaders.authorizationHeader: 'Bearer $_authorization',
         'Content-Type': 'application/octet-stream',
-        'Dropbox-API-Arg': '{"path": "/$_folder/$filename.txt", "mode": "overwrite"}'
+        'Dropbox-API-Arg':
+            '{"path": "/$_folder/$filename.txt", "mode": "overwrite"}'
       });
       return true;
     } catch (e) {
@@ -59,7 +61,8 @@ class DropboxClient {
   }
 
   Future<void> createFolder() async {
-    var folderURL = Uri.parse('https://api.dropboxapi.com/2/files/create_folder_v2');
+    var folderURL =
+        Uri.parse('https://api.dropboxapi.com/2/files/create_folder_v2');
     try {
       var client = http.Client();
       var body = json.encode({'path': '/$_folder'});
@@ -74,8 +77,10 @@ class DropboxClient {
     }
   }
 
-  Future<bool> downloadFileCarefully(String actualFileName, String fileName) async {
-    var downloadURL = Uri.parse('https://content.dropboxapi.com/2/files/download');
+  Future<bool> downloadFileCarefully(
+      String actualFileName, String fileName) async {
+    var downloadURL =
+        Uri.parse('https://content.dropboxapi.com/2/files/download');
     try {
       var file = File(await pathEr(fileName));
       if (file.existsSync()) {

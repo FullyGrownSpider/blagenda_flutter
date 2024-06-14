@@ -35,15 +35,18 @@ mixin DayCreator {
         calcDay);
     var right = _createCalcDayColor(
         listWithEverything.any((e) =>
-            (e is AgainYearController || (e is AgainWeirdController && e.day > 12)) &&
+            (e is AgainYearController ||
+                (e is AgainWeirdController && e.day > 12)) &&
             e.isHappeningOnDayFromNow(fromNow + 7)),
         '◭',
         calcDay);
     Text toAdd;
-    var sortableList =
-        listWithEverything.where((e) => e.isHappeningOnDayFromNow(fromNow)).toList();
+    var sortableList = listWithEverything
+        .where((e) => e.isHappeningOnDayFromNow(fromNow))
+        .toList();
     var listWithExtra = listWithEverything
-        .where((e) => !e.isHappeningOnDayFromNow(fromNow) && e.extraGoingOn(fromNow))
+        .where((e) =>
+            !e.isHappeningOnDayFromNow(fromNow) && e.extraGoingOn(fromNow))
         .toList();
     for (int i = 0; i < sortableList.length; i++) {
       if (sortableList[i] is SkippableEndBasedController) {
@@ -64,7 +67,8 @@ mixin DayCreator {
         var dayShort = formatDate(calcDay, _smallDateFormat).substring(0, 2);
         toAdd = Text('Today ($dayShort)', style: bigTextStyle);
       } else {
-        toAdd = Text(formatDate(calcDay, _smallDateFormat), style: bigTextStyle);
+        toAdd =
+            Text(formatDate(calcDay, _smallDateFormat), style: bigTextStyle);
       }
       var dayDisplayButton = _createDayButton(clickOnDay, toAdd, fromNow);
       list.add(Row(
@@ -95,8 +99,10 @@ mixin DayCreator {
               width: double.infinity,
               decoration: const BoxDecoration(
                   color: Colors.black26,
-                  border: Border(bottom: BorderSide(color: Colors.black38, width: 20))),
-              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: list));
+                  border: Border(
+                      bottom: BorderSide(color: Colors.black38, width: 20))),
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center, children: list));
         } else {
           if (!added) {
             list.add(medBlankSplit);
@@ -110,7 +116,8 @@ mixin DayCreator {
                   border: Border(
                       top: BorderSide(color: Colors.green, width: 6),
                       bottom: BorderSide(color: Colors.green, width: 4))),
-              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: list));
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center, children: list));
         }
 
         list = <Widget>[];
@@ -122,7 +129,8 @@ mixin DayCreator {
       if (newDate.year == nowDate.year) {
         toAdd = Text(formatDate(newDate, _bigDateFormat), style: bigTextStyle);
       } else {
-        toAdd = Text(formatDate(newDate, _bigDateFormatWithYear), style: bigTextStyle);
+        toAdd = Text(formatDate(newDate, _bigDateFormatWithYear),
+            style: bigTextStyle);
       }
       var dayDisplayButton = _createDayButton(clickOnDay, toAdd, fromNow);
       list.add(Row(
@@ -166,28 +174,34 @@ mixin DayCreator {
   }
 
   bool _yesterdayShouldShow(List<EndBasedController> list) {
-    return !list.any((e) => !(e is SkippableEndBasedController && e.inTheNextDays(7)));
+    return !list
+        .any((e) => !(e is SkippableEndBasedController && e.inTheNextDays(7)));
   }
 
   List<Widget> addAdded(List<Widget> list, bool added) {
     if (added) {
       list.add(Container(
           decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.green, width: 4))),
+              border:
+                  Border(bottom: BorderSide(color: Colors.green, width: 4))),
           child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center, children: [smallBlankSplit])));
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [smallBlankSplit])));
     } else {
       list.add(Container(
           decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.green, width: 4))),
+              border:
+                  Border(bottom: BorderSide(color: Colors.green, width: 4))),
           child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center, children: [medBlankSplit])));
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [medBlankSplit])));
     }
     return list;
   }
 
   _createDayButton(void Function(int)? clickOnDay, Text toAdd, int fromNow) {
     return TextButton(
-        onPressed: clickOnDay == null ? null : () => clickOnDay(fromNow), child: toAdd);
+        onPressed: clickOnDay == null ? null : () => clickOnDay(fromNow),
+        child: toAdd);
   }
 }

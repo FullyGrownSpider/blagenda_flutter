@@ -8,8 +8,7 @@ import '../Controllers/ScreensControllers/adding_entity_screen_controller.dart';
 class AddingEntityScreen extends StatefulWidget {
   final EntityController? entity;
 
-  final Future<dynamic> Function()
-      _openButtonSearch;
+  final Future<dynamic> Function() _openButtonSearch;
   final Future<dynamic> Function(dynamic) _openButtonEdit;
 
   final ButtonNotifier _buttonNotifier;
@@ -26,8 +25,12 @@ class AddingEntityScreen extends StatefulWidget {
 
 class _AddingEntityScreenState extends State<AddingEntityScreen> {
   late final AddingEntityScreenController _screenController =
-      AddingEntityScreenController(widget.entity, widget._entityNotifier, widget._buttonNotifier,
-          widget._openButtonSearch, widget._openButtonEdit);
+      AddingEntityScreenController(
+          widget.entity,
+          widget._entityNotifier,
+          widget._buttonNotifier,
+          widget._openButtonSearch,
+          widget._openButtonEdit);
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +46,8 @@ class _AddingEntityScreenState extends State<AddingEntityScreen> {
                       Navigator.pop(context, true);
                       return; //should never happen
                     }
-                    widget._entityNotifier.addOrUpdate(controller..tags.clear());
+                    widget._entityNotifier
+                        .addOrUpdate(controller..tags.clear());
                     Navigator.pop(context, true);
                   })
               : const Text(''),

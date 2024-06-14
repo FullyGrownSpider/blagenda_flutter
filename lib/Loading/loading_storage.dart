@@ -30,11 +30,13 @@ class LoadingFromStorage {
       items.add(exportGenerator(butt));
       parts.add(uniquePart(butt));
     }
-    await SuperStorage(typeToFile(buts.first.runtimeType)).updateAll(items, parts);
+    await SuperStorage(typeToFile(buts.first.runtimeType))
+        .updateAll(items, parts);
   }
 
   Future<void> addItem(StoreAble but) async =>
-      await SuperStorage(typeToFile(but.runtimeType)).addItem(exportGenerator(but));
+      await SuperStorage(typeToFile(but.runtimeType))
+          .addItem(exportGenerator(but));
 
   Future<List<String>> getItems(Type t) async {
     var file = SuperStorage(typeToFile(t));

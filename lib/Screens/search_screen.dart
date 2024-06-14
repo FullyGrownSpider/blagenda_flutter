@@ -16,12 +16,13 @@ class SearchScreen<T extends SearchAble> extends StatefulWidget {
 }
 
 class _SearchScreenState<T extends SearchAble> extends State<SearchScreen<T>> {
-  late final SearchScreenController _controller =
-      SearchScreenController<T>((s) {
+  late final SearchScreenController _controller = SearchScreenController<T>(
+      (s) {
     var page = widget.doWithClicked(s);
     pop();
     return page;
-  }, widget.notifier.getData().whereType<T>().toList(), widget.notifier.addOrUpdate);
+  }, widget.notifier.getData().whereType<T>().toList(),
+      widget.notifier.addOrUpdate);
 
   BuildContext? _currentContext;
 

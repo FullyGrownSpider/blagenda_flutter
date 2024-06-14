@@ -7,7 +7,8 @@ import 'ObservationScreen/observation_screen_buttons.dart';
 import 'ObservationScreen/observation_screen_options.dart';
 
 class ObservationScreenController {
-  final ObservationScreenOptions observationScreenOptions = ObservationScreenOptions();
+  final ObservationScreenOptions observationScreenOptions =
+      ObservationScreenOptions();
   @visibleForTesting
   late final ObservationScreenButtons observationScreenButtons;
   @visibleForTesting
@@ -18,7 +19,7 @@ class ObservationScreenController {
       Future Function(BasicButtonController) openButtonEdit, this._notifier) {
     observationScreenButtons = ObservationScreenButtons(openButtonEdit);
     _notifier.addListener(() {
-      if (_notifier.getData().last.touched) observationScreenButtons.addNew(_notifier.getData().last.id, _notifier.getData().last.runtimeType);
+      observationScreenButtons.updateMoment();
       if (_notifier.hardPoint) deselect();
     });
   }
@@ -31,16 +32,19 @@ class ObservationScreenController {
 
   List<Widget> getWidgetListEndBased() =>
       observationScreenButtons.getWidgetListEndBased(
-          ObservationScreenOptions.daysToShow, _notifier.getData(), observationScreenOptions);
+          ObservationScreenOptions.daysToShow,
+          _notifier.getData(),
+          observationScreenOptions);
 
-  void resetSelects() =>
-      observationScreenOptions.resetSearch(_resetCounters);
+  void resetSelects() => observationScreenOptions.resetSearch(_resetCounters);
 
   void _resetCounters() => observationScreenButtons.resetCounters();
 
-  BasicButtonController? getSelectedButton() => observationScreenButtons.getSelected(_notifier.getData());
+  BasicButtonController? getSelectedButton() =>
+      observationScreenButtons.getSelected(_notifier.getData());
 
-  bool justAddedCheck() => observationScreenButtons.justAddedCheck();
+  bool justAddedCheck() =>
+      observationScreenButtons.justAddedCheck(_notifier.getEndbasedData());
 
   int getNewId(Type t) => _notifier.getNewId(t);
 

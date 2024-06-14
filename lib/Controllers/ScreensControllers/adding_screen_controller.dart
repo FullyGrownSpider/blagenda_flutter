@@ -29,7 +29,6 @@ class AddingScreenController with ButtonCreator, InputHandler {
 
   final bool _withNote;
 
-
   static bool _noCheck(Map<PossibleValues, dynamic> map) => true;
 
   bool Function(Map<PossibleValues, dynamic>) _checksAndChanges = _noCheck;
@@ -99,8 +98,7 @@ class AddingScreenController with ButtonCreator, InputHandler {
   void switchButtonType(Type newType) {
     date.value = null;
     _id = -1;
-    _storedValues[PossibleValues.col] =
-        _getDefaultTypeColor(newType);
+    _storedValues[PossibleValues.col] = _getDefaultTypeColor(newType);
     reCreateScreenWidgets(newType);
     buttonType.value = newType;
   }
@@ -370,17 +368,17 @@ class _SelectorShow extends State<SelectorShow>
   }
 
   late final InputObject<bool> _chosenStateIsOne = itemForBoolean(
-      'Type of Item',
-      () => widget._page.value,
-      (s) => widget._page.value = s);
+      'Type of Item', () => widget._page.value, (s) => widget._page.value = s);
 
   List<Widget> _addButtonsForButtonType(Map<Type, String> typeList) {
     List<Widget> widgetList = [];
     typeList.forEach((type, stringValue) {
       final myBool = ValueNotifier(widget._currentType.value == type);
-      widget._currentType.addListener(() => myBool.value = widget._currentType.value == type);
+      widget._currentType
+          .addListener(() => myBool.value = widget._currentType.value == type);
       widgetList.add(BlagendaUniformButton(
-          AddingScreenController._getDefaultTypeColor(type), () => stringValue, () {
+          AddingScreenController._getDefaultTypeColor(type), () => stringValue,
+          () {
         widget._currentType.value = type;
       }, isSelected: myBool));
     });

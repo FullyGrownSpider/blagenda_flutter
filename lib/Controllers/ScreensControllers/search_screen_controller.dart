@@ -7,7 +7,8 @@ import '../blagenda_uniform_button.dart';
 import 'mix_day_creator.dart';
 import 'mix_input_handler.dart.dart';
 
-class SearchScreenController<T extends SearchAble> with DayCreator, SearchField {
+class SearchScreenController<T extends SearchAble>
+    with DayCreator, SearchField {
   ///needs to be sorted
   final List<T> _everything;
 
@@ -21,8 +22,8 @@ class SearchScreenController<T extends SearchAble> with DayCreator, SearchField 
   DateRange date = const DateRange(0, -1);
   final void Function(T) _reAdd;
 
-  SearchScreenController(this._doActionWithClickedItem,
-      this._everything, this._reAdd) {
+  SearchScreenController(
+      this._doActionWithClickedItem, this._everything, this._reAdd) {
     Set searchesSet = {};
     for (var e in _everything) {
       searchesSet.addAll(e.possibleSearches());
@@ -116,7 +117,8 @@ class SearchScreenController<T extends SearchAble> with DayCreator, SearchField 
 
   //Default widgets
   List<Widget> getScreenWidgets() {
-    return searches.values.map((e) => e.displayWidget).toList()..addAll(list.value);
+    return searches.values.map((e) => e.displayWidget).toList()
+      ..addAll(list.value);
   }
 
   void setScreenSearch() {
@@ -129,12 +131,13 @@ class SearchScreenController<T extends SearchAble> with DayCreator, SearchField 
       toFill.add(item.displayWidget);
     }
     toFill.add(smallBlankSplit);
-    toFill.add(BlagendaUniformButton(usedColors.last, () => 'Search', resetSearch));
+    toFill.add(
+        BlagendaUniformButton(usedColors.last, () => 'Search', resetSearch));
     if (_searchingText.isNotEmpty) {
       toFill.add(smallBlankSplit);
       //you searched for X
-      toFill.add(
-          BlagendaUniformButton(usedColors.last, () =>_searchingText, fullSearchReset));
+      toFill.add(BlagendaUniformButton(
+          usedColors.last, () => _searchingText, fullSearchReset));
 
       toFill.add(bigSplitterTextField);
       //fill all found items
@@ -151,14 +154,14 @@ class SearchScreenController<T extends SearchAble> with DayCreator, SearchField 
                   } else if (false == value) {
                     _everything.remove(item);
                     _reAdd(item);
-                      resetSearch();
+                    resetSearch();
                   }
                 })));
       }
     } else if (foundItems.isNotEmpty) {
       toFill.add(bigSplitterTextField);
-      toFill.add(BlagendaUniformButton(
-          usedColors.last, () => 'Suggestions', () {}));
+      toFill.add(
+          BlagendaUniformButton(usedColors.last, () => 'Suggestions', () {}));
       toFill.add(bigSplitterTextField);
       for (var item in foundItems) {
         toFill.add(smallBlankSplit);

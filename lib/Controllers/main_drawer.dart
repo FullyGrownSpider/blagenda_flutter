@@ -28,8 +28,8 @@ class MainDrawer {
       title: Text('--------------------------------------------',
           style: normalTextStyle));
 
-  MainDrawer(this._buttonNotifier, this._entityNotifier,
-      this._getSelectedButton);
+  MainDrawer(
+      this._buttonNotifier, this._entityNotifier, this._getSelectedButton);
 
   final EntityNotifier _entityNotifier;
   final ButtonNotifier _buttonNotifier;
@@ -113,8 +113,8 @@ class MainDrawer {
         ListTile(
             title: _dumbJoke('Find Appointment'),
             trailing: const Icon(Icons.search, color: Colors.black),
-            onTap: () => _openButtonSearch(context)
-                .then((v) => Navigator.pop(context))),
+            onTap: () =>
+                _openButtonSearch(context).then((v) => Navigator.pop(context))),
         ListTile(
           title: _dumbJoke('Add Entity'),
           trailing: const Icon(Icons.add_circle_outline, color: Colors.black),

@@ -31,7 +31,8 @@ class MyDateController extends DateTime {
   static int monthCalc(int fromNow) {
     var month = fromDaysFromNow(fromNow).month;
     return DateTimeRange(
-                start: DateTime(today.year, month), end: DateTime(today.year, month + 1))
+                start: DateTime(today.year, month),
+                end: DateTime(today.year, month + 1))
             .duration
             .inDays -
         1;
@@ -54,7 +55,9 @@ class MyDateController extends DateTime {
   static MyDateController get nowDate => today;
 
   int daysLeftUntil() {
-    return isAfter(today) ? _daysLeftUntil(today, this) : -_daysLeftUntil(this, today);
+    return isAfter(today)
+        ? _daysLeftUntil(today, this)
+        : -_daysLeftUntil(this, today);
   }
 
   int _daysLeftUntil(MyDateController low, MyDateController high) =>
@@ -68,13 +71,23 @@ class MyDateController extends DateTime {
     return '$dayValue - $monthValue ${(showYear ? ' - ${year.toString()}' : '')}';
   }
 
-  String stringFullDisplayWithCal([bool withYear = true]) => formatDate(
-      this, [D, ' ', d, '-', m, '(', M, ')', withYear ? '-' : '', withYear ? yy : '']);
+  String stringFullDisplayWithCal([bool withYear = true]) => formatDate(this, [
+        D,
+        ' ',
+        d,
+        '-',
+        m,
+        '(',
+        M,
+        ')',
+        withYear ? '-' : '',
+        withYear ? yy : ''
+      ]);
 
   String stringMonthSmallDisplay() {
-    return '${int.parse(formatDate(this, [m])).toRadixString(16)}-${formatDate(this, [
-          M
-        ]).substring(0, 1)}';
+    return '${int.parse(formatDate(this, [
+          m
+        ])).toRadixString(16)}-${formatDate(this, [M]).substring(0, 1)}';
   }
 
   String stringDayDisplay() => '${formatDate(this, [D])}: ';
@@ -88,7 +101,11 @@ class MyDateController extends DateTime {
     myNumb = myNumb.replaceAll('+', '');
     toAdd += '*'.allMatches(myNumb).length * 2;
     myNumb = myNumb.replaceAll('*', '');
-    myNumb = myNumb.replaceAll('-', ' ').replaceAll('.', ' ').replaceAll(',', ' ').trim();
+    myNumb = myNumb
+        .replaceAll('-', ' ')
+        .replaceAll('.', ' ')
+        .replaceAll(',', ' ')
+        .trim();
     List<String> parts = myNumb.toLowerCase().split(' ');
     parts.removeWhere((e) => e.isEmpty);
     if (parts.length > 3) {
@@ -101,7 +118,8 @@ class MyDateController extends DateTime {
     }
 
     int? dateY = _consumeYear(parts);
-    int? dateM = _consumeMonthLetter(parts) ?? _consumeMonth(parts, dateY == null);
+    int? dateM =
+        _consumeMonthLetter(parts) ?? _consumeMonth(parts, dateY == null);
     if (parts.isEmpty || dateM == null) return null;
     int? dateD = int.tryParse(parts.last);
     if (dateD == null) return null;
@@ -198,8 +216,8 @@ class MyDateController extends DateTime {
         MyDateController(now.year, now.month, 1).add(Duration(days: numb - 1));
     if (timeMeant.month != now.month) return null;
     if (timeMeant.isBefore(now)) {
-      timeMeant =
-          MyDateController(now.year, now.month + 1, 1).add(Duration(days: numb - 1));
+      timeMeant = MyDateController(now.year, now.month + 1, 1)
+          .add(Duration(days: numb - 1));
     }
     return timeMeant;
   }
@@ -311,8 +329,24 @@ class MyDateController extends DateTime {
     '31'
   ];
   static const List<String> daysEn = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
-  static const List<String> _daysEn = ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa'];
-  static const List<String> _daysNe = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'];
+  static const List<String> _daysEn = [
+    'su',
+    'mo',
+    'tu',
+    'we',
+    'th',
+    'fr',
+    'sa'
+  ];
+  static const List<String> _daysNe = [
+    'zo',
+    'ma',
+    'di',
+    'wo',
+    'do',
+    'vr',
+    'za'
+  ];
 
   static bool aboutEqual(DateTime first, DateTime second) {
     return first.day == second.day &&

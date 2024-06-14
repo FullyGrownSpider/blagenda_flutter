@@ -13,7 +13,8 @@ class Loading {
   static final List<Type> _uploader = [];
 
   Future<bool> deleteButton(BasicButtonController but) async {
-    if ((await _local.getItems(Entity)).any((ent) => _searchFactorButton(ent, but))) {
+    if ((await _local.getItems(Entity))
+        .any((ent) => _searchFactorButton(ent, but))) {
       return false;
     }
     await _local.deleteItem(but.button);
@@ -42,7 +43,9 @@ class Loading {
   }
 
   Future<List<t>> _getButtons<t extends StoreAble>() async {
-    return (await _local.getItems(t)).map((e) => importGenerator<t>(e)).toList();
+    return (await _local.getItems(t))
+        .map((e) => importGenerator<t>(e))
+        .toList();
   }
 
   Future<void> deleteEntity(
@@ -84,7 +87,8 @@ class Loading {
           .downloadFileCarefully(typeToFile(type), '${typeToFile(type)}.backup')
           .then((value) => {
                 results.add(_local
-                    .shouldKeepFirstFile(typeToFile(type), '${typeToFile(type)}.backup')
+                    .shouldKeepFirstFile(
+                        typeToFile(type), '${typeToFile(type)}.backup')
                     .then((value) => value ? update = false : update = update))
               }));
     }
@@ -116,7 +120,8 @@ class Loading {
 
   bool _searchFactorButton(String line, BasicButtonController controller) =>
       line.contains(dataExportGenerator(
-              TagObjectReference(controller.runtimeType.toString(), controller.id),
+              TagObjectReference(
+                  controller.runtimeType.toString(), controller.id),
               StringBuffer(),
               '')
           .toString()

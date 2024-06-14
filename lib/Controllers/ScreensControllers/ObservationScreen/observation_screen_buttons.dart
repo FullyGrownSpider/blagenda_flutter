@@ -13,9 +13,7 @@ import '../mix_button_creator.dart';
 import '../mix_day_creator.dart';
 
 class ObservationScreenButtons with DayCreator, ButtonCreator {
-  ///keep the data of all the new things
-  final Map<_NewRef, MyDateController> _newThings = {};
-
+  MyDateController _lastUpdate = MyDateController.now();
   final ButSelectorData _butSelectorData = ButSelectorData();
 
   final Future Function(BasicButtonController) _openButtonEdit;
@@ -44,7 +42,7 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
 
   List<Widget> getWidgetListNote(
       ObservationScreenOptions options, List<BasicButtonController> notesList) {
-    notesList = options.goesInList(notesList, wasJustAdded);
+    notesList = options.goesInList(notesList, wasJustUpdated);
     List<Widget> items = [];
     if (notesList.isNotEmpty) {
       notesList = NoteController.chosenSort(notesList.cast<NoteController>(),
@@ -61,14 +59,13 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
   void resetCounters() => _butSelectorData.reset();
 
   void _clickOnButton(BasicButtonController e) =>
-    _butSelectorData.select(e, _openButtonEdit);
-
+      _butSelectorData.select(e, _openButtonEdit);
 
   List<Widget> getWidgetListEndBased(int daysToShow, List<dynamic> allLists,
       ObservationScreenOptions options) {
     List<EndBasedController> everythingToShow = options
         .goesInList(
-            allLists.whereType<EndBasedController>().toList(), wasJustAdded)
+            allLists.whereType<EndBasedController>().toList(), wasJustUpdated)
         .whereType<EndBasedController>()
         .toList();
     List<Widget> againDeadlineDisplayList = [];
@@ -78,13 +75,10 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
       () {
         List<EndBasedController> newList = [];
         List<EndBasedController> newListToRemove = [];
-        if (_newThings.isNotEmpty) {
-          newList.addAll(_newThings.keys
-              .map((k) => everythingToShow.firstWhere((e) => k.compare(e))));
+          newList.addAll(allLists.where((e) => e is EndBasedController && e.touched) as Iterable<EndBasedController>);
           newList.sort((a, b) => a.daysLeft.compareTo(b.daysLeft));
           newListToRemove.addAll(
               newList.where((e) => e.daysLeft >= options.displayState.days));
-        }
         againDeadlineDisplayList.addAll(_createEndBasedDayList(
             MyDateController.lookTime,
             everythingToShow
@@ -256,45 +250,26 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
     }
   }
 
-  void addNew(int id, Type type) {
-    var timeWhenNotNewItemAnymore =
-        MyDateController.now().add(const Duration(minutes: 4));
-    _newThings[_getKey(id, type)] = timeWhenNotNewItemAnymore;
-  }
-
-  void removeNew(int id, Type type) {
-    _newThings.remove(_getKey(id, type));
-  }
-
-  _NewRef _getKey(int id, Type type) =>
-      _newThings.keys.firstWhere((e) => e.t == type && e.id == id,
-          orElse: () => _NewRef(type, id));
-
   /// if there have been updates form or away from new just added sends true
-  bool justAddedCheck() {
-    if (_newThings.isEmpty) return false;
-    MyDateController now = MyDateController.now();
-    int hasJustAddedCalc = _newThings.length;
-    List toRemove = [];
-    for (var butId in _newThings.keys) {
-      if (_newThings[butId]!.isBefore(now)) {
-        toRemove.add(butId);
+  bool justAddedCheck(List<EndBasedController> list) {
+    if (MyDateController.now().isAfter(_lastUpdate)) {
+      for (var e in list) {
+        e.touched = false;
       }
+      return false;
     }
-    for (var ref in toRemove) {
-      _newThings.remove(ref);
-    }
-    var amountJustAdded = _newThings.length;
-    if (amountJustAdded != hasJustAddedCalc) {
-      return true;
-    }
-    return false;
+    return list.any((e) => e.touched);
   }
 
-  bool wasJustAdded(EndBasedController eb) =>
-      _newThings.keys.any((e) => e.compare(eb));
+  bool wasJustUpdated(EndBasedController eb) =>
+      eb.touched;
 
-  BasicButtonController? getSelected(List<BasicButtonController> all) => all.cast<BasicButtonController?>().firstWhere((e) => _butSelectorData.isItMe(e!), orElse: () => null);
+  BasicButtonController? getSelected(List<BasicButtonController> all) => all
+      .cast<BasicButtonController?>()
+      .firstWhere((e) => _butSelectorData.isItMe(e!), orElse: () => null);
+
+  void updateMoment() =>
+    _lastUpdate = MyDateController.now().add(const Duration(minutes: 10));
 }
 
 class ButSelectorData extends ChangeNotifier {
@@ -315,18 +290,18 @@ class ButSelectorData extends ChangeNotifier {
   }
 
   bool isItMe(BasicButtonController e) {
-    if (e.id == _id && e.runtimeType == _type){
-      if (e is SkippableEndBasedController){
+    if (e.id == _id && e.runtimeType == _type) {
+      if (e is SkippableEndBasedController) {
         return e.altLeft == fromNowSelect;
       }
       return true;
     }
     return false;
   }
+
   ValueNotifier<bool> makeWorkingBool(BasicButtonController e) {
     var newValue = ValueNotifier(isItMe(e));
-    addListener(() =>
-    newValue.value = isItMe(e));
+    addListener(() => newValue.value = isItMe(e));
     return newValue;
   }
 
@@ -336,8 +311,7 @@ class ButSelectorData extends ChangeNotifier {
         _type != e.runtimeType &&
         _prevId == e.id &&
         _prevType == e.runtimeType &&
-        (e is! SkippableEndBasedController ||
-          fromNowSelect == e.altLeft)) {
+        (e is! SkippableEndBasedController || fromNowSelect == e.altLeft)) {
       //double click
       doOnDoubleClick(e);
       reset();
@@ -345,7 +319,7 @@ class ButSelectorData extends ChangeNotifier {
       //selecting click
       _prevId = _id = e.id;
       _prevType = _type = e.runtimeType;
-      if (e is SkippableEndBasedController){
+      if (e is SkippableEndBasedController) {
         fromNowSelect = e.altLeft;
       }
     } else {
@@ -355,13 +329,4 @@ class ButSelectorData extends ChangeNotifier {
     }
     notifyListeners();
   }
-}
-
-class _NewRef {
-  final Type t;
-  final int id;
-
-  _NewRef(this.t, this.id);
-
-  bool compare(EndBasedController eb) => t == eb.runtimeType && id == eb.id;
 }
