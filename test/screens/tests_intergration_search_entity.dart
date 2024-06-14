@@ -8,12 +8,14 @@ import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'overview4test.dart';
+
 void main() {
   test('entiteis testing', addEntities);
 }
 
 void addEntities() {
-  var b1 = makeController(entit()).getEntity!()!;
+  var b1 = makeController(entit()).getEntity()!;
   expect(b1.tags.first.data == entit().tags.first.data, true);
   expect(b1.tags[1].data == entit().tags[1].data, true);
   expect(
@@ -23,10 +25,10 @@ void addEntities() {
 }
 
 AddingEntityScreenController makeController(EntityController but) {
+  final FakeEntityNotifier entityNotifier = FakeEntityNotifier();
+  final FakeButtonNotifier notifier = FakeButtonNotifier(entityNotifier);
   var screen = AddingEntityScreenController(
-      but, () => 10, () {}, [], possibleButtons, (d) async {}, (x) async {
-    return dead(-1);
-  });
+      but, entityNotifier, notifier, () async {}, (_) async {});
   screen.createScreenWidgets();
   return screen;
 }

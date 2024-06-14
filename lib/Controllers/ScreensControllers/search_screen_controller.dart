@@ -59,7 +59,6 @@ class SearchScreenController<T extends SearchAble>
     List<int> notScored = [];
     if (searches.containsKey(SearchTypes.date)) {
       var data = searches[SearchTypes.date]!.getValue() as DateRange;
-      searches[SearchTypes.date]!.setValue(searches[SearchTypes.date]!);
       if (data.range > -1) {
         var from = MyDateController.fromDaysFromNow(data.myDateFromNow);
         if (data.range == 0) {
@@ -78,7 +77,6 @@ class SearchScreenController<T extends SearchAble>
     }
     if (searches.containsKey(SearchTypes.string)) {
       var data = searches[SearchTypes.string]!.getValue() as String;
-      searches[SearchTypes.string]!.setValue(searches[SearchTypes.string]!);
       if (data.isNotEmpty) {
         if (_searchingText.isNotEmpty) _searchingText += '\n and \n';
         _searchingText += data;

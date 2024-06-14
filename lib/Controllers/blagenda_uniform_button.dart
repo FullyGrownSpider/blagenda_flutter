@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 const TextStyle bigTextStyle = TextStyle(
@@ -73,8 +71,7 @@ class _BlagendaUniformButton extends State<BlagendaUniformButton> {
     if (widget.isSmall) {
       var text = widget.text().trim().replaceAll('\n', '');
       //this means its a very small button and can not be selected
-      text = '${text.substring(0, min(4, text.length))}..';
-      ElevatedButton(
+      return ElevatedButton(
           onPressed: widget.pressed,
           style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.only(left: 13, right: 13),

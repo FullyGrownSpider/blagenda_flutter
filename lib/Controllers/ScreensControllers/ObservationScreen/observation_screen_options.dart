@@ -34,11 +34,11 @@ class ObservationScreenOptions with ButtonCreator {
   }
 
   Widget _createDisplayAllEndBasedButtonsButton(Function() resetCounters) {
-    var myBool = _makeBool(() => displayState._state == _States.everything);
+    var myBool = _makeBool(() => displayState.state == States.everything);
     return BlagendaUniformButton(usedColors.first, () => 'Show all', () {
       resetCounters();
       //should reset?
-      myBool.value = displayState._state != _States.everything;
+      myBool.value = displayState.state != States.everything;
       if (myBool.value) {
         displayState.showEverything();
       } else {
@@ -86,10 +86,10 @@ class ObservationScreenOptions with ButtonCreator {
       void Function() defaultListMaker,
       void Function() showEverythingListMaker,
       void Function(Color) colorChoiceListMaker) {
-    var chosenState = displayState._state;
-    if (chosenState == _States.colors) {
+    var chosenState = displayState.state;
+    if (chosenState == States.colors) {
       colorChoiceListMaker(usedColors[displayState.color]);
-    } else if (chosenState == _States.everything) {
+    } else if (chosenState == States.everything) {
       showEverythingListMaker();
     } else {
       defaultListMaker();
@@ -127,13 +127,14 @@ class DisplayState {
       ValueNotifier(ObservationScreenOptions.daysToShow + usedColors.length);
 
   //-2 is show EVERYTHING
+  @visibleForTesting
   // 0 - usedColors.length is that color
-  _States get _state {
+  States get state {
     return _actuallyCurrent.value == -2
-        ? _States.everything
+        ? States.everything
         : _actuallyCurrent.value >= usedColors.length
-            ? _States.days
-            : _States.colors;
+            ? States.days
+            : States.colors;
   }
 
   int get color => _actuallyCurrent.value;
@@ -150,5 +151,5 @@ class DisplayState {
   void addListener(void Function() listener) =>
       _actuallyCurrent.addListener(listener);
 }
-
-enum _States { everything, colors, days }
+@visibleForTesting
+enum States { everything, colors, days }

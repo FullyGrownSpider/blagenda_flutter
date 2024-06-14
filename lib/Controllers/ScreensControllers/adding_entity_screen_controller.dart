@@ -120,7 +120,7 @@ class AddingEntityScreenController
           i,
           inputObject,
           BlagendaUniformButton(
-              usedColors.first, _storedValues['n$i'], () => _deleteTag(i)),
+              usedColors.first, () => _storedValues['n$i'], () => _deleteTag(i)),
           _storedValues['n$i'],
           type));
     }

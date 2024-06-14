@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/deadline.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/ObservationScreen/observation_screen_options.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
@@ -58,7 +60,8 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
 
   void resetCounters() => _butSelectorData.reset();
 
-  void _clickOnButton(BasicButtonController e) =>
+  @visibleForTesting
+  void clickOnButton(BasicButtonController e) =>
       _butSelectorData.select(e, _openButtonEdit);
 
   List<Widget> getWidgetListEndBased(int daysToShow, List<dynamic> allLists,
@@ -75,10 +78,13 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
       () {
         List<EndBasedController> newList = [];
         List<EndBasedController> newListToRemove = [];
-          newList.addAll(allLists.where((e) => e is EndBasedController && e.touched) as Iterable<EndBasedController>);
-          newList.sort((a, b) => a.daysLeft.compareTo(b.daysLeft));
-          newListToRemove.addAll(
-              newList.where((e) => e.daysLeft >= options.displayState.days));
+        newList.addAll(allLists
+            .where((e) => e is EndBasedController && e.touched)
+            .toList(growable: false)
+            .cast<EndBasedController>());
+        newList.sort((a, b) => a.daysLeft.compareTo(b.daysLeft));
+        newListToRemove.addAll(
+            newList.where((e) => e.daysLeft >= options.displayState.days));
         againDeadlineDisplayList.addAll(_createEndBasedDayList(
             MyDateController.lookTime,
             everythingToShow
@@ -152,10 +158,9 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
     return Column(children: [
       BlagendaUniformButton(
           e.color,
-          () => (myBool.value)
-              ? e.gettingTheStringSelected()
-              : e.gettingTheStringShortWithDate(),
-          () => _clickOnButton(e),
+          () =>
+              '${e.touched ? '⊚' : ''}${(myBool.value) ? e.gettingTheStringSelected() : e.gettingTheStringShortWithDate()}',
+          () => clickOnButton(e),
           isSelected: myBool),
       smallBlankSplit
     ]);
@@ -222,14 +227,15 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
     ValueNotifier<bool> myBool = _butSelectorData.makeWorkingBool(it);
     return BlagendaUniformButton(
         it.color,
-        () => '${isNew ? '⊚' : ''}${_buttonDisplay(it)}',
-        () => _clickOnButton(it),
+        () =>
+            '${isNew ? '⊚' : ''}${isExtra ? (it.job.substring(0, min(4, it.job.length)).trim() + (it.job.length > 4 ? '...' : '')) : _buttonDisplay(it)}',
+        () => clickOnButton(it),
         isSelected: myBool,
         isSmall: isExtra);
   }
 
   String _buttonDisplay(BasicButtonController it) {
-    if (it.job.startsWith('!') || _butSelectorData.isItMe(it)) {
+    if (it.job.contains('!') || _butSelectorData.isItMe(it)) {
       return it.gettingTheStringSelected().replaceFirst(r'^!', '');
     }
     return it.gettingTheStringShort();
@@ -252,7 +258,7 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
 
   /// if there have been updates form or away from new just added sends true
   bool justAddedCheck(List<EndBasedController> list) {
-    if (MyDateController.now().isAfter(_lastUpdate)) {
+    if (MyDateController.now().isBefore(_lastUpdate)) {
       for (var e in list) {
         e.touched = false;
       }
@@ -261,15 +267,14 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
     return list.any((e) => e.touched);
   }
 
-  bool wasJustUpdated(EndBasedController eb) =>
-      eb.touched;
+  bool wasJustUpdated(EndBasedController eb) => eb.touched;
 
   BasicButtonController? getSelected(List<BasicButtonController> all) => all
       .cast<BasicButtonController?>()
       .firstWhere((e) => _butSelectorData.isItMe(e!), orElse: () => null);
 
   void updateMoment() =>
-    _lastUpdate = MyDateController.now().add(const Duration(minutes: 10));
+      _lastUpdate = MyDateController.now().add(const Duration(minutes: 10));
 }
 
 class ButSelectorData extends ChangeNotifier {

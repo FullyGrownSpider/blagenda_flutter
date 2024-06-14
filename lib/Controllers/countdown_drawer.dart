@@ -29,7 +29,7 @@ class _CountdownDrawerState extends State<CountdownDrawer> with MonthDayWidget {
     super.initState();
     countDownController
         .loadSortFillImportant(
-            widget._notifier.getEndbasedData,
+            widget._notifier.getEndBasedData,
             containWidgetsPretty,
             widget._notifier.addOrUpdate,
             widget._notifier.getData().whereType<NoteController>().toList)
@@ -77,7 +77,7 @@ class _CountdownDrawerState extends State<CountdownDrawer> with MonthDayWidget {
           if (but == null) return;
           countDownController
               .loadSortFillImportant(
-                  widget._notifier.getEndbasedData,
+                  widget._notifier.getEndBasedData,
                   containWidgetsPretty,
                   widget._notifier.addOrUpdate,
                   widget._notifier.getData().whereType<NoteController>().toList)

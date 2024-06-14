@@ -15,6 +15,8 @@ import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'overview4test.dart';
+
 ///test both searching and the adding_screen
 void main() {
   test('buttons testing', addButtons);
@@ -58,9 +60,7 @@ void searchButtons() {
     year(1)
   ];
   SearchScreenController searcher =
-      SearchScreenController(() {}, (p0) async {}, testList, (_) async {
-    return note(1);
-  });
+      SearchScreenController((_) async {}, testList, (_) {});
   setSearches(searcher, testList, 'job', const DateRange(-1, -1), ['', '']);
   searcher.resetSearch();
   expect(searcher.foundItems.length, testList.length);
@@ -112,12 +112,14 @@ setSearches(SearchScreenController searcher, List<SearchAble> testList, String s
   }
 }
 
-AddingScreenController makeController(BasicButton but) =>
-    AddingScreenController(but, (p0) => 10, () {}, () => [], true);
-
+AddingScreenController makeController(BasicButton but) {
+  final FakeEntityNotifier entityNotifier = FakeEntityNotifier();
+  final FakeButtonNotifier notifier = FakeButtonNotifier(entityNotifier);
+  return AddingScreenController(but, notifier, true);
+}
 void goToNote(AddingScreenController controller) {
-  controller.buttonType = BasicButton;
-  controller.switchButtonType();
+  controller.buttonType.value = BasicButton;
+  controller.switchButtonType(controller.buttonType.value);
 }
 
 NoteController note(int numb) =>

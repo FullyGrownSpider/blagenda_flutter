@@ -62,9 +62,10 @@ class AddingScreenController with ButtonCreator, InputHandler {
 
   @visibleForTesting
   void fillStoredValues(dynamic button) {
-    _storedValues.addAll(itemToStoringMap(button).map((key, value) => MapEntry(
-        PossibleValues.values.firstWhere((nm) => enumToString(nm) == key),
-        value)));
+    _storedValues.addAll(itemToStoringMap(button).map((key, value) =>
+        MapEntry(
+            PossibleValues.values.firstWhere((nm) => enumToString(nm) == key),
+            value)));
     if (button is SkippableButton) {
       if (button is AgainWeird) {
         int value = _storedValues[PossibleValues.day] % 7;
@@ -128,7 +129,7 @@ class AddingScreenController with ButtonCreator, InputHandler {
         _againYearFillerList();
         correctController = AgainYearController;
         _checksAndChanges = (map) =>
-            map[PossibleValues.mon] != null && map[PossibleValues.day] != null;
+        map[PossibleValues.mon] != null && map[PossibleValues.day] != null;
         break;
       case const (AgainWeird):
         _againWeirdFillerList();
@@ -157,7 +158,7 @@ class AddingScreenController with ButtonCreator, InputHandler {
         _againAmountFillerList();
         correctController = AgainAmountController;
         _checksAndChanges = (map) =>
-            map[PossibleValues.str] != null && map[PossibleValues.day] != null;
+        map[PossibleValues.str] != null && map[PossibleValues.day] != null;
         break;
       default:
         _defaultFillerList();
@@ -167,13 +168,13 @@ class AddingScreenController with ButtonCreator, InputHandler {
     }
     getButton = () {
       Map<PossibleValues, dynamic> data =
-          widgetsOnScreen.map((k, e) => MapEntry(k, e.getValue()));
+      widgetsOnScreen.map((k, e) => MapEntry(k, e.getValue()));
       if (!_checksAndChanges(data)) {
         return null;
       }
       data.addAll({
         PossibleValues.id:
-            _id == -1 ? _notifier.getNewId(correctController) : _id
+        _id == -1 ? _notifier.getNewId(correctController) : _id
       });
       return dataToController(map2Data(
           data.map(((k, e) => MapEntry(enumToString(k), e))),
@@ -201,19 +202,19 @@ class AddingScreenController with ButtonCreator, InputHandler {
     widgetsOnScreen.addAll({
       PossibleValues.job: itemForString(
           'Title',
-          () => _getFromStoredValue(PossibleValues.job, ''),
-          (s) => _setFromStoredValue(PossibleValues.job, s)),
+              () => _getFromStoredValue(PossibleValues.job, ''),
+              (s) => _setFromStoredValue(PossibleValues.job, s)),
       PossibleValues.todo: itemForStringList(
           'Extra Info',
-          () => _getFromStoredValue(PossibleValues.todo, ''),
-          (s) => _setFromStoredValue(PossibleValues.todo, s)),
+              () => _getFromStoredValue(PossibleValues.todo, ''),
+              (s) => _setFromStoredValue(PossibleValues.todo, s)),
       PossibleValues.col: itemForColor(
-          () => _getFromStoredValue(PossibleValues.col, usedColors.first),
-          (s) => _setFromStoredValue(PossibleValues.col, s)),
+              () => _getFromStoredValue(PossibleValues.col, usedColors.first),
+              (s) => _setFromStoredValue(PossibleValues.col, s)),
       PossibleValues.imp: itemForBoolean(
           'Is Important?',
-          () => _getFromStoredValue(PossibleValues.imp, false),
-          (s) => _setFromStoredValue(PossibleValues.imp, s))
+              () => _getFromStoredValue(PossibleValues.imp, false),
+              (s) => _setFromStoredValue(PossibleValues.imp, s))
     });
   }
 
@@ -221,14 +222,14 @@ class AddingScreenController with ButtonCreator, InputHandler {
     widgetsOnScreen.addAll({
       PossibleValues.str: itemForMyDate(
           'Starts on',
-          () =>
+              () =>
               _getFromStoredValue<MyDateController?>(PossibleValues.str, null),
-          (s) => _setFromStoredValue(PossibleValues.str, s)),
+              (s) => _setFromStoredValue(PossibleValues.str, s)),
       PossibleValues.end: itemForMyDate(
           'Stops on',
-          () =>
+              () =>
               _getFromStoredValue<MyDateController?>(PossibleValues.end, null),
-          (s) => _setFromStoredValue(PossibleValues.end, s))
+              (s) => _setFromStoredValue(PossibleValues.end, s))
     });
   }
 
@@ -236,9 +237,9 @@ class AddingScreenController with ButtonCreator, InputHandler {
     widgetsOnScreen.addAll({
       PossibleValues.dat: itemForMyDate(
           'Date',
-          () =>
+              () =>
               _getFromStoredValue<MyDateController?>(PossibleValues.dat, null),
-          (s) => _setFromStoredValue(PossibleValues.dat, s))
+              (s) => _setFromStoredValue(PossibleValues.dat, s))
     });
     _defaultFillerList();
   }
@@ -247,18 +248,18 @@ class AddingScreenController with ButtonCreator, InputHandler {
     widgetsOnScreen.addAll({
       PossibleValues.str: itemForMyDate(
           'Next time',
-          () =>
+              () =>
               _getFromStoredValue<MyDateController?>(PossibleValues.str, null),
-          (s) => _setFromStoredValue(PossibleValues.str, s)),
+              (s) => _setFromStoredValue(PossibleValues.str, s)),
       PossibleValues.day: itemForInt(
           'Days amount',
-          () => _getFromStoredValue(PossibleValues.day, 0),
-          (s) => _setFromStoredValue(PossibleValues.day, s)),
+              () => _getFromStoredValue(PossibleValues.day, 0),
+              (s) => _setFromStoredValue(PossibleValues.day, s)),
       PossibleValues.end: itemForMyDate(
           'Stops on',
-          () =>
+              () =>
               _getFromStoredValue<MyDateController?>(PossibleValues.end, null),
-          (s) => _setFromStoredValue(PossibleValues.end, s))
+              (s) => _setFromStoredValue(PossibleValues.end, s))
     });
     _defaultFillerList();
   }
@@ -268,8 +269,8 @@ class AddingScreenController with ButtonCreator, InputHandler {
       PossibleValues.day: itemForIntFromList(
           MyDateController.daysEn,
           'Weekday',
-          () => _getFromStoredValue<int?>(PossibleValues.day, null),
-          (s) => _setFromStoredValue(PossibleValues.day, s))
+              () => _getFromStoredValue<int?>(PossibleValues.day, null),
+              (s) => _setFromStoredValue(PossibleValues.day, s))
     });
     _skippableFillerList();
     _defaultFillerList();
@@ -280,8 +281,8 @@ class AddingScreenController with ButtonCreator, InputHandler {
       PossibleValues.day: itemForIntFromList(
           MyDateController.monthDays,
           'Day of month',
-          () => _getFromStoredValue<int?>(PossibleValues.day, null),
-          (s) => _setFromStoredValue(PossibleValues.day, s))
+              () => _getFromStoredValue<int?>(PossibleValues.day, null),
+              (s) => _setFromStoredValue(PossibleValues.day, s))
     });
     _skippableFillerList();
     _defaultFillerList();
@@ -292,13 +293,13 @@ class AddingScreenController with ButtonCreator, InputHandler {
       PossibleValues.mon: itemForIntFromList(
           MyDateController.months,
           'Month',
-          () => _getFromStoredValue<int?>(PossibleValues.day, null),
-          (s) => _setFromStoredValue(PossibleValues.day, s)),
+              () => _getFromStoredValue<int?>(PossibleValues.mon, null),
+              (s) => _setFromStoredValue(PossibleValues.mon, s)),
       PossibleValues.day: itemForIntFromList(
           MyDateController.monthDays,
           'Day of month',
-          () => _getFromStoredValue<int?>(PossibleValues.day, null),
-          (s) => _setFromStoredValue(PossibleValues.day, s))
+              () => _getFromStoredValue<int?>(PossibleValues.day, null),
+              (s) => _setFromStoredValue(PossibleValues.day, s))
     });
     _defaultFillerList();
   }
@@ -308,13 +309,13 @@ class AddingScreenController with ButtonCreator, InputHandler {
       PossibleValues.mon: itemForIntFromList(
           MyDateController.daysEn,
           'Weekday',
-          () => _getFromStoredValue<int?>(PossibleValues.day, null),
-          (s) => _setFromStoredValue(PossibleValues.day, s)),
+              () => _getFromStoredValue<int?>(PossibleValues.mon, null),
+              (s) => _setFromStoredValue(PossibleValues.mon, s)),
       PossibleValues.day: itemForIntFromList(
           ['1st', '2nd', '3d'],
           '- day',
-          () => _getFromStoredValue<int?>(PossibleValues.day, null),
-          (s) => _setFromStoredValue(PossibleValues.day, s))
+              () => _getFromStoredValue<int?>(PossibleValues.day, null),
+              (s) => _setFromStoredValue(PossibleValues.day, s))
     });
     _skippableFillerList();
     _defaultFillerList();
@@ -336,7 +337,7 @@ class SelectorShow extends StatefulWidget {
   static const Map<Type, String> _buttonTypesPart2 = {
     AgainYearDay: 'Yearly',
     AgainMonthDay: 'Monthly',
-    AgainWeird: 'Every xday of month'
+    AgainWeird: 'Every ×day of month'
   };
 
   final ValueNotifier<bool> _page = ValueNotifier(false);
@@ -361,8 +362,8 @@ class _SelectorShow extends State<SelectorShow>
           widgetList.addAll(_addButtonsForButtonType(value
               ? SelectorShow._buttonTypesPart2
               : widget._showNote
-                  ? SelectorShow._buttonTypesPart1
-                  : SelectorShow._buttonTypesPart1NoNote));
+              ? SelectorShow._buttonTypesPart1
+              : SelectorShow._buttonTypesPart1NoNote));
           return Column(children: widgetList);
         });
   }
@@ -378,13 +379,13 @@ class _SelectorShow extends State<SelectorShow>
           .addListener(() => myBool.value = widget._currentType.value == type);
       widgetList.add(BlagendaUniformButton(
           AddingScreenController._getDefaultTypeColor(type), () => stringValue,
-          () {
-        widget._currentType.value = type;
-      }, isSelected: myBool));
+              () {
+            widget._currentType.value = type;
+          }, isSelected: myBool));
     });
     var valuesList = typeList.values.toList();
     return addAsRow((i) => widgetList[i], typeList.values.length,
-        (i) => valuesList[i].length, 35);
+            (i) => valuesList[i].length, 35);
   }
 }
 
@@ -419,7 +420,7 @@ class _DayShow extends State<DayShow> with DayCreator {
               child: Column(
                   children: createADay(
                       MyDateController.nowDate,
-                      widget.notifier.getEndbasedData(),
+                      widget.notifier.getEndBasedData(),
                       left,
                       _addEndBasedButton,
                       left < 7,
@@ -428,15 +429,11 @@ class _DayShow extends State<DayShow> with DayCreator {
   }
 
   //used to create a single day, in single days there will never be a value that "isExtra"
-  Container _addEndBasedButton(EndBasedController controller, bool _) {
-    return Container(
-        decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.black,
-            ),
-            color: controller.color,
-            borderRadius: const BorderRadius.all(Radius.circular(5))),
-        child:
-            Text(controller.gettingTheStringShort(), style: normalTextStyle));
+  Widget _addEndBasedButton(EndBasedController controller, bool _) {
+    ValueNotifier<bool> showIt = ValueNotifier(false);
+    return BlagendaUniformButton(controller.color, () =>
+    showIt.value ?
+    controller.gettingTheStringShort() : controller.job, () =>
+    showIt.value = !showIt.value, isSelected: showIt);
   }
 }

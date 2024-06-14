@@ -9,12 +9,10 @@ class EntityNotifier
     implements StoreAbleNotifier<EntityController> {
   final List<EntityController> _entities = [];
 
-  final Loading loading = Loading();
-
-  EntityNotifier();
+  final Loading _loading = Loading();
 
   Future<void> init() {
-    return loading.getData<Entity>().then((x) {
+    return _loading.getData<Entity>().then((x) {
       _entities.addAll(x.whereType<EntityController>());
       notifyListeners();
     });
@@ -28,7 +26,7 @@ class EntityNotifier
   @override
   void addOrUpdate(EntityController entity) {
     _entities.add(entity);
-    loading.updateData(entity);
+    _loading.updateData(entity);
     notifyListeners();
   }
 
@@ -36,7 +34,7 @@ class EntityNotifier
   void delete(EntityController entity) {
     _entities.removeWhere(
         (e) => e.runtimeType == entity.runtimeType && e.id == entity.id);
-    loading.deleteEntity(entity, _entities);
+    _loading.deleteEntity(entity, _entities);
     notifyListeners();
   }
 

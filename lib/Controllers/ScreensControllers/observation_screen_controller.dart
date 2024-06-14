@@ -11,7 +11,6 @@ class ObservationScreenController {
       ObservationScreenOptions();
   @visibleForTesting
   late final ObservationScreenButtons observationScreenButtons;
-  @visibleForTesting
   final ButtonNotifier _notifier;
 
   ///needs to load first use doneLoading to check if done
@@ -44,7 +43,7 @@ class ObservationScreenController {
       observationScreenButtons.getSelected(_notifier.getData());
 
   bool justAddedCheck() =>
-      observationScreenButtons.justAddedCheck(_notifier.getEndbasedData());
+      observationScreenButtons.justAddedCheck(_notifier.getEndBasedData());
 
   int getNewId(Type t) => _notifier.getNewId(t);
 

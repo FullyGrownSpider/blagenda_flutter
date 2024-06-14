@@ -81,7 +81,7 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
             maxLengthTodos -= 3;
             int size = 0;
             while (size + maxLengthTodos < data[i].length) {
-              buf.write('${data[i].substring(size, size + maxLengthTodos)}...\n');
+              buf.write('${data[i].substring(size, size + maxLengthTodos).trim()}...\n');
               size += maxLengthTodos;
             }
             buf.write('${data[i].substring(size, data[i].length)} ');

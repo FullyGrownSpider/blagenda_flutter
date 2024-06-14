@@ -29,7 +29,9 @@ class ButtonNotifier
 
   bool hardPoint = false;
 
-  final List<BasicButtonController> _buttons = [];
+  @protected
+  @visibleForTesting
+  final List<BasicButtonController> buttons = [];
 
   static final Loading _loading = Loading();
 
@@ -38,7 +40,7 @@ class ButtonNotifier
   ButtonNotifier(this.entities);
 
   @override
-  List<BasicButtonController> getData() => _buttons;
+  List<BasicButtonController> getData() => buttons;
 
   Future<void> init() async {
     for (int i = 0; i < _loaded.length; i++) {
@@ -58,7 +60,7 @@ class ButtonNotifier
               }
             }
           }
-          _buttons.addAll(value.cast<BasicButtonController>().toList());
+          buttons.addAll(value.cast<BasicButtonController>().toList());
         }
         _loaded[i] = true;
       });
@@ -71,7 +73,7 @@ class ButtonNotifier
 
   @override
   void addOrUpdate(BasicButtonController but) {
-    _buttons.add(but);
+    buttons.add(but);
     _loading.updateData(but.button);
     hardPoint = true;
     notifyListeners();
@@ -79,7 +81,7 @@ class ButtonNotifier
 
   ///only have button controllers of the same type in list
   void addAll(List<BasicButtonController> butList) {
-    _buttons.addAll(butList);
+    buttons.addAll(butList);
     _loading.updateButtons(butList);
     hardPoint = true;
     notifyListeners();
@@ -87,29 +89,9 @@ class ButtonNotifier
 
   @override
   void delete(BasicButtonController but) {
-    _buttons
+    buttons
         .removeWhere((e) => e.runtimeType == but.runtimeType && e.id == but.id);
     _loading.deleteButton(but);
-    hardPoint = true;
-    notifyListeners();
-  }
-
-  void deleteAll(List<BasicButtonController> butList) {
-    for (var but in butList) {
-      _buttons.removeWhere(
-          (e) => e.runtimeType == but.runtimeType && e.id == but.id);
-    }
-    _loading.deleteButtons(butList);
-    hardPoint = true;
-    notifyListeners();
-  }
-
-  void updateAll(List<BasicButtonController> butList) {
-    for (var but in butList) {
-      _buttons.removeWhere(
-          (e) => e.runtimeType == but.runtimeType && e.id == but.id);
-    }
-    _buttons.addAll(butList);
     hardPoint = true;
     notifyListeners();
   }
@@ -132,7 +114,7 @@ class ButtonNotifier
       });
 
   int getNewId(Type t) {
-    var correctList = _buttons.where((e) => e.runtimeType == t).toList();
+    var correctList = buttons.where((e) => e.runtimeType == t).toList();
     if (correctList.isNotEmpty) {
       correctList.sort((a, b) => a.id.compareTo(b.id));
       for (int i = 0; i < correctList.length; i++) {
@@ -144,8 +126,8 @@ class ButtonNotifier
     return correctList.length;
   }
 
-  List<EndBasedController> getEndbasedData() =>
-      _buttons.whereType<EndBasedController>().toList();
+  List<EndBasedController> getEndBasedData() =>
+      buttons.whereType<EndBasedController>().toList();
 
   void flipImportant(BasicButtonController? selectedButton) {
     if (selectedButton == null) return;

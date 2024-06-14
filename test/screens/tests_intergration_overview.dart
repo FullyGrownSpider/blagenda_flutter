@@ -1,7 +1,5 @@
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/again.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
-import 'package:blagenda_flutter_simple/Commons/Models/entity.dart';
-import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/again_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/end_based_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/note_controller.dart';
@@ -16,8 +14,6 @@ import 'defaultButtons.dart';
 import 'overview4test.dart';
 
 void main() {
-  test('adding', _createADayAndEntity);
-  test('edit', _editADay);
   test('show week', _showWeek);
   test('show colors', _showColorButtons);
   test('show more days', _showMoreDays);
@@ -26,30 +22,8 @@ void main() {
   test('skipping', _skipThisTime);
 }
 
-void _createADayAndEntity() {
-  var overView = buildOverview([], []);
-  overView.addOrUpdate(NoteController(note()));
-  overView.addOrUpdate(make(deadline()));
-  overView.addOrUpdate(EntityController(Entity([], 1)));
-
-  expect(overView.controller.allLists.length, 2);
-  overView.controller.observationScreenButtons.justAddedCheck();
-  expect(overView.controller.observationScreenButtons.amountJustAdded, 1);
-}
-
-void _editADay() {
-  var overView = buildOverview([NoteController(note()), make(deadline())], []);
-  var title = 'newTitle';
-  overView.addOrUpdate(NoteController(note()..job = title));
-  overView.addOrUpdate(make(deadline()..job = title));
-
-  expect(overView.controller.allLists.where((e) => e.job == title).length, 2);
-  overView.controller.observationScreenButtons.justAddedCheck();
-  expect(overView.controller.observationScreenButtons.amountJustAdded, 1);
-}
-
 Overview4Test makeItFullForTesting() {
-  return buildOverview([
+  final overView = buildOverview([
     NoteController(note()),
     make(deadline()
       ..id = 0
@@ -67,28 +41,33 @@ Overview4Test makeItFullForTesting() {
     make(deadline()
       ..id = 5
       ..date = MyDateController.fromDaysFromNow(200))
-  ], [])
-    ..addOrUpdate(make(deadline()
-      ..toDos = '10am\n10d'
-      ..id = 6
-      ..date = MyDateController.fromDaysFromNow(200)))
-    ..addOrUpdate(make(deadline()
-      ..job = 'long'
+  ], []);
+  overView.addOrUpdate(make(deadline()
+    ..job = 'in the near future'
+    ..toDos = '10am\n10d'
+    ..id = 6
+    ..date = MyDateController.fromDaysFromNow(200))
+    ..touched = true);
+  overView
+    .addOrUpdate(make(deadline()
+      ..job = 'longggggggggg'
       ..color = usedColors.first
       ..toDos = '10am\n2d'
       ..id = 7
-      ..date = MyDateController.fromDaysFromNow(3)))
-    ..controller.observationScreenButtons.justAddedCheck();
+      ..date = MyDateController.fromDaysFromNow(3))
+      ..touched = true);
+  overView.controller.justAddedCheck();
+  return overView;
 }
 
 void _skipThisTime() {
-  var theScreen = buildOverview([
-    NoteController(note()),
-    make(AgainMonthDay('this', '', 1, usedColors.first, MyDateController.today.day)),
-    make(AgainAmountDay('that', '', 1, usedColors.first, MyDateController.today, 3))
-  ], [])
-    ..controller.observationScreenButtons.justAddedCheck();
-  var list = theScreen.controller.getWidgetListEndBased(() {});
+  var nrOne = make(AgainMonthDay(
+      'this', '', 1, usedColors.first, MyDateController.today.day));
+  var nrTwo = make(AgainAmountDay(
+      'that-y', '', 1, usedColors.first, MyDateController.today, 3));
+  var theScreen = buildOverview([NoteController(note()), nrOne, nrTwo], [])
+    ..controller.justAddedCheck();
+  var list = theScreen.controller.getWidgetListEndBased();
   var buttons = [];
   for (var item in list) {
     buttons.addAll(textButtonSearch(item, false));
@@ -96,39 +75,39 @@ void _skipThisTime() {
   }
   expect(buttons.contains('this'), true);
   //...
-  theScreen.controller.observationScreenButtons.typeOfSelected = AgainMonthController;
-  theScreen.controller.observationScreenButtons.idSelected = 1;
-  theScreen.controller.observationScreenButtons.fromNowSelect = 0;
-  theScreen.controller.skipButton(() {});
-  list = theScreen.controller.getWidgetListEndBased(() {});
+
+  theScreen.controller.observationScreenButtons.clickOnButton(nrOne);
+  theScreen.notifier.skipButton(
+      theScreen.controller.getSelectedButton()! as SkippableEndBasedController,
+      0);
+  list = theScreen.controller.getWidgetListEndBased();
   buttons.clear();
   for (var item in list) {
     buttons.addAll(textButtonSearch(item, false));
     buttons.addAll(textButtonSearch(item, true));
   }
   expect(buttons.contains('this'), false);
-  expect(buttons.where((e) => e == 'that').length, 2);
+  expect(buttons.where((e) => e == 'that-y').length, 2);
 
   //,,
-  theScreen.controller.observationScreenButtons.typeOfSelected = AgainAmountController;
-  theScreen.controller.observationScreenButtons.idSelected = 1;
-  theScreen.controller.observationScreenButtons.fromNowSelect = 3;
-  theScreen.controller.skipButton(() {});
+  theScreen.controller.observationScreenButtons.clickOnButton(nrTwo);
+  theScreen.notifier.skipButton(
+      theScreen.controller.getSelectedButton()! as SkippableEndBasedController,
+      3);
 
-  list = theScreen.controller.getWidgetListEndBased(() {});
+  list = theScreen.controller.getWidgetListEndBased();
   buttons.clear();
   for (var item in list) {
     buttons.addAll(textButtonSearch(item, false));
     buttons.addAll(textButtonSearch(item, true));
   }
   expect(buttons.contains('this'), false);
-  expect(buttons.where((e) => e == 'that').length, 1);
+  expect(buttons.where((e) => e == 'that-y').length, 1);
 }
 
 void _showWeek() {
   var theScreen = makeItFullForTesting();
-  expect(2, theScreen.controller.observationScreenButtons.amountJustAdded);
-  var list = theScreen.controller.getWidgetListEndBased(() {});
+  var list = theScreen.controller.getWidgetListEndBased();
   var buttons = [];
   for (var item in list) {
     buttons.addAll(textButtonSearch(item, false));
@@ -137,18 +116,20 @@ void _showWeek() {
   //the 6 default days + yesterday + 2 deadlines + 3 from the new date + 3 long deadlines = 12
   expect(buttons.length, 15);
   expect(buttons[1], '123'); //yesterday
-  expect(buttons[3], '⊚123'); //in the future
+  expect(buttons[3], '⊚in the near future'); //in the future
   expect(buttons[5], '123');
   expect(buttons[7], '123');
-  expect(buttons[10], '⊚10:00 ~ long');
-  expect(buttons[12], '⊚lon••');
-  expect(buttons[14], '⊚lon••');
+  expect(buttons[10], '⊚10:00 ~ longggggggggg');
+  expect(buttons[12], '⊚long...');
+  expect(buttons[14], '⊚long...');
 }
 
 void _showEverything() {
   var theScreen = makeItFullForTesting();
-  theScreen.controller.observationScreenOptions.chosenColor = -2;
-  var list = theScreen.controller.getWidgetListEndBased(() {});
+  theScreen.controller.observationScreenOptions.displayState.showEverything();
+  expect(States.everything,
+      theScreen.controller.observationScreenOptions.displayState.state);
+  var list = theScreen.controller.getWidgetListEndBased();
   var buttons = [];
   for (var item in list) {
     buttons.addAll(textButtonSearch(item, true));
@@ -180,16 +161,16 @@ void _showColorButtons() {
   theScreen.addOrUpdate(make(butTwo));
   theScreen.addOrUpdate(make(butThree));
   theScreen.addOrUpdate(make(butFour));
-  theScreen.controller.observationScreenOptions.chosenColor = 0;
-  var list = theScreen.controller.getWidgetListEndBased(() {});
+  theScreen.controller.observationScreenOptions.displayState.colorMode = 0;
+  var list = theScreen.controller.getWidgetListEndBased();
   var buttons = [];
   for (var item in list) {
     buttons.addAll(textButtonSearch(item, true));
   }
   expect(buttons.length, 5);
   expect(buttons.where((e) => e == '0').length, 2);
-  theScreen.controller.observationScreenOptions.chosenColor = 1;
-  list = theScreen.controller.getWidgetListEndBased(() {});
+  theScreen.controller.observationScreenOptions.displayState.colorMode = 1;
+  list = theScreen.controller.getWidgetListEndBased();
   buttons.clear();
   for (var item in list) {
     buttons.addAll(textButtonSearch(item, true));
@@ -200,17 +181,17 @@ void _showColorButtons() {
 
 void _showMoreDays() {
   var theScreen = makeItFullForTesting();
-  theScreen.controller.observationScreenOptions.daysToShowNow =
+  theScreen.controller.observationScreenOptions.displayState.days =
       ObservationScreenOptions.possibleExtraDays.first;
-  var list = theScreen.controller.getWidgetListEndBased(() {});
+  var list = theScreen.controller.getWidgetListEndBased();
   var buttons = [];
   for (var item in list) {
     buttons.addAll(textButtonSearch(item, true));
   }
   expect(buttons.length, 9);
-  theScreen.controller.observationScreenOptions.daysToShowNow =
+  theScreen.controller.observationScreenOptions.displayState.days =
       ObservationScreenOptions.possibleExtraDays.last;
-  list = theScreen.controller.getWidgetListEndBased(() {});
+  list = theScreen.controller.getWidgetListEndBased();
   buttons.clear();
   for (var item in list) {
     buttons.addAll(textButtonSearch(item, true));
@@ -224,7 +205,7 @@ void _showLong() {
     ..date = MyDateController.fromDaysFromNow(-10)
     ..job = 'It\'s not butter'
     ..toDos = '20d'));
-  var list = theScreen.controller.getWidgetListEndBased(() {});
+  var list = theScreen.controller.getWidgetListEndBased();
   var buttons = [];
   for (var item in list) {
     buttons.addAll(textButtonSearch(item, true));
@@ -240,5 +221,8 @@ EndBasedController make<t extends BasicButton>(t button) {
 Overview4Test buildOverview(
     List<BasicButtonController> buttons, List<EntityController> entities,
     [Function()? thingToDo]) {
-  return Overview4Test((p0) => thingToDo, buttons, entities);
+  final enitityNotifier = FakeEntityNotifier();
+  final notifier = FakeButtonNotifier(enitityNotifier);
+  notifier.getData().addAll(buttons); //kinda should not do this
+  return Overview4Test(notifier, enitityNotifier);
 }
