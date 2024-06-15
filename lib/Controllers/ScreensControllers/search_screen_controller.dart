@@ -7,7 +7,7 @@ import '../blagenda_uniform_button.dart';
 import 'mix_day_creator.dart';
 import 'mix_input_handler.dart.dart';
 
-class SearchScreenController<T extends SearchAble>
+class SearchScreenController<T extends SearchAble> extends ChangeNotifier
     with DayCreator, SearchField {
   ///needs to be sorted
   final List<T> _everything;
@@ -18,9 +18,11 @@ class SearchScreenController<T extends SearchAble>
   final Map<SearchTypes, InputObject> searches = {};
   @visibleForTesting
   final List<T> foundItems = [];
-  final ValueNotifier<List<Widget>> list = ValueNotifier([]);
+  final List<Widget> _list = [];
   DateRange date = const DateRange(0, -1);
   final void Function(T) _reAdd;
+  late final Widget searchBut =
+      BlagendaUniformButton(usedColors.last, () => 'Search', resetSearch);
 
   SearchScreenController(
       this._doActionWithClickedItem, this._everything, this._reAdd) {
@@ -44,10 +46,11 @@ class SearchScreenController<T extends SearchAble>
       TextStyle(fontSize: 20.0, height: 2.5, color: Colors.green);
 
   void onConfirmed() {
-    //submitted by pressing enter in the input things
     resetSearch();
+    notifyListeners();
   }
 
+  @visibleForTesting
   void resetSearch() {
     if (_everything.isEmpty) {
       _searchingText = 'no items';
@@ -111,26 +114,25 @@ class SearchScreenController<T extends SearchAble>
       foundItems.add(_everything[i]);
     }
     foundItems.sort((a, b) => scoreMap[b]!.compareTo(scoreMap[a]!));
+    _foundToWidget();
   }
 
   //Default widgets
   List<Widget> getScreenWidgets() {
     return searches.values.map((e) => e.displayWidget).toList()
-      ..addAll(list.value);
+      ..add(smallBlankSplit)
+      ..add(searchBut)
+      ..addAll(_list);
   }
 
-  void setScreenSearch() {
+  void _foundToWidget() {
     if (_everything.isEmpty) {
-      list.value = [const Center(child: Text('No items'))];
+      _list
+        ..clear()
+        ..add(const Center(child: Text('No items')));
       return;
     }
     List<Widget> toFill = [];
-    for (var item in searches.values) {
-      toFill.add(item.displayWidget);
-    }
-    toFill.add(smallBlankSplit);
-    toFill.add(
-        BlagendaUniformButton(usedColors.last, () => 'Search', resetSearch));
     if (_searchingText.isNotEmpty) {
       toFill.add(smallBlankSplit);
       //you searched for X
@@ -175,7 +177,9 @@ class SearchScreenController<T extends SearchAble>
                 })));
       }
     }
-    list.value = toFill;
+    _list
+      ..clear()
+      ..addAll(toFill);
   }
 
   void fullSearchReset() {

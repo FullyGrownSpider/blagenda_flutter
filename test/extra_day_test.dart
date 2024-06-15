@@ -5,7 +5,7 @@ import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:blagenda_flutter_simple/Loading/conversion_base.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'screens/defaultButtons.dart';
+import 'screens/default_buttons.dart';
 
 Map<String, int> inputTrue = {
   '5 days': 5,
@@ -20,13 +20,12 @@ Map<String, int> inputTrue = {
 };
 
 ///test weather the regex for days-long works when its supposed to
-///TODO and weather it deletes when it should or should not
-///TODO and weather it gets detected while being added
 void main() {
-  test('found time', testFoundTime);
+  test('found time', _testFoundTime);
+  test('delete time', _testShouldDelete);
 }
 
-void testFoundTime() {
+void _testFoundTime() {
   var but = deadline();
   but.date = MyDateController.nowDate.addOrRemoveDays(4);
   for (var key in inputTrue.keys) {
@@ -40,12 +39,25 @@ void testFoundTime() {
   }
 }
 
-void testShouldDelete() {
-  //TODO
-}
-
-void addingScreenRead() {
-  //TODO
+void _testShouldDelete() {
+  var but = deadline();
+  but.date = MyDateController.nowDate.addOrRemoveDays(10);
+  but.toDos = inputTrue.keys.first;
+  var contr = DeadlineController(but);
+  contr.rebuild();
+  expect(contr.requiresChange, false);
+  but = deadline();
+  but.date = MyDateController.nowDate.addOrRemoveDays(-8);
+  but.toDos = inputTrue.keys.first;
+  contr = DeadlineController(but);
+  contr.rebuild();
+  expect(contr.requiresChange, false);
+  but = deadline();
+  but.date = MyDateController.nowDate.addOrRemoveDays(-9);
+  but.toDos = inputTrue.keys.first;
+  contr = DeadlineController(but);
+  contr.rebuild();
+  expect(contr.requiresChange, true);
 }
 
 EndBasedController make<t extends BasicButton>(t button) {

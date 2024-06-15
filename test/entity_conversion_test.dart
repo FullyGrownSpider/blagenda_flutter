@@ -12,10 +12,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 ///test weather loading of entities works fine (.loading class)
 void main() {
-  test('entity conversion', entityTest);
+  test('entity conversion', _entityTest);
 }
 
-void entityTest() {
+void _entityTest() {
   var guyToTest = EntityController(Entity(tagList, 2));
   guyToTest.tagsAsReferences();
   var line = exportGenerator(guyToTest.myEntity);

@@ -25,15 +25,8 @@ class AgainYearController extends SkippableEndBasedController<AgainYearDay> {
   @override
   bool isHappeningOnDayFromNow(int calculatedDay) {
     if (daysLeft == calculatedDay) return true;
-    int counter = -1;
-    int newLeft = -100;
-    while (newLeft < calculatedDay) {
-      counter++;
-      newLeft = MyDateController(
-              dateController.year + counter, dateController.month, dateController.day)
-          .daysLeftUntil();
-    }
-    return newLeft == calculatedDay;
+    var calcDay = MyDateController.fromDaysFromNow(calculatedDay);
+    return dateController.month == calcDay.month && dateController.day == calcDay.day;
   }
 
   @override
@@ -175,17 +168,8 @@ class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
   bool isHappeningOnDayFromNow(int calculatedDay) {
     var can = super.isHappeningOnDayFromNow(calculatedDay);
     if (!can) return false;
-    var counter = 0;
-    var date = MyDateController(
-        dateController.year, dateController.month + counter, dateController.day);
-    var newLeft = date.daysLeftUntil();
-    while (newLeft < calculatedDay) {
-      counter++;
-      date = MyDateController(
-          dateController.year, dateController.month + counter, dateController.day);
-      newLeft = date.daysLeftUntil();
-    }
-    return newLeft == calculatedDay;
+    var calcDay = MyDateController.fromDaysFromNow(calculatedDay);
+    return calcDay.day == day;
   }
 
   @override

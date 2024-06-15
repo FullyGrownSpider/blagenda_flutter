@@ -89,7 +89,7 @@ class AddingScreenController with ButtonCreator, InputHandler {
   }
 
   void _setFromStoredValue<t>(PossibleValues it, t value) {
-    if (it == PossibleValues.dat && t == MyDateController) {
+    if (value is MyDateController && it == PossibleValues.dat) {
       date.value = value as MyDateController;
     }
     _storedValues[it] = value;

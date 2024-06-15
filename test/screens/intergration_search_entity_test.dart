@@ -11,10 +11,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'overview4test.dart';
 
 void main() {
-  test('entiteis testing', addEntities);
+  test('entiteis testing', _addEntities);
 }
 
-void addEntities() {
+void _addEntities() {
   var b1 = makeController(entit()).getEntity()!;
   expect(b1.tags.first.data == entit().tags.first.data, true);
   expect(b1.tags[1].data == entit().tags[1].data, true);

@@ -19,7 +19,6 @@ class _SearchScreenState<T extends SearchAble> extends State<SearchScreen<T>> {
   late final SearchScreenController _controller = SearchScreenController<T>(
       (s) {
     var page = widget.doWithClicked(s);
-    pop();
     return page;
   }, widget.notifier.getData().whereType<T>().toList(),
       widget.notifier.addOrUpdate);
@@ -37,13 +36,9 @@ class _SearchScreenState<T extends SearchAble> extends State<SearchScreen<T>> {
     _currentContext = context;
     return Scaffold(
         backgroundColor: Colors.white24,
-        appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(10.0),
-            child: AppBar(
-              backgroundColor: Colors.green,
-            )),
+        appBar: AppBar(title: const Text('Search')),
         body: ListenableBuilder(
-            listenable: _controller.list,
+            listenable: _controller,
             builder: (BuildContext context, Widget? child) =>
                 SingleChildScrollView(
                     // child: Center(

@@ -5,12 +5,14 @@ import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonCont
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/note_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/entity_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/ObservationScreen/observation_screen_options.dart';
+import 'package:blagenda_flutter_simple/Controllers/blagenda_uniform_button.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:blagenda_flutter_simple/Loading/conversion_base.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'defaultButtons.dart';
+import 'default_buttons.dart';
 import 'overview4test.dart';
 
 void main() {
@@ -70,8 +72,8 @@ void _skipThisTime() {
   var list = theScreen.controller.getWidgetListEndBased();
   var buttons = [];
   for (var item in list) {
-    buttons.addAll(textButtonSearch(item, false));
-    buttons.addAll(textButtonSearch(item, true));
+    buttons.addAll(textButtonSearch(item, TextButton));
+    buttons.addAll(textButtonSearch(item, BlagendaUniformButton));
   }
   expect(buttons.contains('this'), true);
   //...
@@ -83,8 +85,8 @@ void _skipThisTime() {
   list = theScreen.controller.getWidgetListEndBased();
   buttons.clear();
   for (var item in list) {
-    buttons.addAll(textButtonSearch(item, false));
-    buttons.addAll(textButtonSearch(item, true));
+    buttons.addAll(textButtonSearch(item, TextButton));
+    buttons.addAll(textButtonSearch(item, BlagendaUniformButton));
   }
   expect(buttons.contains('this'), false);
   expect(buttons.where((e) => e == 'that-y').length, 2);
@@ -98,8 +100,8 @@ void _skipThisTime() {
   list = theScreen.controller.getWidgetListEndBased();
   buttons.clear();
   for (var item in list) {
-    buttons.addAll(textButtonSearch(item, false));
-    buttons.addAll(textButtonSearch(item, true));
+    buttons.addAll(textButtonSearch(item, TextButton));
+    buttons.addAll(textButtonSearch(item, BlagendaUniformButton));
   }
   expect(buttons.contains('this'), false);
   expect(buttons.where((e) => e == 'that-y').length, 1);
@@ -110,8 +112,8 @@ void _showWeek() {
   var list = theScreen.controller.getWidgetListEndBased();
   var buttons = [];
   for (var item in list) {
-    buttons.addAll(textButtonSearch(item, false));
-    buttons.addAll(textButtonSearch(item, true));
+    buttons.addAll(textButtonSearch(item, TextButton));
+    buttons.addAll(textButtonSearch(item, BlagendaUniformButton));
   }
   //the 6 default days + yesterday + 2 deadlines + 3 from the new date + 3 long deadlines = 12
   expect(buttons.length, 15);
@@ -132,7 +134,7 @@ void _showEverything() {
   var list = theScreen.controller.getWidgetListEndBased();
   var buttons = [];
   for (var item in list) {
-    buttons.addAll(textButtonSearch(item, true));
+    buttons.addAll(textButtonSearch(item, BlagendaUniformButton));
   }
   expect(buttons.length, 8);
 }
@@ -165,7 +167,7 @@ void _showColorButtons() {
   var list = theScreen.controller.getWidgetListEndBased();
   var buttons = [];
   for (var item in list) {
-    buttons.addAll(textButtonSearch(item, true));
+    buttons.addAll(textButtonSearch(item, BlagendaUniformButton));
   }
   expect(buttons.length, 5);
   expect(buttons.where((e) => e == '0').length, 2);
@@ -173,7 +175,7 @@ void _showColorButtons() {
   list = theScreen.controller.getWidgetListEndBased();
   buttons.clear();
   for (var item in list) {
-    buttons.addAll(textButtonSearch(item, true));
+    buttons.addAll(textButtonSearch(item, BlagendaUniformButton));
   }
   expect(buttons.length, 2);
   expect(buttons.where((e) => e == '1').length, 2);
@@ -186,7 +188,7 @@ void _showMoreDays() {
   var list = theScreen.controller.getWidgetListEndBased();
   var buttons = [];
   for (var item in list) {
-    buttons.addAll(textButtonSearch(item, true));
+    buttons.addAll(textButtonSearch(item, BlagendaUniformButton));
   }
   expect(buttons.length, 9);
   theScreen.controller.observationScreenOptions.displayState.days =
@@ -194,7 +196,7 @@ void _showMoreDays() {
   list = theScreen.controller.getWidgetListEndBased();
   buttons.clear();
   for (var item in list) {
-    buttons.addAll(textButtonSearch(item, true));
+    buttons.addAll(textButtonSearch(item, BlagendaUniformButton));
   }
   expect(buttons.length, 8);
 }
@@ -208,7 +210,7 @@ void _showLong() {
   var list = theScreen.controller.getWidgetListEndBased();
   var buttons = [];
   for (var item in list) {
-    buttons.addAll(textButtonSearch(item, true));
+    buttons.addAll(textButtonSearch(item, BlagendaUniformButton));
   }
   expect(buttons.length, 13);
 }

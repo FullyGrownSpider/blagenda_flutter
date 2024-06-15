@@ -6,13 +6,13 @@ List<String> relativeInput = ['1e', '5', '5+', 'ma', 'ma++'];
 
 ///test weather the MyDateController.translate works with all input it should work with
 void main() {
-  test('test normal input', testInput);
-  test('test normal input with a year', testInputWYear);
-  test('from now', testRelativeInput);
+  test('test normal input', _testInput);
+  test('test normal input with a year', _testInputWYear);
+  test('from now', _testRelativeInput);
 }
 
 ///this test will fail on january first
-void testInput() {
+void _testInput() {
   var defaultDate = MyDateController(MyDateController.today.year + 1, 1, 2);
   var jan = MyDateController.translate(input[0]);
   var rad = MyDateController.translate(input[1]);
@@ -22,7 +22,7 @@ void testInput() {
   expect(defaultDate, norm);
 }
 
-void testInputWYear() {
+void _testInputWYear() {
   var defaultDate = MyDateController(MyDateController.today.year + 2, 1, 2);
   var jan = MyDateController.translate('${input[0]} ${MyDateController.today.year + 2}');
   var rad = MyDateController.translate('${input[1]} ${MyDateController.today.year + 2}');
@@ -32,7 +32,7 @@ void testInputWYear() {
   expect(defaultDate, norm);
 }
 
-void testRelativeInput() {
+void _testRelativeInput() {
   var ord = MyDateController.translate(relativeInput[0]);
   var fromNow = MyDateController.translate(relativeInput[1]);
   var fromNowAndWeek = MyDateController.translate(relativeInput[2]);

@@ -2,10 +2,10 @@ import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart
 import 'package:blagenda_flutter_simple/Loading/conversion_base.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'screens/defaultButtons.dart';
+import 'screens/default_buttons.dart';
 
 ///test weather loading of buttons works fine (.loading class)
-const stringUsed = '◘';
+const _stringUsed = '◘';
 void main() {
   test('deadline', _deadline);
   test('note', _note);
@@ -52,7 +52,7 @@ void _compare<t extends BasicButton>(t button, int expected) {
   var newLine = exportGenerator(newButton);
   // when you export a line after you load it its the same as when you unload it
   expect(line, newLine);
-  var split = line.split(stringUsed);
+  var split = line.split(_stringUsed);
   // amount we expect (all the values are put in)
   expect(expected + 1, split.length);
   // all unique

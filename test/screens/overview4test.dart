@@ -23,12 +23,24 @@ class Overview4Test {
 }
 
 ///agressivly search for text in text buttons in the given widget (the dynamic is to do sneaky reflection)
-List<String?> textButtonSearch(dynamic victim, bool needBlagenda) {
-  if (!needBlagenda && victim is TextButton && victim.child is Text) {
-    return [(victim.child as Text).data];
-  }
-  if (needBlagenda && victim is BlagendaUniformButton) {
-    return [victim.text()];
+List<String?> textButtonSearch(dynamic victim, Type needBlagenda) {
+  switch (needBlagenda){
+  case (const (TextButton)) :
+    if (victim is TextButton && victim.child is Text) {
+      return [(victim.child as Text).data];
+    }
+    break;
+    case(const (BlagendaUniformButton)) :
+      if (victim is BlagendaUniformButton) {
+        return [victim.text()];
+      }
+      break;
+    case(const (TextField)) :
+      if (victim is TextField) {
+        return [(victim.controller!.text)];
+      }
+      break;
+    default : throw (Exception('not testable yet'));
   }
   try {
     return textButtonSearch(victim.child, needBlagenda);

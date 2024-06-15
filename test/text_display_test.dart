@@ -9,13 +9,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 ///test all difficult time things
 void main() {
-  test('deadline', deadline);
-  test('basic', basic);
-  //TODO new item (is only done in observation screen
-  //TODO small item because its not the first one of a day (done in create a day via observation screen
+  test('deadline', _deadline);
+  test('basic', _basic);
 }
 
-void basic() {
+void _basic() {
   var x = BasicButtonController.splitByLength(
       'A VERY VERY VERY LONG STRING OMG IT IS SO BIG HOW DID IT GET THIS BIG LIKE WHAAAAT',
       20);
@@ -32,7 +30,7 @@ void basic() {
   expect(x3.split('\n').length, 5);
 }
 
-void deadline() {
+void _deadline() {
   var one = make(
       Deadline('normal', '', 1, usedColors.first, MyDateController(2023, 12, 27), false));
   var two = make(Deadline(

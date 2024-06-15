@@ -12,20 +12,19 @@ class MockingCreator with DayCreator {}
 
 ///tests if it shows days in createADay the way it should on a basic level
 void main() {
-  test('deadline', deadline);
-
-  test('week', week);
-  test('year', year);
-  test('month', month);
-  test('day', day);
-  test('skip', skip);
+  test('deadline', _deadline);
+  test('week', _week);
+  test('year', _year);
+  test('month', _month);
+  test('day', _day);
+  test('skip', _skip);
 }
 
 MyDateController wowDate = MyDateController.nowDate.addOrRemoveDays(-10);
 
 MockingCreator to = MockingCreator();
 
-void deadline() {
+void _deadline() {
   var deadline = Deadline('23', '', 1, Colors.black, MyDateController.nowDate);
   showIn10(deadline);
   var deadline2 =
@@ -34,7 +33,7 @@ void deadline() {
   expect(false, yesterday.requiresChange);
 }
 
-void week() {
+void _week() {
   var week = make(AgainWeekDay('123', '', 1, Colors.black, 1));
   for (int i = 0; i < 7; i++) {
     var list = to.createADay(MyDateController.nowDate, [week], i,
@@ -47,23 +46,23 @@ void week() {
   expect(true, false);
 }
 
-void year() {
+void _year() {
   var year = AgainYearDay('123', '', 1, Colors.black, MyDateController.nowDate.day,
       MyDateController.nowDate.month);
   showIn10(year);
 }
 
-void month() {
+void _month() {
   var month = AgainMonthDay('123', '', 1, Colors.black, MyDateController.nowDate.day);
   showIn10(month);
 }
 
-void day() {
+void _day() {
   var day = AgainAmountDay('123', '', 1, Colors.black, MyDateController.nowDate, 11);
   showIn10(day);
 }
 
-void skip() {
+void _skip() {
   var month = AgainMonthDay(
       '123', '', 1, Colors.black, MyDateController.nowDate.day, MyDateController.today);
   var monthController = make(month);

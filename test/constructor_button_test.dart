@@ -8,7 +8,7 @@ import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'screens/defaultButtons.dart';
+import 'screens/default_buttons.dart';
 
 ///tests for default requires change (delete or edit and store again) and if the date is correct (in x many days) upon creation
 void main() {

@@ -3,7 +3,7 @@ import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'screens/defaultButtons.dart';
+import 'screens/default_buttons.dart';
 
 List<String> inputFalse = [
   ' amsterdam',
@@ -54,12 +54,12 @@ Map<String, List<int>> inputTrueTrue = {
 
 ///test the reading of all different types of time
 void main() {
-  test('found time', tesFoundTime);
-  test('not found time', tesNotFoundTime);
-  test('doubleFound', testDoubleFound);
+  test('found time', _tesFoundTime);
+  test('not found time', _tesNotFoundTime);
+  test('doubleFound', _testDoubleFound);
 }
 
-void tesFoundTime() {
+void _tesFoundTime() {
   var but = deadline();
   but.date = MyDateController.nowDate.addOrRemoveDays(4);
   for (var key in inputTrue.keys) {
@@ -72,7 +72,7 @@ void tesFoundTime() {
   }
 }
 
-void tesNotFoundTime() {
+void _tesNotFoundTime() {
   var but = deadline();
   but.color = Colors.black;
   for (var item in inputFalse) {
@@ -84,7 +84,7 @@ void tesNotFoundTime() {
   }
 }
 
-void testDoubleFound() {
+void _testDoubleFound() {
   var but = deadline();
   but.date = MyDateController.nowDate.addOrRemoveDays(4);
   for (var key in inputTrueTrue.keys) {

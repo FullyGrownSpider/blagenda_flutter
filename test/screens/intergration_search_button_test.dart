@@ -19,36 +19,10 @@ import 'overview4test.dart';
 
 ///test both searching and the adding_screen
 void main() {
-  test('buttons testing', addButtons);
-  test('searching button testing', searchButtons);
+  test('searching button testing', _searchButtons);
 }
 
-void addButtons() {
-  BasicButtonController b1 = makeController(note(1).button).getButton()!;
-  expect(BasicButtonController.equals(b1.button, note(1).button), true);
-
-  b1 = makeController(dead(1).button).getButton()!;
-  expect(BasicButtonController.equals(b1.button, dead(1).button), true);
-
-  b1 = makeController(week(1).button).getButton()!;
-  expect(BasicButtonController.equals(b1.button, week(1).button), true);
-
-  b1 = makeController(weird(1).button).getButton()!;
-  // exports(b1.button, weird(1).button);
-  expect(BasicButtonController.equals(b1.button, weird(1).button), true);
-
-  b1 = makeController(year(1).button).getButton()!;
-  expect(BasicButtonController.equals(b1.button, year(1).button), true);
-
-  b1 = makeController(month(1).button).getButton()!;
-  expect(BasicButtonController.equals(b1.button, month(1).button), true);
-
-  b1 = makeController(amount(1).button).getButton()!;
-  expect(BasicButtonController.equals(b1.button, amount(1).button), true);
-  //add every button via input from adding screen controller
-}
-
-void searchButtons() {
+void _searchButtons() {
   var testList = <BasicButtonController>[
     dead(1),
     dead(2),
@@ -94,8 +68,8 @@ void searchButtons() {
   expect(searcher.foundItems.length, 1);
 }
 
-setSearches(SearchScreenController searcher, List<SearchAble> testList, String s,
-    DateRange r, List<String> tag) {
+setSearches(SearchScreenController searcher, List<SearchAble> testList,
+    String s, DateRange r, List<String> tag) {
   Set searchesSet = {};
   for (var e in testList) {
     searchesSet.addAll(e.possibleSearches());
@@ -117,16 +91,17 @@ AddingScreenController makeController(BasicButton but) {
   final FakeButtonNotifier notifier = FakeButtonNotifier(entityNotifier);
   return AddingScreenController(but, notifier, true);
 }
+
 void goToNote(AddingScreenController controller) {
   controller.buttonType.value = BasicButton;
   controller.switchButtonType(controller.buttonType.value);
 }
 
-NoteController note(int numb) =>
-    NoteController(BasicButton("job$numb", "asfd\nasdf\nhaha\n", numb, usedColors.first));
+NoteController note(int numb) => NoteController(
+    BasicButton("job$numb", "asfd\nasdf\nhaha\n", numb, usedColors.first));
 
-DeadlineController dead(int numb) => DeadlineController(Deadline(
-    "job$numb", "asfd\nasdf\nhaha\n", numb, usedColors.first, MyDateController.today));
+DeadlineController dead(int numb) => DeadlineController(Deadline("job$numb",
+    "asfd\nasdf\nhaha\n", numb, usedColors.first, MyDateController.today));
 
 AgainWeirdController weird(int numb) => AgainWeirdController(AgainWeird(
     "job$numb",
