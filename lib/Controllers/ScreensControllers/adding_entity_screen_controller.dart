@@ -87,7 +87,6 @@ class AddingEntityScreenController extends ChangeNotifier
     _id = -1;
   }
 
-//TODO what is happening here?
   //try to call this only once
   void _fillStoredValues(EntityController entity) {
     for (int i = 0; i < entity.tags.length; i++) {
