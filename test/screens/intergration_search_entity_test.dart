@@ -1,3 +1,4 @@
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/deadline.dart';
 import 'package:blagenda_flutter_simple/Commons/Models/entity.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/basic_button_controller.dart';
@@ -7,7 +8,6 @@ import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/adding_en
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'overview4test.dart';
 
 void main() {
@@ -27,8 +27,8 @@ void _addEntities() {
 AddingEntityScreenController makeController(EntityController but) {
   final FakeEntityNotifier entityNotifier = FakeEntityNotifier();
   final FakeButtonNotifier notifier = FakeButtonNotifier(entityNotifier);
-  var screen = AddingEntityScreenController(
-      but, entityNotifier, notifier, () async {}, (_) async {});
+  var screen =
+      AddingEntityScreenController(but, entityNotifier, notifier, notInTheMood, (_) async {});
   screen.createScreenWidgets();
   return screen;
 }
@@ -39,7 +39,11 @@ EntityController entit() => EntityController(Entity([
       Tag('what the what', dead(1))
     ], 1));
 
-DeadlineController dead(int numb) => DeadlineController(Deadline(
-    "job$numb", "asfd\nasdf\nhaha\n", numb, usedColors.first, MyDateController.today));
+DeadlineController dead(int numb) => DeadlineController(Deadline("job$numb",
+    "asfd\nasdf\nhaha\n", numb, usedColors.first, MyDateController.today));
 
 List<BasicButtonController> possibleButtons = [dead(1)];
+
+Future<BasicButtonController<BasicButton>> notInTheMood() async {
+  return dead(1);
+}

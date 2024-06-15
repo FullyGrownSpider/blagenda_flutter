@@ -113,8 +113,12 @@ class MainDrawer {
         ListTile(
             title: _dumbJoke('Find Appointment'),
             trailing: const Icon(Icons.search, color: Colors.black),
-            onTap: () =>
-                _openButtonSearch(context).then((v) => Navigator.pop(context))),
+            onTap: () => _openButtonSearch(
+                    context,
+                    true,
+                    (it) =>
+                        _openEdit(context, it as BasicButtonController, false))
+                .then((v) => Navigator.pop(context))),
         ListTile(
           title: _dumbJoke('Add Entity'),
           trailing: const Icon(Icons.add_circle_outline, color: Colors.black),
@@ -147,18 +151,19 @@ class MainDrawer {
     return Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => SearchScreen(
-                (c) => _openEntityEdit(context, c as EntityController),
-                _entityNotifier)));
+            builder: (context) => SearchScreen<EntityController>(
+                (c) => _openEntityEdit(context, c),
+                _entityNotifier,
+                false)));
   }
 
-  Future<dynamic> _openButtonSearch(BuildContext context) {
+  Future<dynamic> _openButtonSearch(BuildContext context, bool giveTheClick,
+      Future<dynamic> Function(EndBasedController)? doWithClicked) {
     return Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => SearchScreen(
-                (it) => _openEdit(context, it as BasicButtonController, false),
-                _buttonNotifier)));
+            builder: (context) =>
+                SearchScreen<EndBasedController>(doWithClicked, _buttonNotifier, !giveTheClick)));
   }
 
   Widget _dumbJoke(String s) {
@@ -192,7 +197,7 @@ class MainDrawer {
                   c,
                   _buttonNotifier,
                   _entityNotifier,
-                  () => _openButtonSearch(context),
+                  () async => (await _openButtonSearch(context, false, null)) as BasicButtonController,
                   (toGet) => _openEdit(context, toGet, false))));
 
   Future<dynamic> _openEdit(

@@ -158,28 +158,35 @@ mixin InputHandler on ButtonCreator {
     return InputObject<int>(displayWidget, get, set);
   }
 
-  InputObject<int?> itemForIntFromList(List<String> listToShow, String hint,
-      int? Function() get, void Function(int?) set) {
-    return InputObject<int?>(
+  InputObject<int> itemForIntFromList(List<String> listToShow, String hint,
+      int Function() get, void Function(int?) set) {
+    return InputObject<int>(
         _createDropDown(listToShow, hint, () => get(), (s) => set(s)),
         get,
         set);
   }
 
   Widget _createDropDown(List<String> listToShow, String hint,
-      int? Function() get, void Function(int) set) {
-    int? value = get();
-    var text = Text(
-        value == null ? hint : listToShow[(value - 1) % listToShow.length]);
+      int Function() get, void Function(int) set) {
+    int value = get();
+    var change = ValueNotifier<int>(value);
     return notQuiteFull(DropdownButton<String>(
-        hint: text,
+        hint: ValueListenableBuilder(
+            valueListenable: change,
+            builder: (context, subValue, widget) => Text(subValue == -1
+                ? hint
+                : listToShow[(subValue - 1) % listToShow.length])),
         items: listToShow.map((String value) {
           return DropdownMenuItem<String>(
             value: value,
             child: Text(value),
           );
         }).toList(),
-        onChanged: (s) => set(listToShow.indexOf(s ?? '') + 1)));
+        onChanged: (s) {
+          var value = listToShow.indexOf(s ?? '') + 1;
+          set(value);
+          change.value = value;
+        }));
   }
 
   InputObject<Color> itemForColor(

@@ -269,7 +269,7 @@ class AddingScreenController with ButtonCreator, InputHandler {
       PossibleValues.day: itemForIntFromList(
           MyDateController.daysEn,
           'Weekday',
-              () => _getFromStoredValue<int?>(PossibleValues.day, null),
+              () => _getFromStoredValue<int>(PossibleValues.day, -1),
               (s) => _setFromStoredValue(PossibleValues.day, s))
     });
     _skippableFillerList();
@@ -281,7 +281,7 @@ class AddingScreenController with ButtonCreator, InputHandler {
       PossibleValues.day: itemForIntFromList(
           MyDateController.monthDays,
           'Day of month',
-              () => _getFromStoredValue<int?>(PossibleValues.day, null),
+              () => _getFromStoredValue<int>(PossibleValues.day, -1),
               (s) => _setFromStoredValue(PossibleValues.day, s))
     });
     _skippableFillerList();
@@ -293,12 +293,12 @@ class AddingScreenController with ButtonCreator, InputHandler {
       PossibleValues.mon: itemForIntFromList(
           MyDateController.months,
           'Month',
-              () => _getFromStoredValue<int?>(PossibleValues.mon, null),
+              () => _getFromStoredValue<int>(PossibleValues.mon, -1),
               (s) => _setFromStoredValue(PossibleValues.mon, s)),
       PossibleValues.day: itemForIntFromList(
           MyDateController.monthDays,
           'Day of month',
-              () => _getFromStoredValue<int?>(PossibleValues.day, null),
+              () => _getFromStoredValue<int>(PossibleValues.day, -1),
               (s) => _setFromStoredValue(PossibleValues.day, s))
     });
     _defaultFillerList();
@@ -309,12 +309,12 @@ class AddingScreenController with ButtonCreator, InputHandler {
       PossibleValues.mon: itemForIntFromList(
           MyDateController.daysEn,
           'Weekday',
-              () => _getFromStoredValue<int?>(PossibleValues.mon, null),
+              () => _getFromStoredValue<int>(PossibleValues.mon, -1),
               (s) => _setFromStoredValue(PossibleValues.mon, s)),
       PossibleValues.day: itemForIntFromList(
           ['1st', '2nd', '3d'],
           '- day',
-              () => _getFromStoredValue<int?>(PossibleValues.day, null),
+              () => _getFromStoredValue<int>(PossibleValues.day, -1),
               (s) => _setFromStoredValue(PossibleValues.day, s))
     });
     _skippableFillerList();

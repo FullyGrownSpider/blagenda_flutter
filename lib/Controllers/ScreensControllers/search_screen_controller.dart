@@ -22,7 +22,8 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
   DateRange date = const DateRange(0, -1);
   final void Function(T) _reAdd;
   late final Widget searchBut =
-      BlagendaUniformButton(usedColors.last, () => 'Search', resetSearch);
+      BlagendaUniformButton(usedColors.last, () => 'Search', onConfirmed);
+
 
   SearchScreenController(
       this._doActionWithClickedItem, this._everything, this._reAdd) {
@@ -143,20 +144,19 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
       //fill all found items
       for (var item in foundItems) {
         toFill.add(smallBlankSplit);
-        toFill.add(BlagendaUniformButton(
-            item.displayColor(),
-            item.searchDisplay,
-            () => _doActionWithClickedItem(item).then((value) {
-                  //if (null) is possible with if (value)
-                  if (true == value) {
-                    _everything.remove(item);
-                    resetSearch();
-                  } else if (false == value) {
-                    _everything.remove(item);
-                    _reAdd(item);
-                    resetSearch();
-                  }
-                })));
+        toFill.add(
+            BlagendaUniformButton(item.displayColor(), item.searchDisplay, () {
+          _doActionWithClickedItem(item).then((value) {
+            if (true == value) {
+              _everything.remove(item);
+              resetSearch();
+            } else if (false == value) {
+              _everything.remove(item);
+              _reAdd(item);
+              resetSearch();
+            }
+          });
+        }));
       }
     } else if (foundItems.isNotEmpty) {
       toFill.add(bigSplitterTextField);
@@ -165,16 +165,15 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
       toFill.add(bigSplitterTextField);
       for (var item in foundItems) {
         toFill.add(smallBlankSplit);
-        toFill.add(BlagendaUniformButton(
-            item.displayColor(),
-            item.searchDisplay,
-            () => _doActionWithClickedItem(item).then((value) {
-                  //if (null) is possible with if (value)
-                  if (true == value) {
-                    _everything.remove(item);
-                    resetSearch();
-                  }
-                })));
+        toFill.add(
+            BlagendaUniformButton(item.displayColor(), item.searchDisplay, () {
+          _doActionWithClickedItem(item).then((value) {
+            if (true == value) {
+              _everything.remove(item);
+              resetSearch();
+            }
+          });
+        }));
       }
     }
     _list
@@ -184,7 +183,9 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
 
   void fullSearchReset() {
     for (var item in searches.values) {
-      item.setValue(null);
+      if (item.getValue() is String) {
+        item.setValue("");
+      }
     }
     resetSearch();
   }

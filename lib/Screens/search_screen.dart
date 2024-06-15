@@ -7,9 +7,11 @@ import '../Controllers/ObjectControllers/mix_search_able.dart';
 
 class SearchScreen<T extends SearchAble> extends StatefulWidget {
   final StoreAbleNotifier<StoreAble> notifier;
-  final Future<dynamic> Function(SearchAble) doWithClicked;
+  final Future<dynamic> Function(T)? doWithClicked;
+  final bool closeOnClickDone;
 
-  const SearchScreen(this.doWithClicked, this.notifier, {super.key});
+  const SearchScreen(this.doWithClicked, this.notifier, this.closeOnClickDone,
+      {super.key});
 
   @override
   State<StatefulWidget> createState() => _SearchScreenState<T>();
@@ -17,19 +19,27 @@ class SearchScreen<T extends SearchAble> extends StatefulWidget {
 
 class _SearchScreenState<T extends SearchAble> extends State<SearchScreen<T>> {
   late final SearchScreenController _controller = SearchScreenController<T>(
-      (s) {
-    var page = widget.doWithClicked(s);
-    return page;
-  }, widget.notifier.getData().whereType<T>().toList(),
+      doPopLogic,
+      widget.notifier.getData().whereType<T>().toList(),
       widget.notifier.addOrUpdate);
 
-  BuildContext? _currentContext;
-
-  void pop() {
-    if (mounted && _currentContext != null) {
-      Navigator.pop(_currentContext!);
+  Future<dynamic> doPopLogic(T item) async {
+    if (widget.doWithClicked != null) {
+      widget.doWithClicked!(item).then((v) {
+        if (widget.closeOnClickDone) {
+          if (mounted && _currentContext != null) {
+            Navigator.pop(_currentContext!, item);
+          }
+        }
+      });
+    } else if (widget.closeOnClickDone) {
+      if (mounted && _currentContext != null) {
+        Navigator.pop(_currentContext!, item);
+      }
     }
   }
+
+  BuildContext? _currentContext;
 
   @override
   Widget build(BuildContext context) {

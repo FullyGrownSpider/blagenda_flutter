@@ -1,3 +1,4 @@
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/entity_controller.dart';
 import 'package:blagenda_flutter_simple/Loading/button_notifier.dart';
 import 'package:blagenda_flutter_simple/Loading/entity_notifier.dart';
@@ -8,7 +9,7 @@ import '../Controllers/ScreensControllers/adding_entity_screen_controller.dart';
 class AddingEntityScreen extends StatefulWidget {
   final EntityController? entity;
 
-  final Future<dynamic> Function() _openButtonSearch;
+  final Future<BasicButtonController> Function() _openButtonSearch;
   final Future<dynamic> Function(dynamic) _openButtonEdit;
 
   final ButtonNotifier _buttonNotifier;
@@ -61,11 +62,11 @@ class _AddingEntityScreenState extends State<AddingEntityScreen> {
               }),
         ]),
         body: ListenableBuilder(
-            listenable: _screenController.screenWidgets,
+            listenable: _screenController,
             builder: (context, child) => SingleChildScrollView(
                     child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: _screenController.screenWidgets.value,
+                  children: _screenController.createScreenWidgets(),
                 ))));
   }
 }

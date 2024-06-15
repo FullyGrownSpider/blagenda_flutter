@@ -11,22 +11,21 @@ import '../blagenda_uniform_button.dart';
 import 'mix_button_creator.dart';
 import 'mix_input_handler.dart.dart';
 
-class AddingEntityScreenController
+class AddingEntityScreenController extends ChangeNotifier
     with ButtonCreator, DayCreator, InputHandler {
   late final InputObject _nextName;
   late final InputObject _nextAddButton;
 
   String nextName = '';
   late final EntityController? Function() getEntity;
-  final ValueNotifier<List<Widget>> screenWidgets =
-      ValueNotifier<List<Widget>>([]);
   late int _id;
   final List<TagCreateInfo> _info = [];
   final Map<String, dynamic> _storedValues = {};
 
   static const String _tagListText = 'Tag type', _newNameText = 'New tag name';
 
-  final Future<dynamic> Function() _openButtonSearch;
+  final Future<BasicButtonController> Function()
+      _openButtonSearch;
 
   final ButtonNotifier _notifier;
   final EntityNotifier _entityNotifier;
@@ -70,6 +69,7 @@ class AddingEntityScreenController
       var myEntity = Entity(tagList, _id);
       return EntityController(myEntity);
     };
+    notifyListeners();
   }
 
   void _fillStoredValuesNoEntity() {
@@ -81,12 +81,13 @@ class AddingEntityScreenController
         0, //only one item
         inputObject,
         BlagendaUniformButton(
-            usedColors.first, _storedValues['n0'], () => _deleteTag(0)),
+            usedColors.first, () => _storedValues['n0'], () => _deleteTag(0)),
         _storedValues['n0'],
         0));
     _id = -1;
   }
 
+//TODO what is happening here?
   //try to call this only once
   void _fillStoredValues(EntityController entity) {
     for (int i = 0; i < entity.tags.length; i++) {
@@ -108,9 +109,7 @@ class AddingEntityScreenController
         inputObject = itemForReferenceAbleList(
             () => _storedValues[i.toString()],
             (s) => _storedValues[i.toString()] = s,
-            () => _openButtonSearch().then((s) {
-                  (item) => _fillInputItem(item, i);
-                }),
+            () => _openButtonSearch().then((item) => _fillInputItem(item, i)),
             EntityController.getNickname);
       } else {
         throw UnimplementedError('Unkown Type requested');
@@ -119,14 +118,14 @@ class AddingEntityScreenController
       _info.add(TagCreateInfo(
           i,
           inputObject,
-          BlagendaUniformButton(
-              usedColors.first, () => _storedValues['n$i'], () => _deleteTag(i)),
+          BlagendaUniformButton(usedColors.first, () => _storedValues['n$i'],
+              () => _deleteTag(i)),
           _storedValues['n$i'],
           type));
     }
   }
 
-  void createScreenWidgets() {
+  List<Widget> createScreenWidgets() {
     List<Widget> widgetList = [];
     for (var item in _info) {
       widgetList.add(item.nameDisplay);
@@ -141,7 +140,7 @@ class AddingEntityScreenController
     widgetList.add(splitterTextField);
     widgetList.add(_nextName.displayWidget);
     widgetList.add(_nextAddButton.displayWidget);
-    screenWidgets.value = widgetList;
+    return widgetList;
   }
 
   void _addNewTag(int toMake) {
@@ -153,9 +152,7 @@ class AddingEntityScreenController
       inputObject = itemForReferenceAbleList(
           () => _storedValues[i.toString()],
           (s) => _storedValues[i.toString()] = s,
-          () => _openButtonSearch().then((s) {
-                (item) => _fillInputItem(item, i);
-              }),
+          () => _openButtonSearch().then((item) => _fillInputItem(item, i)),
           (b) => b.searchDisplay());
     } else if (toMake == 2) {
       //a long note
@@ -182,11 +179,11 @@ class AddingEntityScreenController
         i,
         inputObject,
         BlagendaUniformButton(
-            usedColors.first, _storedValues['n$i'], () => _deleteTag(i)),
+            usedColors.first, () => _storedValues['n$i'], () => _deleteTag(i)),
         _storedValues['n$i'],
         toMake));
     ();
-    createScreenWidgets();
+    notifyListeners();
   }
 
   Future<dynamic> _fillInputItem(BasicButtonController item, int i) async {
@@ -194,12 +191,10 @@ class AddingEntityScreenController
     var inputObject = itemForReferenceAbleList(
         () => _storedValues[i.toString()],
         (s) => _storedValues[i.toString()] = s,
-        () => _openButtonSearch().then((s) {
-              (item) => _fillInputItem(item, i);
-            }),
+        () => _openButtonSearch().then((item) => _fillInputItem(item, i)),
         EntityController.getNickname);
     _info[i].destinedInput = inputObject;
-    ();
+    notifyListeners();
   }
 
   void _deleteTag(int fromWhere) {
@@ -225,12 +220,12 @@ class AddingEntityScreenController
       _info[i] = (TagCreateInfo(
           i,
           _info[i].destinedInput,
-          BlagendaUniformButton(
-              usedColors.first, _storedValues['n$i'], () => _deleteTag(i)),
+          BlagendaUniformButton(usedColors.first, () => _storedValues['n$i'],
+              () => _deleteTag(i)),
           _storedValues['n$i'],
           _info[i].type));
     }
-    createScreenWidgets();
+    notifyListeners();
   }
 
   static const List<String> types = ['A Note', 'A Long Note', 'A Date'];
