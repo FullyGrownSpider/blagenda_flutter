@@ -156,34 +156,25 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
 
       toFill.add(bigSplitterTextField);
       //fill all found items
-      if (searches.containsKey(SearchTypes.date) &&
-          (searches[SearchTypes.date]!.getValue() as DateRange)
-              .weekdays
-              .isNotEmpty) {
-        var dateRange = searches[SearchTypes.date]!.getValue() as DateRange;
-        for (int i = 0; i <= dateRange.range; i++) {
-          var tempController =
-              MyDateController.today.add(Duration(days: i * 7));
-          for (var weekday in dateRange.weekdays) {
-            var superTempController = tempController
-                .add(Duration(days: weekday - MyDateController.today.weekday));
-            toFill.addAll(createADay(
-                MyDateController.today,
-                notifier.getData().whereType<EndBasedController>().toList(),
-                superTempController.daysLeftUntil(),
-                (item, _) => BlagendaUniformButton(
-                        item.displayColor(), item.searchDisplay, () {
-                      _doActionWithClickedItem(item as T).then((value) {
-                        if (true == value) {
-                          notifier.delete(item as T);
-                        } else if (false == value) {
-                          notifier.addOrUpdate(item as T);
-                        }
-                        resetSearch();
-                      });
-                    }),
-                false,
-                false));
+      if (searches.containsKey(SearchTypes.date)) {
+        var range = searches[SearchTypes.date]!.getValue();
+        if ((range as DateRange).weekdays.isNotEmpty) {
+          for (int i = 0; i <= range.range; i++) {
+            var tempController =
+                MyDateController.today.add(Duration(days: i * 7));
+            for (var weekday in range.weekdays) {
+              var superTempController = tempController.add(
+                  Duration(days: weekday - MyDateController.today.weekday));
+              toFill.addAll(createDayThingy(superTempController));
+            }
+          }
+        } else {
+          //fill with days you selected
+          for (int i = range.myDateFromNow;
+              i <= range.myDateFromNow + range.range;
+              i++) {
+            var tempController = MyDateController.today.add(Duration(days: i));
+            toFill.addAll(createDayThingy(tempController));
           }
         }
       } else {
@@ -223,7 +214,28 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
     _list
       ..clear()
       ..addAll(toFill);
+
     notifyListeners();
+  }
+
+  List<Widget> createDayThingy(MyDateController tempDate) {
+    return createADay(
+        MyDateController.today,
+        notifier.getData().whereType<EndBasedController>().toList(),
+        tempDate.daysLeftUntil(),
+        (item, _) =>
+            BlagendaUniformButton(item.displayColor(), item.searchDisplay, () {
+              _doActionWithClickedItem(item as T).then((value) {
+                if (true == value) {
+                  notifier.delete(item as T);
+                } else if (false == value) {
+                  notifier.addOrUpdate(item as T);
+                }
+                resetSearch();
+              });
+            }),
+        false,
+        false);
   }
 
   void fullSearchReset() {
