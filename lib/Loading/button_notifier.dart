@@ -73,6 +73,10 @@ class ButtonNotifier
 
   @override
   void addOrUpdate(BasicButtonController but) {
+    int index = buttons.indexWhere((e) => e.runtimeType == but.runtimeType && e.id == but.id);
+    if (index != -1) {
+      buttons.removeAt(index);
+    }
     buttons.add(but);
     _loading.updateData(but.button);
     hardPoint = true;

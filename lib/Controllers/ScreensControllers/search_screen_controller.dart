@@ -19,7 +19,7 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
   @visibleForTesting
   final List<T> foundItems = [];
   final List<Widget> _list = [];
-  DateRange date = const DateRange(0, -1);
+  DateRange date = const DateRange(0, -1, []);
   final void Function(T) _reAdd;
   late final Widget searchBut =
       BlagendaUniformButton(usedColors.last, () => 'Search', onConfirmed);
@@ -57,10 +57,10 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
       _searchingText = 'no items';
       return;
     }
+    var everyThingCopy = [..._everything];
     _searchingText = '';
     foundItems.clear();
     Map<T, int> scoreMap = {};
-    List<int> notScored = [];
     if (searches.containsKey(SearchTypes.date)) {
       var data = searches[SearchTypes.date]!.getValue() as DateRange;
       if (data.range > -1) {
@@ -72,10 +72,14 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
           _searchingText =
               '${from.stringFullDisplayWithCal(from.year == MyDateController.today.year)} to ${MyDateController.fromDaysFromNow(data.myDateFromNow + data.range).stringFullDisplayWithCal(from.year == MyDateController.today.year)}';
         }
-        for (int i = 0; i < _everything.length; i++) {
-          var score = _everything[i].searchHere(SearchTypes.date, data);
-          scoreMap[_everything[i]] = score;
-          if (score == 0) notScored.add(i);
+        for (int i = 0; i < everyThingCopy.length; i++) {
+          var score = everyThingCopy[i].searchHere(SearchTypes.date, data);
+          if (score == 0) {
+            everyThingCopy.removeAt(i);
+            i--;
+          } else {
+            scoreMap[everyThingCopy[i]] = score;
+          }
         }
       }
     }
@@ -84,11 +88,17 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
       if (data.isNotEmpty) {
         if (_searchingText.isNotEmpty) _searchingText += '\n and \n';
         _searchingText += data;
-        for (int i = 0; i < _everything.length; i++) {
-          if (notScored.contains(i)) continue;
-          var score = _everything[i].searchHere(SearchTypes.string, data);
-          scoreMap[_everything[i]] = score;
-          if (score == 0) notScored.add(i);
+        for (int i = 0; i < everyThingCopy.length; i++) {
+          var score = everyThingCopy[i].searchHere(SearchTypes.string, data);
+          if (score == 0) {
+            everyThingCopy.removeAt(i);
+            i--;
+          } else {
+            if (scoreMap[everyThingCopy[i]] == null) {
+              scoreMap[everyThingCopy[i]] = 0;
+            }
+            scoreMap[everyThingCopy[i]] = score;
+          }
         }
       }
     }
@@ -97,24 +107,30 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
       if (data.first.isNotEmpty || data.last.isNotEmpty) {
         if (_searchingText.isNotEmpty) _searchingText += '\n and \n';
         _searchingText += '${data[0]} - ${data[1]}';
-        for (int i = 0; i < _everything.length; i++) {
-          if (notScored.contains(i)) continue;
-          var score = _everything[i].searchHere(SearchTypes.tag, data);
-          scoreMap[_everything[i]] = score;
-          if (score == 0) notScored.add(i);
+        for (int i = 0; i < everyThingCopy.length; i++) {
+          var score = everyThingCopy[i].searchHere(SearchTypes.tag, data);
+          if (score == 0) {
+            everyThingCopy.removeAt(i);
+            i--;
+          } else {
+            if (scoreMap[everyThingCopy[i]] == null) {
+              scoreMap[everyThingCopy[i]] = 0;
+            }
+            scoreMap[everyThingCopy[i]] = score;
+          }
         }
       }
     }
-    if (notScored.length == _everything.length || scoreMap.isEmpty) {
-      foundItems.addAll(_everything.where((e) => e.shouldShowWhenStarting()));
-      foundItems.sort();
+    if (everyThingCopy.isEmpty || scoreMap.isEmpty) {
+      foundItems
+        ..addAll(_everything.where((e) => e.shouldShowWhenStarting()))
+        ..sort();
+      _foundToWidget();
       return;
     }
-    for (int i = 0; i < _everything.length; i++) {
-      if (notScored.contains(i)) continue;
-      foundItems.add(_everything[i]);
-    }
-    foundItems.sort((a, b) => scoreMap[b]!.compareTo(scoreMap[a]!));
+    foundItems
+      ..addAll(everyThingCopy)
+      ..sort((a, b) => scoreMap[b]!.compareTo(scoreMap[a]!));
     _foundToWidget();
   }
 

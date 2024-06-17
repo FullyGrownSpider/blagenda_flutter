@@ -2,13 +2,14 @@ import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart
 import 'package:flutter/material.dart';
 
 import '../../../Commons/Models/Buttons/skippable_button.dart';
+import '../../ScreensControllers/mix_input_handler.dart.dart';
 import '../../my_date_controller.dart';
 import '../mix_search_able.dart';
 import 'basic_button_controller.dart';
 import 'deadline_controller.dart';
 
-abstract class EndBasedController<t extends BasicButton> extends BasicButtonController<t>
-    implements Comparable<EndBasedController> {
+abstract class EndBasedController<t extends BasicButton>
+    extends BasicButtonController<t> implements Comparable<EndBasedController> {
   static final RegExp _completeReg = RegExp(
       r"(?:(?<full>[0-2]?[0-9][-,.:][0-6][0-9](?: ?[apAP][mM])?)|(?<hour>[0-2]?[0-9] ?[apAP][mM]))(?:([^0-9]{0,5}(?:(?<full2>[0-2]?[0-9][-,.:][0-6][0-9] ?([apAP][mM])?)|(?<hour2>[0-2]?[0-9] ?[apAP][mM]))\b)|\b)");
   static final RegExp _regFix = RegExp(r'[-,.:]');
@@ -80,12 +81,14 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
     if (text == null) return -1;
     var split = text.replaceAll(_regNum, '').split(_regFix);
     return _timeSet(
-        int.parse(split.first) * 60 + (split.length > 1 ? int.parse(split.last) : 0),
+        int.parse(split.first) * 60 +
+            (split.length > 1 ? int.parse(split.last) : 0),
         text);
   }
 
   int _timeSet(int result, String text) {
-    if ((text.contains('p') && result < 721) || (!text.contains('a') && result < 420)) {
+    if ((text.contains('p') && result < 721) ||
+        (!text.contains('a') && result < 420)) {
       result += 720;
     }
     if (result > 1440) return -1;
@@ -93,9 +96,10 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
   }
 
   @visibleForTesting
-  String displayJob() =>
-      (daysLeft < showDayTime ? _displayWithTimeJob() : super.gettingTheStringShort())
-          .trim();
+  String displayJob() => (daysLeft < showDayTime
+          ? _displayWithTimeJob()
+          : super.gettingTheStringShort())
+      .trim();
 
   String _displayWithTimeJob() {
     return (timeOfDay != -1
@@ -123,7 +127,10 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
   String todosToString() {
     var result = super.todosToString();
     if (timeOfDay != -1) {
-      result = result.replaceFirst(_completeReg, '').replaceFirst('\n\n', '\n').trim();
+      result = result
+          .replaceFirst(_completeReg, '')
+          .replaceFirst('\n\n', '\n')
+          .trim();
       if (result.trim().isEmpty) result = writeEmpty();
     }
     return result;
@@ -159,6 +166,21 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
           (toDos.toLowerCase().contains(value) ? 1 : 0);
     }
     if (searchType == SearchTypes.date) {
+      if ((value as DateRange).weekdays.isNotEmpty) {
+        for (int date = 0; date <= value.range; date++) {
+          var tempController =
+              MyDateController.today.add(Duration(days: date * 7));
+          for (var weekday in value.weekdays) {
+            var superTempController = tempController
+                .add(Duration(days: weekday - MyDateController.today.weekday));
+            if (isHappeningOnDayFromNow(
+                superTempController.daysLeftUntil())) {
+              return 10;
+            }
+          }
+        }
+        return 0;
+      }
       for (int date = value.myDateFromNow;
           date <= value.myDateFromNow + value.range;
           date++) {
@@ -248,10 +270,12 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
   }
 
   @override
-  String writeEmpty() => emogjiList[
-      (job + MyDateController.fromDaysFromNow(altLeft).microsecondsSinceEpoch.toString())
-              .hashCode %
-          emogjiList.length];
+  String writeEmpty() => emogjiList[(job +
+              MyDateController.fromDaysFromNow(altLeft)
+                  .microsecondsSinceEpoch
+                  .toString())
+          .hashCode %
+      emogjiList.length];
 
   SkippableEndBasedController callConstructor(button);
 
@@ -274,7 +298,8 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   bool isHappeningOnDayFromNow(int calculatedDay) {
-    return (dateToSkip == null || dateToSkip!.daysLeftUntil() != calculatedDay) &&
+    return (dateToSkip == null ||
+            dateToSkip!.daysLeftUntil() != calculatedDay) &&
         (endingDate == null || endingDate!.daysLeftUntil() >= calculatedDay) &&
         (startDate == null || startDate!.daysLeftUntil() <= calculatedDay);
   }

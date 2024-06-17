@@ -237,6 +237,17 @@ class MyDateController extends DateTime {
     return date;
   }
 
+  static List<int> weekDayCheck(String toCheck) {
+    var s = toCheck.toLowerCase();
+    var result = <int>[];
+    for (int i = 0; i< _daysEn.length; i++){
+      if (s.contains(_daysNe[i]) || s.contains(_daysNe[i])){
+        result.add(i);
+      }
+    }
+    return result;
+  }
+
   //----------------------------------------------------------------------
 
   static const List<String> months = [

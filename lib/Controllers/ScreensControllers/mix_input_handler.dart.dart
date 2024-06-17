@@ -225,14 +225,20 @@ mixin SearchField {
               flex: 2, child: _extraDatesFinder(onConfirmed, rangeController))
         ])),
         get, (s) {
-      var dateBefore = MyDateController.translate(dateController.text);
+      var weekdays = MyDateController.weekDayCheck(dateController.text);
+      if (weekdays.isNotEmpty){
+        DateRange(0,
+            _rangeCalculator(rangeController.text, MyDateController.today) ?? 0, weekdays);
+        return;
+      }
+      MyDateController? dateBefore = MyDateController.translate(dateController.text);
       if (dateBefore == null && rangeController.text.isEmpty) {
-        set(const DateRange(0, -1));
+        set(const DateRange(0, -1, []));
         return;
       }
       var date = dateBefore ?? MyDateController.today;
       var dateRange = DateRange(date.daysLeftUntil(),
-          _rangeCalculator(rangeController.text, date) ?? 0);
+          _rangeCalculator(rangeController.text, date) ?? 0, []);
       set(dateRange);
     });
   }
@@ -348,6 +354,7 @@ class InputObject<t> {
 final class DateRange {
   final int myDateFromNow;
   final int range;
+  final List<int> weekdays;
 
-  const DateRange(this.myDateFromNow, this.range);
+  const DateRange(this.myDateFromNow, this.range, this.weekdays);
 }
