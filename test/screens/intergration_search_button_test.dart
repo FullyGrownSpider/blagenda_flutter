@@ -11,6 +11,8 @@ import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/adding_sc
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/mix_input_handler.dart.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/search_screen_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
+import 'package:blagenda_flutter_simple/Loading/button_notifier.dart';
+import 'package:blagenda_flutter_simple/Loading/entity_notifier.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -35,7 +37,7 @@ void _searchButtons() {
     _year(1)
   ];
   SearchScreenController searcher =
-      SearchScreenController((_) async {}, testList, (_) {});
+      SearchScreenController((_) async {}, ButtonNotifier(EntityNotifier()));
   setSearches(searcher, testList, 'job', const DateRange(-1, -1, []), ['', '']);
   searcher.resetSearch();
   expect(searcher.foundItems.length, testList.length);
@@ -80,7 +82,7 @@ void _searchButtonsWeekday() {
     _year(114)
   ];
   SearchScreenController searcher =
-      SearchScreenController((_) async {}, testList, (_) {});
+      SearchScreenController((_) async {}, ButtonNotifier(EntityNotifier()));
   setSearches(
       searcher,
       testList,

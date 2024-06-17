@@ -20,12 +20,11 @@ class SearchScreen<T extends SearchAble> extends StatefulWidget {
 class _SearchScreenState<T extends SearchAble> extends State<SearchScreen<T>> {
   late final SearchScreenController _controller = SearchScreenController<T>(
       doPopLogic,
-      widget.notifier.getData().whereType<T>().toList(),
-      widget.notifier.addOrUpdate);
+      widget.notifier as StoreAbleNotifier<SearchAble>);
 
   Future<dynamic> doPopLogic(T item) async {
     if (widget.doWithClicked != null) {
-      widget.doWithClicked!(item).then((v) {
+      return widget.doWithClicked!(item).then((v) {
         if (widget.closeOnClickDone) {
           if (mounted && _currentContext != null) {
             Navigator.pop(_currentContext!, item);

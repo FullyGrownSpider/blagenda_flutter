@@ -14,7 +14,7 @@ const TextStyle inputTextStyle = TextStyle(
     color: Colors.white);
 
 mixin InputHandler on ButtonCreator {
-  InputObject<String> itemForStringAutoComplete(String hint,
+  InputObject<String, String> itemForStringAutoComplete(String hint,
       String Function() get, void Function(String) set, List<String> autoComp) {
     var initValue = TextEditingValue(text: get());
     var autoComplete = notQuiteFull(Autocomplete(
@@ -60,7 +60,7 @@ mixin InputHandler on ButtonCreator {
                                 ));
                           }))));
         }));
-    return InputObject<String>(autoComplete, get, set);
+    return InputObject<String, String>(autoComplete, get, set);
   }
 
   TextField _defaultTextField(
@@ -81,7 +81,7 @@ mixin InputHandler on ButtonCreator {
         focusNode: focusNode);
   }
 
-  InputObject<String> itemForString(
+  InputObject<String, String> itemForString(
       String hint, String Function() get, void Function(String) set) {
     TextEditingController stringController = TextEditingController(text: get());
     Widget displayWidget =
@@ -90,16 +90,17 @@ mixin InputHandler on ButtonCreator {
       set(s);
       stringController.text = s;
     };
-    return InputObject<String>(displayWidget, get, set);
+    return InputObject<String, String>(displayWidget, get, set);
   }
 
-  InputObject<MyDateController?> itemForMyDate(String hint,
+  InputObject<MyDateController?, MyDateController?> itemForMyDate(String hint,
       MyDateController? Function() get, void Function(MyDateController?) set) {
     TextEditingController stringController =
         TextEditingController(text: _dateDisplay(get()));
     var displayWidget = notQuiteFull(_defaultTextField(
         stringController, (s) => set(MyDateController.translate(s)), hint));
-    return InputObject<MyDateController?>(displayWidget, get, set);
+    return InputObject<MyDateController?, MyDateController?>(
+        displayWidget, get, set);
   }
 
   String _dateDisplay(MyDateController? controller) {
@@ -121,10 +122,10 @@ mixin InputHandler on ButtonCreator {
     }
   }
 
-  InputObject<bool> itemForBoolean(
+  InputObject<bool, bool> itemForBoolean(
       String hint, bool Function() get, void Function(bool) set) {
     final myBool = ValueNotifier(get());
-    return InputObject<bool>(
+    return InputObject<bool, bool>(
         BlagendaUniformButton(
             usedColors.first, () => '${get() ? '⬤' : '◯'} - $hint', () {
           var newBool = !get();
@@ -135,16 +136,17 @@ mixin InputHandler on ButtonCreator {
         set);
   }
 
-  InputObject<String> itemForStringList(
+  InputObject<String, String> itemForStringList(
       String hint, String Function() get, void Function(String) set) {
     var stringController = TextEditingController(text: get());
     Widget displayWidget = notQuiteFull(_defaultTextField(
         stringController, set, hint,
         maxLines: 5, keyboardType: TextInputType.multiline));
-    return InputObject<String>(displayWidget, get, (s) => '${s.trim()}\n');
+    return InputObject<String, String>(
+        displayWidget, get, (s) => '${s.trim()}\n');
   }
 
-  InputObject<int> itemForInt(
+  InputObject<int, int> itemForInt(
       String hint, int Function() get, void Function(int) set) {
     var stringController = TextEditingController(text: get().toString());
     var displayWidget = notQuiteFull(_defaultTextField(stringController, (s) {
@@ -155,12 +157,12 @@ mixin InputHandler on ButtonCreator {
         set(value);
       }
     }, hint, keyboardType: TextInputType.number));
-    return InputObject<int>(displayWidget, get, set);
+    return InputObject<int, int>(displayWidget, get, set);
   }
 
-  InputObject<int> itemForIntFromList(List<String> listToShow, String hint,
+  InputObject<int, int> itemForIntFromList(List<String> listToShow, String hint,
       int Function() get, void Function(int?) set) {
-    return InputObject<int>(
+    return InputObject<int, int>(
         _createDropDown(listToShow, hint, () => get(), (s) => set(s)),
         get,
         set);
@@ -189,9 +191,9 @@ mixin InputHandler on ButtonCreator {
         }));
   }
 
-  InputObject<Color> itemForColor(
+  InputObject<Color, Color> itemForColor(
       Color Function() get, void Function(Color) set) {
-    return InputObject<Color>(_widgetForColor(get, set), get, set);
+    return InputObject<Color, Color>(_widgetForColor(get, set), get, set);
   }
 
   Widget _widgetForColor(Color Function() get, void Function(Color) set) {
@@ -202,48 +204,66 @@ mixin InputHandler on ButtonCreator {
     });
   }
 
-  InputObject<dynamic> itemForReferenceAbleList(
+  InputObject<dynamic, String> itemForReferenceAbleList(
       dynamic Function() get,
-      void Function(dynamic) set,
+      void Function(String) set,
       void Function() onThingClick,
       String Function(dynamic) getNickname) {
     var but = BlagendaUniformButton(usedColors.first,
         () => get() == null ? "???" : getNickname(get()), onThingClick);
-    return InputObject<dynamic>(but, get, set);
+    return InputObject<dynamic, String>(but, get, set);
   }
 }
 
 mixin SearchField {
-  InputObject<DateRange> dateFinder(void Function() onConfirmed,
+  InputObject<DateRange, bool> dateFinder(void Function() onConfirmed,
       DateRange Function() get, void Function(DateRange) set) {
     TextEditingController dateController = TextEditingController(),
         rangeController = TextEditingController();
-    return InputObject(
-        notQuiteFull(Row(children: [
-          Expanded(flex: 3, child: _dateFinder(onConfirmed, dateController)),
-          Expanded(
-              flex: 2, child: _extraDatesFinder(onConfirmed, rangeController))
-        ])),
-        get, (s) {
-      var weekdays = MyDateController.weekDayCheck(dateController.text);
-      if (weekdays.isNotEmpty){
-        DateRange(0,
-            _rangeCalculator(rangeController.text, MyDateController.today) ?? 0, weekdays);
-        return;
+    actualSet(newSet) {
+      if (newSet) {
+        dateController.text = rangeController.text = '';
+        return const DateRange(0, -1, []);
       }
-      MyDateController? dateBefore = MyDateController.translate(dateController.text);
+      var weekdays = MyDateController.weekDayCheck(dateController.text);
+      if (weekdays.isNotEmpty) {
+        var dateRange = DateRange(
+            0,
+            _rangeCalculator(rangeController.text, MyDateController.today) ?? 0,
+            weekdays);
+        set(dateRange);
+        return dateRange;
+      }
+      MyDateController? dateBefore =
+          MyDateController.translate(dateController.text);
       if (dateBefore == null && rangeController.text.isEmpty) {
-        set(const DateRange(0, -1, []));
-        return;
+        var dateRange = const DateRange(0, -1, []);
+        set(dateRange);
+        return dateRange;
       }
       var date = dateBefore ?? MyDateController.today;
       var dateRange = DateRange(date.daysLeftUntil(),
           _rangeCalculator(rangeController.text, date) ?? 0, []);
       set(dateRange);
-    });
+      return dateRange;
+    }
+
+    return InputObject(
+        notQuiteFull(Row(children: [
+          Expanded(
+              flex: 3,
+              child: _dateFinder(
+                  onConfirmed, () => actualSet(false), dateController)),
+          Expanded(
+              flex: 2,
+              child: _extraDatesFinder(
+                  onConfirmed, () => actualSet(false), rangeController))
+        ])),
+        () => actualSet(false),
+        (s) => actualSet(s));
   }
 
-  InputObject<String> stringFinder(void Function() onConfirmed) {
+  InputObject<String, String> stringFinder(void Function() onConfirmed) {
     var textController = TextEditingController();
     return InputObject(notQuiteFull(_textFinder(textController, onConfirmed)),
         () => textController.text.toLowerCase(), (s) {
@@ -251,7 +271,8 @@ mixin SearchField {
     });
   }
 
-  InputObject<List<String>> tagFinder(void Function() onConfirmed) {
+  InputObject<List<String>, List<String>> tagFinder(
+      void Function() onConfirmed) {
     TextEditingController nameController = TextEditingController(),
         dataController = TextEditingController();
     return InputObject(
@@ -279,21 +300,22 @@ mixin SearchField {
     });
   }
 
-  Widget _dateFinder(
-      Function() onConfirmed, TextEditingController dateController) {
+  Widget _dateFinder(Function() onConfirmed, Function() set,
+      TextEditingController dateController) {
     return TextField(
         style: inputTextStyle,
         controller: dateController,
         onSubmitted: (s) {
           onConfirmed();
         },
+        onChanged: (_) => set,
         decoration: const InputDecoration(
             hintText: 'date to look up',
             border: OutlineInputBorder(gapPadding: 2)));
   }
 
-  Widget _extraDatesFinder(
-      Function() onConfirmed, TextEditingController rangeController) {
+  Widget _extraDatesFinder(Function() onConfirmed, Function() set,
+      TextEditingController rangeController) {
     return TextField(
         style: inputTextStyle,
         controller: rangeController,
@@ -303,6 +325,7 @@ mixin SearchField {
         onSubmitted: (s) {
           onConfirmed();
         },
+        onChanged: (_) => set,
         decoration: const InputDecoration(
             hintText: '+ numb or m/w',
             border: OutlineInputBorder(gapPadding: 3)));
@@ -343,15 +366,33 @@ Row notQuiteFull(Widget widget) => Row(children: [
       const Spacer()
     ]);
 
-class InputObject<t> {
+class InputObject<t, reset> {
   InputObject(this.displayWidget, this.getValue, this.setValue);
 
   Widget displayWidget;
   t Function() getValue;
-  void Function(t) setValue;
+  void Function(reset) setValue;
+  final Type type = reset;
+
+  void resetInput() {
+    switch (type) {
+      case const (int):
+        setValue(0 as reset);
+        break;
+      case const (String):
+        setValue('' as reset);
+        break;
+      case const (bool):
+        setValue(true as reset);
+        break;
+      default:
+        setValue(null as reset);
+        break;
+    }
+  }
 }
 
-final class DateRange {
+class DateRange {
   final int myDateFromNow;
   final int range;
   final List<int> weekdays;

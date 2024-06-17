@@ -241,7 +241,7 @@ class MyDateController extends DateTime {
     var s = toCheck.toLowerCase();
     var result = <int>[];
     for (int i = 0; i< _daysEn.length; i++){
-      if (s.contains(_daysNe[i]) || s.contains(_daysNe[i])){
+      if (s.contains(_daysEn[i]) || s.contains(_daysNe[i])){
         result.add(i);
       }
     }

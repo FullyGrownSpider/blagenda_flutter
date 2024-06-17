@@ -368,7 +368,7 @@ class _SelectorShow extends State<SelectorShow>
         });
   }
 
-  late final InputObject<bool> _chosenStateIsOne = itemForBoolean(
+  late final InputObject<bool, bool> _chosenStateIsOne = itemForBoolean(
       'Type of Item', () => widget._page.value, (s) => widget._page.value = s);
 
   List<Widget> _addButtonsForButtonType(Map<Type, String> typeList) {

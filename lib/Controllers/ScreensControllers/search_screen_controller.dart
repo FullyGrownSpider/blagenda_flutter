@@ -1,7 +1,9 @@
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/end_based_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter/material.dart';
 
+import '../../Loading/button_notifier.dart';
 import '../ObjectControllers/mix_search_able.dart';
 import '../blagenda_uniform_button.dart';
 import 'mix_day_creator.dart';
@@ -9,9 +11,6 @@ import 'mix_input_handler.dart.dart';
 
 class SearchScreenController<T extends SearchAble> extends ChangeNotifier
     with DayCreator, SearchField {
-  ///needs to be sorted
-  final List<T> _everything;
-
   String _searchingText = '';
   final Future<dynamic> Function(T) _doActionWithClickedItem;
   @visibleForTesting
@@ -20,24 +19,23 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
   final List<T> foundItems = [];
   final List<Widget> _list = [];
   DateRange date = const DateRange(0, -1, []);
-  final void Function(T) _reAdd;
   late final Widget searchBut =
-      BlagendaUniformButton(usedColors.last, () => 'Search', onConfirmed);
+      BlagendaUniformButton(usedColors.last, () => 'Search', resetSearch);
 
+  StoreAbleNotifier<SearchAble> notifier;
 
-  SearchScreenController(
-      this._doActionWithClickedItem, this._everything, this._reAdd) {
+  SearchScreenController(this._doActionWithClickedItem, this.notifier) {
     Set searchesSet = {};
-    for (var e in _everything) {
+    for (var e in notifier.getData().whereType<T>()) {
       searchesSet.addAll(e.possibleSearches());
     }
     for (var key in searchesSet) {
       if (key == SearchTypes.date) {
-        searches[key] = dateFinder(onConfirmed, () => date, (s) => date = s);
+        searches[key] = dateFinder(resetSearch, () => date, (s) => date = s);
       } else if (key == SearchTypes.string) {
-        searches[key] = stringFinder(onConfirmed);
+        searches[key] = stringFinder(resetSearch);
       } else if (key == SearchTypes.tag) {
-        searches[key] = tagFinder(onConfirmed);
+        searches[key] = tagFinder(resetSearch);
       }
     }
     resetSearch();
@@ -46,18 +44,13 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
   static const TextStyle styleDays =
       TextStyle(fontSize: 20.0, height: 2.5, color: Colors.green);
 
-  void onConfirmed() {
-    resetSearch();
-    notifyListeners();
-  }
-
   @visibleForTesting
   void resetSearch() {
-    if (_everything.isEmpty) {
+    if (notifier.getData().whereType<T>().isEmpty) {
       _searchingText = 'no items';
       return;
     }
-    var everyThingCopy = [..._everything];
+    var everyThingCopy = [...notifier.getData().whereType<T>()];
     _searchingText = '';
     foundItems.clear();
     Map<T, int> scoreMap = {};
@@ -65,7 +58,10 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
       var data = searches[SearchTypes.date]!.getValue() as DateRange;
       if (data.range > -1) {
         var from = MyDateController.fromDaysFromNow(data.myDateFromNow);
-        if (data.range == 0) {
+        if (data.weekdays.isNotEmpty) {
+          _searchingText =
+              'Every {weekday(s)} ${data.range == 0 ? '' : 'for ${data.range} weeks'}';
+        } else if (data.range == 0) {
           _searchingText =
               'On ${from.stringFullDisplayWithCal(from.year == MyDateController.today.year)}';
         } else {
@@ -121,16 +117,19 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
         }
       }
     }
-    if (everyThingCopy.isEmpty || scoreMap.isEmpty) {
+    //reset with no search
+    if (_searchingText.isEmpty) {
       foundItems
-        ..addAll(_everything.where((e) => e.shouldShowWhenStarting()))
+        ..addAll(notifier
+            .getData()
+            .whereType<T>()
+            .where((e) => e.shouldShowWhenStarting()))
         ..sort();
-      _foundToWidget();
-      return;
+    } else {
+      foundItems
+        ..addAll(everyThingCopy)
+        ..sort((a, b) => scoreMap[b]!.compareTo(scoreMap[a]!));
     }
-    foundItems
-      ..addAll(everyThingCopy)
-      ..sort((a, b) => scoreMap[b]!.compareTo(scoreMap[a]!));
     _foundToWidget();
   }
 
@@ -143,10 +142,9 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
   }
 
   void _foundToWidget() {
-    if (_everything.isEmpty) {
-      _list
-        ..clear()
-        ..add(const Center(child: Text('No items')));
+    _list.clear();
+    if (notifier.getData().whereType<T>().isEmpty) {
+      _list.add(const Center(child: Text('No items')));
       return;
     }
     List<Widget> toFill = [];
@@ -158,21 +156,51 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
 
       toFill.add(bigSplitterTextField);
       //fill all found items
-      for (var item in foundItems) {
-        toFill.add(smallBlankSplit);
-        toFill.add(
-            BlagendaUniformButton(item.displayColor(), item.searchDisplay, () {
-          _doActionWithClickedItem(item).then((value) {
-            if (true == value) {
-              _everything.remove(item);
+      if (searches.containsKey(SearchTypes.date) &&
+          (searches[SearchTypes.date]!.getValue() as DateRange)
+              .weekdays
+              .isNotEmpty) {
+        var dateRange = searches[SearchTypes.date]!.getValue() as DateRange;
+        for (int i = 0; i <= dateRange.range; i++) {
+          var tempController =
+              MyDateController.today.add(Duration(days: i * 7));
+          for (var weekday in dateRange.weekdays) {
+            var superTempController = tempController
+                .add(Duration(days: weekday - MyDateController.today.weekday));
+            toFill.addAll(createADay(
+                MyDateController.today,
+                notifier.getData().whereType<EndBasedController>().toList(),
+                superTempController.daysLeftUntil(),
+                (item, _) => BlagendaUniformButton(
+                        item.displayColor(), item.searchDisplay, () {
+                      _doActionWithClickedItem(item as T).then((value) {
+                        if (true == value) {
+                          notifier.delete(item as T);
+                        } else if (false == value) {
+                          notifier.addOrUpdate(item as T);
+                        }
+                        resetSearch();
+                      });
+                    }),
+                false,
+                false));
+          }
+        }
+      } else {
+        for (var item in foundItems) {
+          toFill.add(smallBlankSplit);
+          toFill.add(BlagendaUniformButton(
+              item.displayColor(), item.searchDisplay, () {
+            _doActionWithClickedItem(item).then((value) {
+              if (true == value) {
+                notifier.delete(item);
+              } else if (false == value) {
+                notifier.addOrUpdate(item);
+              }
               resetSearch();
-            } else if (false == value) {
-              _everything.remove(item);
-              _reAdd(item);
-              resetSearch();
-            }
-          });
-        }));
+            });
+          }));
+        }
       }
     } else if (foundItems.isNotEmpty) {
       toFill.add(bigSplitterTextField);
@@ -185,7 +213,7 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
             BlagendaUniformButton(item.displayColor(), item.searchDisplay, () {
           _doActionWithClickedItem(item).then((value) {
             if (true == value) {
-              _everything.remove(item);
+              notifier.delete(item);
               resetSearch();
             }
           });
@@ -195,13 +223,12 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
     _list
       ..clear()
       ..addAll(toFill);
+    notifyListeners();
   }
 
   void fullSearchReset() {
     for (var item in searches.values) {
-      if (item.getValue() is String) {
-        item.setValue("");
-      }
+      item.resetInput();
     }
     resetSearch();
   }
