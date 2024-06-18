@@ -169,12 +169,32 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
             }
           }
         } else {
-          //fill with days you selected
-          for (int i = range.myDateFromNow;
-              i <= range.myDateFromNow + range.range;
-              i++) {
-            var tempController = MyDateController.today.add(Duration(days: i));
-            toFill.addAll(createDayThingy(tempController));
+          if (range.range == -1) {
+            foundItems.sort((SearchAble a, SearchAble b) {
+              if (a is! EndBasedController || b is! EndBasedController) {
+                return -1;
+              }
+              return a.daysLeft.compareTo(b.daysLeft);
+            });
+            int lastFromNow = -10;
+            for (var item in foundItems.whereType<EndBasedController>()) {
+              if (lastFromNow == item.daysLeft) {
+                continue;
+              }
+              lastFromNow = item.daysLeft;
+              var tempController =
+                  MyDateController.today.add(Duration(days: lastFromNow));
+              toFill.addAll(createDayThingy(tempController));
+            }
+          } else {
+            //fill with days you selected
+            for (int i = range.myDateFromNow;
+                i <= range.myDateFromNow + range.range;
+                i++) {
+              var tempController =
+                  MyDateController.today.add(Duration(days: i));
+              toFill.addAll(createDayThingy(tempController));
+            }
           }
         }
       } else {
@@ -223,8 +243,15 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
         MyDateController.today,
         notifier.getData().whereType<EndBasedController>().toList(),
         tempDate.daysLeftUntil(),
-        (item, _) =>
-            BlagendaUniformButton(item.displayColor(), item.searchDisplay, () {
+        (item, _) => BlagendaUniformButton(
+                item.displayColor(),
+                () =>
+                    item.searchDisplay() +
+                    (foundItems.any((e) =>
+                            item.id == e.id &&
+                            item.runtimeType == e.runtimeType)
+                        ? '\n\n----'
+                        : ''), () {
               _doActionWithClickedItem(item as T).then((value) {
                 if (true == value) {
                   notifier.delete(item as T);
