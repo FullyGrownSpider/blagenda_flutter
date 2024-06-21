@@ -96,7 +96,7 @@ class AgainAmountController extends SkippableEndBasedController<AgainAmountDay> 
 
   @override
   void create() {
-    while (startDate!.isBefore(MyDateController.yesterday)) {
+    while (startDate!.isBefore(MyDateController.yesterday.addOrRemoveDays(-1))) {
       button.startDate = button.startDate!.addOrRemoveDays(day);
       requiresChange = true;
     }
