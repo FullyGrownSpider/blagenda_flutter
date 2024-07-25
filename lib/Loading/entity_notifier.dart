@@ -26,7 +26,7 @@ class EntityNotifier
   @override
   void addOrUpdate(EntityController entity) {
     _entities.add(entity);
-    _loading.updateData(entity);
+    _loading.updateData(entity.myEntity);
     notifyListeners();
   }
 

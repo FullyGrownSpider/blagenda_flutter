@@ -96,13 +96,17 @@ class AddingEntityScreenController extends ChangeNotifier
       if (entity.tags[i].data is String) {
         if (entity.tags[i].data.contains('\n')) {
           type = 1;
+          inputObject = itemForStringList(
+              'Description',
+                  () => _storedValues[i.toString()],
+                  (s) => _storedValues[i.toString()] = s);
         } else {
           type = 0;
+          inputObject = itemForString(
+              'Description',
+                  () => _storedValues[i.toString()],
+                  (s) => _storedValues[i.toString()] = s);
         }
-        inputObject = itemForStringList(
-            'Description',
-            () => _storedValues[i.toString()],
-            (s) => _storedValues[i.toString()] = s);
       } else if (entity.tags[i].data is BasicButtonController) {
         type = 2;
         inputObject = itemForReferenceAbleList(
