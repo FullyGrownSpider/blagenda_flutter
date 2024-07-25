@@ -51,7 +51,7 @@ class AddingEntityScreenController extends ChangeNotifier
     _nextAddButton = itemForIntFromList(types, _tagListText, () => -1, (s) {
       if (s == null) return;
       _addNewTag(s);
-    });
+    }, false);
 
     getEntity = () {
       var tagList = <Tag>[];

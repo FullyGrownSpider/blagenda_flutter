@@ -16,9 +16,9 @@ const TextStyle inputTextStyle = TextStyle(
 mixin InputHandler on ButtonCreator {
   InputObject<String, String> itemForStringAutoComplete(String hint,
       String Function() get, void Function(String) set, List<String> autoComp) {
-    var initValue = TextEditingValue(text: get());
+    var result = InputObject<String, String>(const Text(''), get, set);
     var autoComplete = notQuiteFull(Autocomplete(
-        initialValue: initValue,
+        initialValue: TextEditingValue(text: get()),
         optionsBuilder: (TextEditingValue textEditingValue) async {
           if (textEditingValue.text.length < 3) {
             return const Iterable<String>.empty();
@@ -34,6 +34,10 @@ mixin InputHandler on ButtonCreator {
             TextEditingController textEditingController,
             FocusNode focusNode,
             VoidCallback onFieldSubmitted) {
+          result.setValue = (s) {
+            textEditingController.text = s;
+            set(s);
+          };
           return _defaultTextField(textEditingController, set, hint,
               focusNode: focusNode);
         },
@@ -60,7 +64,8 @@ mixin InputHandler on ButtonCreator {
                                 ));
                           }))));
         }));
-    return InputObject<String, String>(autoComplete, get, set);
+    result.displayWidget = autoComplete;
+    return result;
   }
 
   TextField _defaultTextField(
@@ -86,11 +91,10 @@ mixin InputHandler on ButtonCreator {
     TextEditingController stringController = TextEditingController(text: get());
     Widget displayWidget =
         notQuiteFull(_defaultTextField(stringController, set, hint));
-    set = (s) {
+    return InputObject<String, String>(displayWidget, get, (s) {
       set(s);
       stringController.text = s;
-    };
-    return InputObject<String, String>(displayWidget, get, set);
+    });
   }
 
   InputObject<MyDateController?, MyDateController?> itemForMyDate(String hint,
@@ -99,8 +103,11 @@ mixin InputHandler on ButtonCreator {
         TextEditingController(text: _dateDisplay(get()));
     var displayWidget = notQuiteFull(_defaultTextField(
         stringController, (s) => set(MyDateController.translate(s)), hint));
-    return InputObject<MyDateController?, MyDateController?>(
-        displayWidget, get, set);
+    return InputObject<MyDateController?, MyDateController?>(displayWidget, get,
+        (d) {
+      set(d);
+      stringController.text = d == null ? '' : d.stringDayDisplay();
+    });
   }
 
   String _dateDisplay(MyDateController? controller) {
@@ -132,8 +139,10 @@ mixin InputHandler on ButtonCreator {
           set(newBool);
           myBool.value = newBool;
         }, isSelected: myBool),
-        get,
-        set);
+        get, (b) {
+      set(b);
+      myBool.value = b;
+    });
   }
 
   InputObject<String, String> itemForStringList(
@@ -142,8 +151,11 @@ mixin InputHandler on ButtonCreator {
     Widget displayWidget = notQuiteFull(_defaultTextField(
         stringController, set, hint,
         maxLines: 5, keyboardType: TextInputType.multiline));
-    return InputObject<String, String>(
-        displayWidget, get, (s) => '${s.trim()}\n');
+    return InputObject<String, String>(displayWidget, get, (s) {
+      var data = '${s.trim()}\n';
+      set(data);
+      stringController.text = data;
+    });
   }
 
   InputObject<int, int> itemForInt(
@@ -157,22 +169,17 @@ mixin InputHandler on ButtonCreator {
         set(value);
       }
     }, hint, keyboardType: TextInputType.number));
-    return InputObject<int, int>(displayWidget, get, set);
+    return InputObject<int, int>(displayWidget, get, (s) {
+      set(s);
+      stringController.text = s.toString();
+    });
   }
 
   InputObject<int, int> itemForIntFromList(List<String> listToShow, String hint,
-      int Function() get, void Function(int?) set) {
-    return InputObject<int, int>(
-        _createDropDown(listToShow, hint, () => get(), (s) => set(s)),
-        get,
-        set);
-  }
-
-  Widget _createDropDown(List<String> listToShow, String hint,
-      int Function() get, void Function(int) set) {
+      int Function() get, void Function(int?) set, [bool shouldSwitch = true]) {
     int value = get();
     var change = ValueNotifier<int>(value);
-    return notQuiteFull(DropdownButton<String>(
+    var display = notQuiteFull(DropdownButton<String>(
         hint: ValueListenableBuilder(
             valueListenable: change,
             builder: (context, subValue, widget) => Text(subValue == -1
@@ -187,21 +194,25 @@ mixin InputHandler on ButtonCreator {
         onChanged: (s) {
           var value = listToShow.indexOf(s ?? '') + 1;
           set(value);
-          change.value = value;
+          if (shouldSwitch) {
+            change.value = value;
+          }
         }));
+    return InputObject<int, int>(display, get, (i) {
+      set(i);
+      change.value = i;
+    });
   }
 
   InputObject<Color, Color> itemForColor(
       Color Function() get, void Function(Color) set) {
-    return InputObject<Color, Color>(_widgetForColor(get, set), get, set);
-  }
-
-  Widget _widgetForColor(Color Function() get, void Function(Color) set) {
     ValueNotifier<int> colorValue =
         ValueNotifier(usedColors.indexWhere((c) => c.value == get().value));
-    return ColorButtons(colorValue, (_) {
+    var colButs = ColorButtons(colorValue, (_) {
       set(usedColors[colorValue.value]);
     });
+    return InputObject<Color, Color>(
+        colButs, get, (col) => colorValue.value = usedColors.indexOf(col));
   }
 
   InputObject<dynamic, String> itemForReferenceAbleList(
