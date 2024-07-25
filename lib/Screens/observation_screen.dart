@@ -42,6 +42,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
     if (awns || force) {
       MyDateController.resetDate();
       lastHour = MyDateController.lookTime.hour;
+      widget._buttonNotifier
+          .awaitLoading()
+          .then((_) => _controller.updateButtonsDay());
       widget._buttonNotifier.dataSyncLowKey();
     } else if (MyDateController.didHourPass(lastHour)) {
       lastHour = MyDateController.lookTime.hour;

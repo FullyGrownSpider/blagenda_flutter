@@ -13,8 +13,8 @@ import 'mix_input_handler.dart.dart';
 
 class AddingEntityScreenController extends ChangeNotifier
     with ButtonCreator, DayCreator, InputHandler {
-  late final InputObject _nextName;
-  late final InputObject _nextAddButton;
+  late final InputObject<String, String> _nextName;
+  late final InputObject<int, int> _nextAddButton;
 
   String nextName = '';
   late final EntityController? Function() getEntity;

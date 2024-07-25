@@ -23,6 +23,10 @@ class ObservationScreenController {
     });
   }
 
+  void updateButtonsDay() =>
+      observationScreenButtons.updateEndBasedToCurrentDay(
+          _notifier.getData(), _notifier.deleteList, _notifier.updateList);
+
   void deselect() => observationScreenButtons.resetCounters();
 
   List<Widget> getWidgetListNote() =>

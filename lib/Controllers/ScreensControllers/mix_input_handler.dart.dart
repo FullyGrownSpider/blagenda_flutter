@@ -223,7 +223,7 @@ mixin SearchField {
     actualSet(newSet) {
       if (newSet) {
         dateController.text = rangeController.text = '';
-        return const DateRange(0, -1, []);
+        return DateRange.noDate;
       }
       var weekdays = MyDateController.weekDayCheck(dateController.text);
       if (weekdays.isNotEmpty) {
@@ -237,7 +237,7 @@ mixin SearchField {
       MyDateController? dateBefore =
           MyDateController.translate(dateController.text);
       if (dateBefore == null && rangeController.text.isEmpty) {
-        var dateRange = const DateRange(0, -1, []);
+        var dateRange = DateRange.noDate;
         set(dateRange);
         return dateRange;
       }
@@ -396,6 +396,8 @@ class DateRange {
   final int myDateFromNow;
   final int range;
   final List<int> weekdays;
+
+  static DateRange noDate = const DateRange(0, -1, []);
 
   const DateRange(this.myDateFromNow, this.range, this.weekdays);
 }

@@ -37,6 +37,14 @@ class ButtonNotifier
 
   final List<bool> _loaded = [false, false, false, false, false, false, false];
 
+  bool loaded() => _loaded.any((e) => !e);
+
+  Future<void> awaitLoading() async {
+    while (loaded()) {
+      await Future.delayed(const Duration(milliseconds: 1));
+    }
+  }
+
   ButtonNotifier(this.entities);
 
   @override
@@ -65,9 +73,7 @@ class ButtonNotifier
         _loaded[i] = true;
       });
     }
-    while (_loaded.any((e) => !e)) {
-      await Future.delayed(const Duration(milliseconds: 1));
-    }
+    await awaitLoading();
     notifyListeners();
   }
 
@@ -96,6 +102,27 @@ class ButtonNotifier
     buttons
         .removeWhere((e) => e.runtimeType == but.runtimeType && e.id == but.id);
     _loading.deleteButton(but);
+    hardPoint = true;
+    notifyListeners();
+  }
+
+  void deleteList(List<BasicButtonController> buts) {
+    for (var but in buts) {
+      buttons
+        .removeWhere((e) => e.runtimeType == but.runtimeType && e.id == but.id);
+    }
+    _loading.deleteButtons(buts);
+    hardPoint = true;
+    notifyListeners();
+  }
+
+  void updateList(List<BasicButtonController> buts) {
+    for (var but in buts) {
+      buttons
+          .removeWhere((e) => e.runtimeType == but.runtimeType && e.id == but.id);
+    }
+    buttons.addAll(buts);
+    _loading.updateButtons(buts);
     hardPoint = true;
     notifyListeners();
   }

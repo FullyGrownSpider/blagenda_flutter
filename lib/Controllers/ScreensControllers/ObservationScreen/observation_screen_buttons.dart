@@ -33,7 +33,6 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
     List<EndBasedController> itemsToChange =
         itemsToCheck.where((e) => e.requiresChange).toList();
     delete(itemsToChange.whereType<DeadlineController>().toList());
-    allItems.removeWhere((e) => e is DeadlineController && e.requiresChange);
     delete(itemsToChange
         .where((e) => e is SkippableEndBasedController && e.wantDeleteMe())
         .toList());
