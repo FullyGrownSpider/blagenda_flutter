@@ -10,9 +10,13 @@ class EntityNotifier
   final List<EntityController> _entities = [];
 
   final Loading _loading = Loading();
+  bool loading = false;
 
-  Future<void> init() {
+  Future<void> init() async {
+    if (loading) return;
+    loading = true;
     return _loading.getData<Entity>().then((x) {
+      loading = false;
       _entities.addAll(x.whereType<EntityController>());
       notifyListeners();
     });
@@ -25,6 +29,8 @@ class EntityNotifier
 
   @override
   void addOrUpdate(EntityController entity) {
+    _entities.removeWhere(
+            (e) => e.runtimeType == entity.runtimeType && e.id == entity.id);
     _entities.add(entity);
     _loading.updateData(entity.myEntity);
     notifyListeners();
@@ -49,5 +55,10 @@ class EntityNotifier
   }
 
   @override
-  List<EntityController> getData() => _entities;
+  List<EntityController> getData() {
+    if (_entities.isEmpty) {
+      init();
+    }
+    return _entities;
+  }
 }

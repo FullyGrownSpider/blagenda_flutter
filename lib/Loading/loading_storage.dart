@@ -148,6 +148,7 @@ class SuperStorage {
   }
 
   Future<void> addItem(String string) async {
+    if (string.contains('\n')) throw Exception('illegal character');
     await _doAction(() => _addItem(string));
   }
 
@@ -157,7 +158,21 @@ class SuperStorage {
     await _writeStrings(values);
   }
 
+  Future<void> addItems(List<String> string) async {
+    if (string.contains('\n')) throw Exception('illegal character');
+    await _doAction(() => _addItems(string));
+  }
+
+  Future<void> _addItems(List<String> string) async {
+    var values = await _readAllData();
+    values.addAll(string);
+    await _writeStrings(values);
+  }
+
   Future<void> update(String newItem, String uniquePart) async {
+    if (uniquePart.contains('\n') || newItem.contains('\n')) {
+      throw Exception('illegal character');
+    }
     await _doAction(() => _update(newItem, uniquePart));
   }
 
@@ -181,6 +196,10 @@ class SuperStorage {
   }
 
   Future<void> updateAll(List<String> newItem, List<String> uniquePart) async {
+    if (newItem.any((s) => s.contains('\n')) ||
+        newItem.any((s) => s.contains('\n'))) {
+      throw Exception('illegal character');
+    }
     await _doAction(() => _updateAll(newItem, uniquePart));
   }
 
@@ -194,10 +213,16 @@ class SuperStorage {
   }
 
   Future<void> delete(String uniquePart) async {
+    if (uniquePart.contains('\n')) {
+      throw Exception('illegal character');
+    }
     await _doAction(() => _delete(uniquePart));
   }
 
   Future<void> deleteAll(List<String> uniquePart) async {
+    if (uniquePart.any((s) => s.contains('\n'))) {
+      throw Exception('illegal character');
+    }
     await _doAction(() => _deleteAll(uniquePart));
   }
 
@@ -217,7 +242,7 @@ class SuperStorage {
 
   Future<void> waitTurn() async {
     while (working) {
-      await Future.delayed(const Duration(milliseconds: 511));
+      await Future.delayed(const Duration(milliseconds: 213));
     }
   }
 }
