@@ -51,6 +51,7 @@ class ButtonNotifier
   List<BasicButtonController> getData() => buttons;
 
   Future<void> init() async {
+    buttons.clear();
     for (int i = 0; i < _loaded.length; i++) {
       _loaded[i] = false;
       _toLoad[i](_loading).then((value) {
@@ -139,6 +140,7 @@ class ButtonNotifier
 
   Future<void> dataSync() => _loading.downloadDatabaseFiles().then((x) {
         init().then((x) {
+
           hardPoint = true;
           notifyListeners();
         });
