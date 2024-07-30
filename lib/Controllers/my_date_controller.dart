@@ -93,20 +93,21 @@ class MyDateController extends DateTime {
   String stringDayDisplay() => '${formatDate(this, [D])}: ';
 
   /// will translate a representation of a date to an actual usable date
-  /// will change + to 7 extra days and * to 2
+  /// (7th to the next 7th of the month, 31 is something that happens in 31 days and
+  /// 12-12-50 will be the 12th day of the 12th month on the 50th year)
+  /// will change + to 7 extra days and * to 1
   /// so 'su+' is the sunday after next sunday
-  /// 'su##' will be sunday after 4 days
-  static MyDateController? translate(String myNumb) {
-    int toAdd = '+'.allMatches(myNumb).length * 7;
-    myNumb = myNumb.replaceAll('+', '');
-    toAdd += '*'.allMatches(myNumb).length * 2;
-    myNumb = myNumb.replaceAll('*', '');
-    myNumb = myNumb
-        .replaceAll('-', ' ')
-        .replaceAll('.', ' ')
-        .replaceAll(',', ' ')
+  /// 'su**' will be 2 days after the next sunday
+  static MyDateController? translate(String dateToBe) {
+    int extraDays =
+        '+'.allMatches(dateToBe).length * 7 + '*'.allMatches(dateToBe).length;
+    dateToBe = dateToBe
+        .replaceAll(RegExp(r'[+*]'), '')
+        .replaceAll(RegExp(r'[-.,]'), ' ')
+        .toLowerCase()
         .trim();
-    List<String> parts = myNumb.toLowerCase().split(' ');
+
+    List<String> parts = dateToBe.split(' ');
     parts.removeWhere((e) => e.isEmpty);
     if (parts.length > 3) {
       return null;
@@ -114,16 +115,17 @@ class MyDateController extends DateTime {
     if (parts.length == 1) {
       MyDateController? theDate =
           _ifDateOnlyOneChar(parts.first) ?? _endsOrdinal(parts.first);
-      return theDate?.add(Duration(days: toAdd));
+      return theDate?.add(Duration(days: extraDays));
     }
 
-    int? dateY = _consumeYear(parts);
-    int? dateM =
-        _consumeMonthLetter(parts) ?? _consumeMonth(parts, dateY == null);
-    if (parts.isEmpty || dateM == null) return null;
-    int? dateD = int.tryParse(parts.last);
-    if (dateD == null) return null;
-    return _createDate(dateY, dateM, dateD).add(Duration(days: toAdd));
+    int? dateYears = _consumeYear(parts);
+    int? dateMonths =
+        _consumeMonthLetter(parts) ?? _consumeMonth(parts, dateYears == null);
+    if (parts.isEmpty || dateMonths == null) return null;
+    int? dateDays = int.tryParse(parts.last);
+    if (dateDays == null) return null;
+    return _createDate(dateYears, dateMonths, dateDays)
+        .add(Duration(days: extraDays));
   }
 
   static int? _consumeYear(List<String> parts) {
@@ -240,8 +242,8 @@ class MyDateController extends DateTime {
   static List<int> weekDayCheck(String toCheck) {
     var s = toCheck.toLowerCase();
     var result = <int>[];
-    for (int i = 0; i< _daysEn.length; i++){
-      if (s.contains(_daysEn[i]) || s.contains(_daysNe[i])){
+    for (int i = 0; i < _daysEn.length; i++) {
+      if (s.contains(_daysEn[i]) || s.contains(_daysNe[i])) {
         result.add(i);
       }
     }

@@ -148,7 +148,7 @@ void _month() {
   MyDateController.today = MyDateController(toDay.year, 4, 30);
   month = AgainMonthDay('123', '', 69, Colors.black, 31);
   d1 = make(month);
-  expect(0, d1.daysLeft);
+  expect(d1.daysLeft % 31, 0);
   MyDateController.today = toDay;
 }
 

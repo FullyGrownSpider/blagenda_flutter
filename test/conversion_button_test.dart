@@ -1,5 +1,6 @@
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:blagenda_flutter_simple/Loading/conversion_base.dart';
+import 'package:blagenda_flutter_simple/Loading/loading_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'screens/default_buttons.dart';
@@ -13,7 +14,14 @@ void main() {
   test('year', _year);
   test('month', _month);
   test('day', _day);
+  test('error when error?', _errorTest);
   // test('test normal input', testInput);
+}
+
+void _errorTest(){
+  expect(SuperStorage.newLineCheck('\n'), true);
+  expect(SuperStorage.newLineCheck('\r'), true);
+  expect(SuperStorage.newLineCheck('ITS NOT BUTTER DAMMIT'), false);
 }
 
 void _deadline() {

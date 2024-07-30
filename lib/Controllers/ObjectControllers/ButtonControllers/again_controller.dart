@@ -149,13 +149,13 @@ class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
       //if this month does not have 31 days get the last one
       int daysInMonth = DateTimeRange(
               start: MyDateController(
-                  MyDateController.today.year, MyDateController.today.month),
+                  dateController.year, dateController.month),
               end: MyDateController(
-                  MyDateController.today.year, MyDateController.today.month + 1))
+                  dateController.year, dateController.month + 1))
           .duration
           .inDays;
       dateController = MyDateController(
-          MyDateController.today.year, MyDateController.today.month, daysInMonth);
+          dateController.year, dateController.month, daysInMonth);
     }
   }
 

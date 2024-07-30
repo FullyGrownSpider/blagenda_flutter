@@ -148,7 +148,7 @@ class SuperStorage {
   }
 
   Future<void> addItem(String string) async {
-    if (string.contains('\n')) throw Exception('illegal character');
+    if (newLineCheck(string)) throw Exception('illegal character');
     await _doAction(() => _addItem(string));
   }
 
@@ -159,7 +159,7 @@ class SuperStorage {
   }
 
   Future<void> addItems(List<String> string) async {
-    if (string.contains('\n')) throw Exception('illegal character');
+    if (string.any(newLineCheck)) throw Exception('illegal character');
     await _doAction(() => _addItems(string));
   }
 
@@ -170,7 +170,7 @@ class SuperStorage {
   }
 
   Future<void> update(String newItem, String uniquePart) async {
-    if (uniquePart.contains('\n') || newItem.contains('\n')) {
+    if (newLineCheck(uniquePart) || newLineCheck(newItem)) {
       throw Exception('illegal character');
     }
     await _doAction(() => _update(newItem, uniquePart));
@@ -196,8 +196,8 @@ class SuperStorage {
   }
 
   Future<void> updateAll(List<String> newItem, List<String> uniquePart) async {
-    if (newItem.any((s) => s.contains('\n')) ||
-        newItem.any((s) => s.contains('\n'))) {
+    if (uniquePart.any(newLineCheck) ||
+        newItem.any(newLineCheck)) {
       throw Exception('illegal character');
     }
     await _doAction(() => _updateAll(newItem, uniquePart));
@@ -213,14 +213,14 @@ class SuperStorage {
   }
 
   Future<void> delete(String uniquePart) async {
-    if (uniquePart.contains('\n')) {
+    if (newLineCheck(uniquePart)) {
       throw Exception('illegal character');
     }
     await _doAction(() => _delete(uniquePart));
   }
 
   Future<void> deleteAll(List<String> uniquePart) async {
-    if (uniquePart.any((s) => s.contains('\n'))) {
+    if (uniquePart.any((s) => newLineCheck(s))) {
       throw Exception('illegal character');
     }
     await _doAction(() => _deleteAll(uniquePart));
@@ -245,4 +245,6 @@ class SuperStorage {
       await Future.delayed(const Duration(milliseconds: 213));
     }
   }
+  static final RegExp lineEnd = RegExp(r'[\r\n\f]');
+  static bool newLineCheck(String s) => (s.contains(lineEnd));
 }

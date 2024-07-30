@@ -15,7 +15,7 @@ abstract class EndBasedController<t extends BasicButton>
   static final RegExp _regFix = RegExp(r'[-,.:]');
   static final RegExp _regNum = RegExp(r'[^0-9-,.:]');
   static final RegExp _daysReg =
-      RegExp(r"((?:lasts|duurt|D|d) ?\d+)|\d+ ?(?:days|l[oa]ng|dagen|d\b|D\b)");
+      RegExp(r"([ \n\r\f]|^)(((?:lasts|duurt|D|d) ?\d+)|(\d+ ?(?:days|l[oa]ng|dagen|d|D)))([ \n\r\f]|$)");
 
   static const int showDayOfWeek = 6;
   static const int showDayTime = 4;

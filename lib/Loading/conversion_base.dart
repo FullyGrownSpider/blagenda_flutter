@@ -1,5 +1,6 @@
 import 'package:blagenda_flutter_simple/Commons/store_able.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/weird_again_controller.dart';
+import 'package:blagenda_flutter_simple/Loading/loading_storage.dart';
 import 'package:flutter/material.dart';
 
 import '../Commons/Models/Buttons/again.dart';
@@ -116,8 +117,9 @@ final Map<Type, dynamic Function(String?)> dataImportGeneratorMap = {
 final Map<Type, void Function(dynamic, StringBuffer)> _dataExportMap = {
   MaterialColor: (value, buf) => _dataExportMap[Color]!(value, buf),
   MaterialAccentColor: (value, buf) => _dataExportMap[Color]!(value, buf),
-  String: (value, buf) =>
-      buf.write(value.toString().replaceAll('\n', storageListSep)),
+  String: (value, buf) => buf.write(value
+      .toString()
+      .replaceAll(SuperStorage.lineEnd, storageListSep)),
   Color: (value, buf) {
     buf.write(value.red);
     buf.write(storageListSep);
@@ -141,7 +143,9 @@ final Map<Type, void Function(dynamic, StringBuffer)> _dataExportMap = {
         if (e.data is TagObjectReference) {
           _dataExportMap[TagObjectReference]!(e.data, buf);
         } else {
-          buf.write(e.data.toString().replaceAll('\n', '\\n'));
+          buf.write(e.data
+              .toString()
+              .replaceAll(SuperStorage.lineEnd, '\\n'));
         }
         buf.write(storageListSep + storageListSep);
       }),

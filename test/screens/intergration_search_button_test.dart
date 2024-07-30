@@ -36,8 +36,11 @@ void _searchButtons() {
     _week(12),
     _year(1)
   ];
-  SearchScreenController searcher =
-      SearchScreenController((_) async {}, ButtonNotifier(EntityNotifier()));
+  SearchScreenController searcher = SearchScreenController(
+      (_) async {},
+      ButtonNotifier(EntityNotifier())
+        ..getData()
+        .addAll(testList));
   setSearches(searcher, testList, 'job', const DateRange(-1, -1, []), ['', '']);
   searcher.resetSearch();
   expect(searcher.foundItems.length, testList.length);
@@ -61,7 +64,8 @@ void _searchButtons() {
 
   setSearches(searcher, testList, 'job', const DateRange(0, 0, []), ['', '']);
   searcher.resetSearch();
-  expect(searcher.foundItems.length == 5 || searcher.foundItems.length == 4, true);
+  expect(
+      searcher.foundItems.length == 5 || searcher.foundItems.length == 4, true);
 
   setSearches(searcher, testList, '1', const DateRange(-1, -1, []), ['', '']);
   searcher.resetSearch();
@@ -77,12 +81,17 @@ void _searchButtonsWeekday() {
     _dead(1),
     _dead(2),
     _dead(11),
-    make(Deadline('14', '', 12, usedColors.first, MyDateController.today.addOrRemoveDays(14))),
-    make(Deadline('2', '', 13, usedColors.first, MyDateController.today.addOrRemoveDays(2))),
+    make(Deadline('14', '', 12, usedColors.first,
+        MyDateController.today.addOrRemoveDays(14))),
+    make(Deadline('2', '', 13, usedColors.first,
+        MyDateController.today.addOrRemoveDays(2))),
     _year(114)
   ];
-  SearchScreenController searcher =
-      SearchScreenController((_) async {}, ButtonNotifier(EntityNotifier()));
+  SearchScreenController searcher = SearchScreenController(
+      (_) async {},
+      ButtonNotifier(EntityNotifier())
+        ..getData()
+        .addAll(testList));
   setSearches(
       searcher,
       testList,
