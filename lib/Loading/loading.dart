@@ -98,7 +98,7 @@ class Loading {
     if (!update) {
       results.clear();
       for (var type in typeList) {
-        await _client.uploadFile(typeToFile(type));
+        results.add(_client.uploadFile(typeToFile(type)));
       }
       for (int i = 0; i < results.length; i++) {
         await results[i];
