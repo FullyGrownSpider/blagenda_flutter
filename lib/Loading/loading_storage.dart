@@ -43,22 +43,23 @@ class LoadingFromStorage {
     return await file.readAllData();
   }
 
-  Future<bool> shouldKeepFirstFile(String fileOne, String fileTwo) async {
-    var one = SuperStorage(fileOne);
+  ///returns true when the first (original) file is the one to keep
+  Future<bool> checkIfOnlineFileIsOlder(String original, String downloaded) async {
+    var one = SuperStorage(original);
     if (!await one.exists()) {
-      var two = SuperStorage(fileTwo);
+      var two = SuperStorage(downloaded);
       if (!await two.exists()) return false;
       _copyAndDelete(one, two);
-      return false;
+      return true;
     }
-    var two = SuperStorage(fileTwo);
+    var two = SuperStorage(downloaded);
     if (!await two.exists()) return true;
     if ((await one.lastUpdate()).isBefore(await two.lastUpdate())) {
       _copyAndDelete(one, two);
-      return false;
+      return true;
     }
     (await two._localFile).delete();
-    return true;
+    return false;
   }
 
   Future<void> _copyAndDelete(SuperStorage one, SuperStorage two) async {

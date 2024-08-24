@@ -10,7 +10,6 @@ import 'conversion_base.dart';
 class Loading {
   static const DropboxClient _client = DropboxClient();
   static const LoadingFromStorage _local = LoadingFromStorage();
-  static final List<Type> _uploader = [];
 
   Future<bool> deleteButton(BasicButtonController but) async {
     if ((await _local.getItems(Entity))
@@ -59,14 +58,35 @@ class Loading {
     return ((await _getButtons<t>()).map((e) => dataToController(e)).toList());
   }
 
-  Future<void> _upload(Type t) async {
-    if (_uploader.contains(t)) {
-      return;
+  Future<void> _upload(Type t) =>
+   _client.uploadFile(typeToFile(t));
+
+  Future<bool> downloadDatabaseFilesCarefully() async {
+    List<Future> results = [];
+    bool needsUpdate = false;
+    for (var type in typeList) {
+      results.add(_client
+          .downloadFileCarefully(typeToFile(type), '${typeToFile(type)}.backup')
+          .then((value) => {
+                results.add(_local
+                    .checkIfOnlineFileIsOlder(
+                        typeToFile(type), '${typeToFile(type)}.backup')
+                    .then((value) {
+                      if (value) {
+                        //new file is newer
+                        needsUpdate = true;
+                      } else {
+                        //the old file is newer and needs to be kept and therefore we want to upload it
+                        results.add(_client.uploadFile(typeToFile(type)));
+                      }
+                }))
+              }));
     }
-    _uploader.add(t);
-    await Future.delayed(const Duration(milliseconds: 10));
-    await _client.uploadFile(typeToFile(t));
-    _uploader.remove(t);
+    for (int i = 0; i < results.length; i++) {
+      //make these many threads one thread by waiting for all of them
+      await results[i];
+    }
+    return needsUpdate;
   }
 
   Future<void> downloadDatabaseFiles() async {
@@ -77,34 +97,6 @@ class Loading {
     for (var download in results) {
       await download;
     }
-  }
-
-  Future<bool> downloadDatabaseFilesCarefully() async {
-    List<Future> results = [];
-    bool update = true;
-    for (var type in typeList) {
-      results.add(_client
-          .downloadFileCarefully(typeToFile(type), '${typeToFile(type)}.backup')
-          .then((value) => {
-                results.add(_local
-                    .shouldKeepFirstFile(
-                        typeToFile(type), '${typeToFile(type)}.backup')
-                    .then((value) => value ? update = false : update = update))
-              }));
-    }
-    for (int i = 0; i < results.length; i++) {
-      await results[i];
-    }
-    if (!update) {
-      results.clear();
-      for (var type in typeList) {
-        results.add(_client.uploadFile(typeToFile(type)));
-      }
-      for (int i = 0; i < results.length; i++) {
-        await results[i];
-      }
-    }
-    return update;
   }
 
   List<EntityController> _searchFactorEntity(
