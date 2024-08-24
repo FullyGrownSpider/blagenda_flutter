@@ -140,7 +140,6 @@ class ButtonNotifier
 
   Future<void> dataSync() => _loading.downloadDatabaseFiles().then((x) {
         init().then((x) {
-
           hardPoint = true;
           notifyListeners();
         });

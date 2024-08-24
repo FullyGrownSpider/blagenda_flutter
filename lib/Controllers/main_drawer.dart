@@ -3,14 +3,14 @@ import 'dart:math';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/end_based_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/entity_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
-import 'package:blagenda_flutter_simple/Screens/adding_screen.dart';
-import 'package:blagenda_flutter_simple/Screens/search_screen.dart';
+import 'package:blagenda_flutter_simple/ScreensPhone/adding_screen.dart';
+import 'package:blagenda_flutter_simple/ScreensPhone/search_screen.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 
 import '../Loading/button_notifier.dart';
 import '../Loading/entity_notifier.dart';
-import '../Screens/entity_adding_screen.dart';
+import '../ScreensPhone/entity_adding_screen.dart';
 import '../common_items.dart';
 import 'ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import 'blagenda_uniform_button.dart';

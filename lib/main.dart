@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:blagenda_flutter_simple/Loading/button_notifier.dart';
 import 'package:blagenda_flutter_simple/Loading/entity_notifier.dart';
-import 'package:blagenda_flutter_simple/Screens/observation_screen.dart';
+import 'package:blagenda_flutter_simple/ScreensPhone/observation_screen.dart';
 import 'package:flutter/material.dart';
+
+import 'ScreensBigger/overview_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +37,7 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: OverviewScreen(buttonNotifier, entityNotifier),
+        home: isPhone() ? OverviewScreen(buttonNotifier, entityNotifier) : DesktopOverviewScreen(buttonNotifier, entityNotifier),
         title: 'Blagenda',
         theme: ThemeData(
             canvasColor: Colors.green[800],
@@ -47,4 +51,10 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
                 surface: Colors.green,
                 brightness: Brightness.dark)));
   }
+}
+
+
+
+bool isPhone(){
+  return Platform.isAndroid || Platform.isIOS;
 }
