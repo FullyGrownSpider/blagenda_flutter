@@ -9,10 +9,10 @@ import '../Controllers/blagenda_uniform_button.dart';
 import '../common_items.dart';
 
 class MiniAddEntityScreen {
-  MiniAddEntityScreen(this.entity, this._openButtonSearch, this._openButtonEdit,
+  MiniAddEntityScreen(this._entity, this._openButtonSearch, this._openButtonEdit,
       this._buttonNotifier, this._entityNotifier);
 
-  final EntityController? entity;
+  final EntityController? _entity;
 
   final Future<BasicButtonController?> Function() _openButtonSearch;
   final void Function(dynamic) _openButtonEdit;
@@ -21,7 +21,7 @@ class MiniAddEntityScreen {
   final EntityNotifier _entityNotifier;
 
   late final AddingEntityScreenController _screenController =
-      AddingEntityScreenController(entity, _entityNotifier, _buttonNotifier,
+      AddingEntityScreenController(_entity, _entityNotifier, _buttonNotifier,
           _openButtonSearch, _openButtonEdit);
 
   Widget makeAddingEntityScreen() {
@@ -32,7 +32,7 @@ class MiniAddEntityScreen {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ..._screenController.createScreenWidgets(),
-                BlagendaUniformButton(usedColors.first, () => 'Add', () {
+                BlagendaUniformButton(usedColors.first, () => _entity == null ? 'Add' : 'Update', () {
                   EntityController? controller = _screenController.getEntity();
                   if (controller == null) return;
                   _entityNotifier.addOrUpdate(controller);
@@ -41,4 +41,6 @@ class MiniAddEntityScreen {
               ],
             )));
   }
+
+  EntityController? getEntity() =>  _screenController.getEntity();
 }

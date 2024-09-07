@@ -39,8 +39,8 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
 
   int lastHour = 0;
 
-  late final SearchScreenController<BasicButtonController> searchButtonController =
-      SearchScreenController(
+  late final SearchScreenController<BasicButtonController>
+      searchButtonController = SearchScreenController(
           _doActionWithClickedButton, widget._buttonNotifier);
   late final SearchScreenController<EntityController> searchEntityController =
       SearchScreenController(
@@ -50,6 +50,8 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
   EntityState entityState = EntityState.search;
   BasicButtonController? selectedButton;
   EntityController? selectedEntity;
+
+  MiniAddEntityScreen? currentEntityAdding;
 
   @override
   void initState() {
@@ -98,10 +100,11 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
                   widget._buttonNotifier,
                   _observationController.getSelectedButton,
                   _openEdit,
+                  _openEntityAdding,
                   _observationController.getOptionButtons,
                   showImportant,
                   showSearch,
-                  butState)),
+                  butState, entityState)),
           //the buttons
           Expanded(flex: 3, child: pickCorrectCenter()),
           //the entities
@@ -155,13 +158,10 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
     return;
   }
 
-  Future<BasicButtonController?> openSearchGetAwns() async{
+  Future<BasicButtonController?> openSearchGetAwns() async {
     setState(() {
       butState = ButState.search;
     });
-    while (butState == ButState.search) {
-      Future.delayed(const Duration(milliseconds: 500));
-    }
     //TODO test
     return selectedButton;
   }
@@ -171,9 +171,6 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
     setState(() {
       entityState = EntityState.adding;
     });
-    while (entityState == EntityState.adding) {
-      Future.delayed(const Duration(milliseconds: 500));
-    }
     //TODO test
     return;
   }
@@ -227,14 +224,14 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
     Widget body;
     switch (entityState) {
       case EntityState.adding:
-        var currentAdding = MiniAddEntityScreen(
+        currentEntityAdding = MiniAddEntityScreen(
             selectedEntity,
             openSearchGetAwns,
             (s) => _openEdit(s as BasicButtonController, s is NoteController),
             widget._buttonNotifier,
             widget._entityNotifier);
         selectedEntity = null;
-        body = currentAdding.makeAddingEntityScreen();
+        body = currentEntityAdding!.makeAddingEntityScreen();
         break;
       default:
         body = search(widget._entityNotifier, searchEntityController);
@@ -247,6 +244,24 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
             border: Border.fromBorderSide(
                 BorderSide(width: 2, color: Colors.green))),
         child: body);
+  }
+
+  void _openEntityAdding() {
+    if (entityState != EntityState.adding) {
+      setState(() {
+        entityState = EntityState.adding;
+      });
+    } else {
+      if (currentEntityAdding != null){
+        var entity = currentEntityAdding!.getEntity();
+        if (entity != null){
+          widget._entityNotifier.addOrUpdate(entity);
+        }
+      }
+      setState(() {
+      entityState = EntityState.search;
+    });
+    }
   }
 }
 

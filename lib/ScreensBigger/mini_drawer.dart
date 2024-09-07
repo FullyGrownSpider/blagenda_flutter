@@ -34,10 +34,12 @@ Widget generateMenu(
     ButtonNotifier buttonNotifier,
     BasicButtonController? Function() getSelectedButton,
     void Function(BasicButtonController?, bool) openEdit,
+    void Function() openEntityEdit,
     List<Widget> Function(bool) getOptionButtons,
     void Function() showImportant,
     void Function() showSearchOrOverview,
-    ButState butState) {
+    ButState butState,
+    EntityState entityState) {
   return LayoutBuilder(
       builder: (context, constraint) => Container(
           decoration: const BoxDecoration(
@@ -78,7 +80,6 @@ Widget generateMenu(
                                         color: Colors.green, width: 2)),
                                 color: Colors.black),
                             child: Column(children: [
-                              //TODO adding button for entities
                               ListTile(
                                   title: const Text('Add Button',
                                       style: functionTextStyle),
@@ -129,6 +130,17 @@ Widget generateMenu(
                                 },
                               ),
                               ListTile(
+                                  title: Text(
+                                      entityState == EntityState.search
+                                          ? 'Add Entity'
+                                          : 'Finish Entity editing',
+                                      style: functionTextStyle),
+                                  trailing: const Icon(Icons.add,
+                                      color: Colors.white),
+                                  onTap: () {
+                                    openEntityEdit();
+                                  }),
+                              ListTile(
                                   title: const Text('Sync Online Data',
                                       style: functionTextStyle),
                                   trailing: const Icon(Icons.sync,
@@ -138,7 +150,7 @@ Widget generateMenu(
                         smallBlankSplit,
                         BlagendaUniformButton(usedColors[7], () {
                           switch (butState) {
-                            case ButState.overView :
+                            case ButState.overView:
                               return 'Search';
                             default:
                               return 'Show Calendar';
