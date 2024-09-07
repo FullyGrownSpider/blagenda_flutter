@@ -146,7 +146,6 @@ class MainDrawer {
     ));
   }
 
-  //TODO make sure you cant add yourself?
   Future<dynamic> _openEntitySearch(BuildContext context) {
     return Navigator.push(
         context,

@@ -25,20 +25,7 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
   StoreAbleNotifier<SearchAble> notifier;
 
   SearchScreenController(this._doActionWithClickedItem, this.notifier) {
-    Set searchesSet = {};
-    for (var e in notifier.getData().whereType<T>()) {
-      searchesSet.addAll(e.possibleSearches());
-    }
-    for (var key in searchesSet) {
-      if (key == SearchTypes.date) {
-        searches[key] = dateFinder(resetSearch, () => date, (s) => date = s);
-      } else if (key == SearchTypes.string) {
-        searches[key] = stringFinder(resetSearch);
-      } else if (key == SearchTypes.tag) {
-        searches[key] = tagFinder(resetSearch);
-      }
-    }
-    resetSearch();
+    fullSearchReset();
   }
 
   static const TextStyle styleDays =
@@ -278,6 +265,19 @@ class SearchScreenController<T extends SearchAble> extends ChangeNotifier
   }
 
   void fullSearchReset() {
+    Set searchesSet = {};
+    for (var e in notifier.getData().whereType<T>()) {
+      searchesSet.addAll(e.possibleSearches());
+    }
+    for (var key in searchesSet) {
+      if (key == SearchTypes.date) {
+        searches[key] = dateFinder(resetSearch, () => date, (s) => date = s);
+      } else if (key == SearchTypes.string) {
+        searches[key] = stringFinder(resetSearch);
+      } else if (key == SearchTypes.tag) {
+        searches[key] = tagFinder(resetSearch);
+      }
+    }
     for (var item in searches.values) {
       item.resetInput();
     }

@@ -4,11 +4,16 @@ import 'package:blagenda_flutter_simple/Loading/button_notifier.dart';
 import 'package:blagenda_flutter_simple/Loading/entity_notifier.dart';
 import 'package:blagenda_flutter_simple/ScreensPhone/observation_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'ScreensBigger/overview_screen.dart';
 
-void main() {
+void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  await windowManager.ensureInitialized();
+  if (Platform.isWindows) {
+    WindowManager.instance.setMinimumSize(const Size(1200, 400));
+  }
   runApp(const TabBarInsideAppBarPage());
 }
 

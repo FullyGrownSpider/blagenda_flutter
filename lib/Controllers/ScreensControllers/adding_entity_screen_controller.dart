@@ -24,13 +24,14 @@ class AddingEntityScreenController extends ChangeNotifier
 
   static const String _tagListText = 'Tag type', _newNameText = 'New tag name';
 
-  final Future<BasicButtonController> Function()
+  final Future<BasicButtonController?> Function()
       _openButtonSearch;
 
   final ButtonNotifier _notifier;
   final EntityNotifier _entityNotifier;
 
-  final Future<dynamic> Function(dynamic) _openButtonEdit;
+  final Function _openButtonEdit;
+  int selected = -1;
 
   AddingEntityScreenController(EntityController? entity, this._entityNotifier,
       this._notifier, this._openButtonSearch, this._openButtonEdit) {
@@ -70,6 +71,16 @@ class AddingEntityScreenController extends ChangeNotifier
       return EntityController(myEntity);
     };
     notifyListeners();
+  }
+
+  bool tryToAssing(dynamic item) {
+    if (selected == -1) {
+      return false;
+
+    }
+    _storedValues[selected.toString()] = item;
+    _fillInputItem(item, selected);
+    return true;
   }
 
   void _fillStoredValuesNoEntity() {
@@ -185,11 +196,11 @@ class AddingEntityScreenController extends ChangeNotifier
             usedColors.first, () => _storedValues['n$i'], () => _deleteTag(i)),
         _storedValues['n$i'],
         toMake));
-    ();
     notifyListeners();
   }
 
-  Future<dynamic> _fillInputItem(BasicButtonController item, int i) async {
+  Future<dynamic> _fillInputItem(BasicButtonController? item, int i) async {
+    if (item == null) return;
     _storedValues['$i'] = item;
     var inputObject = itemForReferenceAbleList(
         () => _storedValues[i.toString()],
@@ -203,10 +214,14 @@ class AddingEntityScreenController extends ChangeNotifier
   void _deleteTag(int fromWhere) {
     if (_info[fromWhere].type == 3 &&
         _storedValues[fromWhere.toString()] == null) {
-      _openButtonEdit((t) {
+      if (_openButtonEdit is Future<dynamic> Function(dynamic)) {
+        _openButtonEdit((t) {
         _fillInputItem(t, fromWhere);
-        ();
       }).then((value) => null);
+      } else {
+        selected = fromWhere;
+        _openButtonEdit();
+      }
       return;
     }
     //delete the tag combo from the list of name+data things

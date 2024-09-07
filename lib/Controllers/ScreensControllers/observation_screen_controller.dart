@@ -15,7 +15,7 @@ class ObservationScreenController {
 
   ///needs to load first use doneLoading to check if done
   ObservationScreenController(
-      Future Function(BasicButtonController) openButtonEdit, this._notifier) {
+      Function(BasicButtonController) openButtonEdit, this._notifier) {
     observationScreenButtons = ObservationScreenButtons(openButtonEdit);
     _notifier.addListener(() {
       observationScreenButtons.updateMoment();
@@ -51,6 +51,6 @@ class ObservationScreenController {
 
   int getNewId(Type t) => _notifier.getNewId(t);
 
-  List<Widget> getOptionButtons() =>
-      observationScreenOptions.getOptionButtons(_resetCounters);
+  List<Widget> getOptionButtons([bool asRow = true]) =>
+      observationScreenOptions.getOptionButtons(_resetCounters, asRow);
 }

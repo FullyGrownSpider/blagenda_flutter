@@ -1,20 +1,22 @@
 import 'dart:async';
-import 'dart:math';
 
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/note_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/mix_search_able.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/observation_screen_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/search_screen_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
-import 'package:date_format/date_format.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:blagenda_flutter_simple/ScreensBigger/mini_add_button_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 import '../Controllers/ObjectControllers/ButtonControllers/basic_button_controller.dart';
-import '../Controllers/ObjectControllers/ButtonControllers/end_based_controller.dart';
-import '../Controllers/blagenda_uniform_button.dart';
+import '../Controllers/ObjectControllers/entity_controller.dart';
+import '../Controllers/ScreensControllers/countdown_drawer_controller.dart';
 import '../Loading/button_notifier.dart';
 import '../Loading/entity_notifier.dart';
-import '../ScreensPhone/adding_screen.dart';
-import '../common_items.dart';
+import 'mini_add_entity_screen.dart';
+import 'mini_drawer.dart';
+import 'mini_overview_screen.dart';
+import 'mini_search_screen.dart';
 
 class DesktopOverviewScreen extends StatefulWidget {
   const DesktopOverviewScreen(this._buttonNotifier, this._entityNotifier,
@@ -28,25 +30,26 @@ class DesktopOverviewScreen extends StatefulWidget {
 }
 
 class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
-  static const TextStyle infoTextStyle = TextStyle(
-      fontSize: 35.0,
-      height: 1.7,
-      fontWeight: FontWeight.bold,
-      fontStyle: FontStyle.italic,
-      decoration: TextDecoration.underline,
-      color: Colors.grey);
+  late final ObservationScreenController _observationController =
+      ObservationScreenController(
+          (e) => _openEdit(e, false), widget._buttonNotifier);
 
-  static const TextStyle functionTextStyle = TextStyle(
-      fontSize: 18.0,
-      height: 1.3,
-      fontWeight: FontWeight.bold,
-      color: Colors.white);
+  final CountDownDrawerController _countDownController =
+      CountDownDrawerController();
 
-  final int funnyNumber =
-      Random(MyDateController.today.hashCode).nextInt(100) + 1;
-
-  bool showImportantOnly = false;
   int lastHour = 0;
+
+  late final SearchScreenController<BasicButtonController> searchButtonController =
+      SearchScreenController(
+          _doActionWithClickedButton, widget._buttonNotifier);
+  late final SearchScreenController<EntityController> searchEntityController =
+      SearchScreenController(
+          _doActionWithClickedEntity, widget._entityNotifier);
+
+  ButState butState = ButState.overView;
+  EntityState entityState = EntityState.search;
+  BasicButtonController? selectedButton;
+  EntityController? selectedEntity;
 
   @override
   void initState() {
@@ -66,29 +69,19 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
       lastHour = MyDateController.lookTime.hour;
       widget._buttonNotifier
           .awaitLoading()
-          .then((_) => _controller.updateButtonsDay());
+          .then((_) => _observationController.updateButtonsDay());
       widget._buttonNotifier.dataSyncLowKey();
       if (awns) setState(() {});
     } else if (MyDateController.didHourPass(lastHour)) {
       lastHour = MyDateController.lookTime.hour;
       widget._buttonNotifier.dataSyncLowKey();
-    } else if (_controller.justAddedCheck()) {
+    } else if (_observationController.justAddedCheck()) {
       setState(() {});
     }
   }
 
-  final BorderSide border = BorderSide(color: usedColors.first, width: 2);
-
-  late final ObservationScreenController _controller =
-      ObservationScreenController(
-          (e) => _openEdit(e, false), widget._buttonNotifier);
-  final List<Widget> _centerChildren = [];
-
-  BuildContext? currentContext;
-
   @override
   Widget build(BuildContext context) {
-    currentContext = context;
     return Scaffold(
         backgroundColor: Colors.white24,
         appBar: PreferredSize(
@@ -98,211 +91,168 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
             )),
         body: Row(children: <Widget>[
           //The options
-          Expanded(child: generateMenu()),
+          Expanded(
+              flex: 2,
+              child: generateMenu(
+                  _countDownController,
+                  widget._buttonNotifier,
+                  _observationController.getSelectedButton,
+                  _openEdit,
+                  _observationController.getOptionButtons,
+                  showImportant,
+                  showSearch,
+                  butState)),
           //the buttons
-          Expanded(child: generateDayView()), //TODO if statement to switch between search, important and normal (maybe in observation screen?)
+          Expanded(flex: 3, child: pickCorrectCenter()),
           //the entities
           Expanded(
+              flex: 3,
               child: ListenableBuilder(
                   listenable: widget._entityNotifier,
                   builder: (BuildContext context, Widget? child) =>
-                      Text('???')))
+                      pickCorrectRight()))
         ]));
   }
 
-  Widget generateDayView() {
-    return ListenableBuilder(
-        listenable: widget._buttonNotifier,
-        builder: (BuildContext context, Widget? child) => ListenableBuilder(
-            listenable: _controller.observationScreenOptions.getNotifier(),
-            builder: (BuildContext context, Widget? child) {
-              _resetScreen();
-              return LayoutBuilder(
-                  builder: (context, constraint) => SingleChildScrollView(
-                      child: ConstrainedBox(
-                          constraints:
-                              BoxConstraints(minHeight: constraint.maxHeight),
-                          child: IntrinsicHeight(
-                            child: Column(
-                              children: _centerChildren,
-                            ),
-                          ))));
-            }));
+  void showImportant() {
+    setState(() {
+      butState = ButState.important;
+    });
   }
 
-  Widget generateMenu() {
-    return LayoutBuilder(
-        builder: (context, constraint) => Container(
-            decoration: const BoxDecoration(
-                border: Border.fromBorderSide(
-                    BorderSide(width: 2, color: Colors.green))),
-            child: SingleChildScrollView(
-                child: ConstrainedBox(
-                    constraints:
-                        BoxConstraints(minHeight: constraint.maxHeight),
-                    child: IntrinsicHeight(
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                          Container(
-                              width: double.infinity,
-                              decoration:
-                                  const BoxDecoration(color: Colors.black),
-                              child: Column(children: [
-                                Text(
-                                  formatDate(MyDateController.today,
-                                      [D, ', ', M, ' ', d]),
-                                  style: infoTextStyle,
-                                ),
-                                Text(
-                                    '${formatDate(MyDateController.today, [
-                                          'W:',
-                                          WW
-                                        ])} - N:$funnyNumber',
-                                    style: infoTextStyle)
-                              ])),
-                          Container(
-                              margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-                              padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-                              decoration: const BoxDecoration(
-                                  border: Border(
-                                      top: BorderSide(
-                                          color: Colors.green, width: 2),
-                                      bottom: BorderSide(
-                                          color: Colors.green, width: 2)),
-                                  color: Colors.black),
-                              child: Column(children: [
-                                ListTile(
-                                    title: const Text('Add Button',
-                                        style: functionTextStyle),
-                                    trailing: const Icon(Icons.add,
-                                        color: Colors.white),
-                                    onTap: () => _openEdit(null, true)
-                                        .then((v) => Navigator.pop(context))),
-                                ListTile(
-                                    title: const Text('Update Button',
-                                        style: functionTextStyle),
-                                    trailing: const Icon(Icons.edit,
-                                        color: Colors.white),
-                                    onTap: () {
-                                      var button =
-                                          _controller.getSelectedButton();
-                                      if (button != null) {
-                                        _openEdit(button, true).then(
-                                            (v) => Navigator.pop(context));
-                                      }
-                                    }),
-                                ListTile(
-                                  title: const Text('Delete Button',
-                                      style: functionTextStyle),
-                                  trailing: const Icon(Icons.delete,
-                                      color: Colors.white),
-                                  onTap: () {
-                                    var button =
-                                        _controller.getSelectedButton();
-                                    if (button != null) {
-                                      widget._buttonNotifier.delete(button);
-                                    }
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                                ListTile(
-                                  title: const Text('Skip this time',
-                                      style: functionTextStyle),
-                                  trailing: const Icon(Icons.next_plan_outlined,
-                                      color: Colors.white),
-                                  onTap: () {
-                                    var button =
-                                        _controller.getSelectedButton();
-                                    if (button == null) return;
-                                    if (button is SkippableEndBasedController) {
-                                      widget._buttonNotifier
-                                          .skipButton(button, button.altLeft);
-                                    } else {
-                                      widget._buttonNotifier.delete(button);
-                                    }
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                                ListTile(
-                                    title: const Text('Sync Online Data',
-                                        style: functionTextStyle),
-                                    trailing: const Icon(Icons.sync,
-                                        color: Colors.white),
-                                    onTap: () =>
-                                        widget._buttonNotifier.dataSync())
-                              ])),
-                          ...updateButtonsButtons(() {
-                            var but = _controller.getSelectedButton();
-                            widget._buttonNotifier.flipImportant(but);
-                          }, () {
-                            var but = _controller.getSelectedButton();
-                            widget._buttonNotifier.changeDays(but, 1);
-                          }, () {
-                            var but = _controller.getSelectedButton();
-                            widget._buttonNotifier.changeDays(but, -1);
-                          }, () {
-                            showImportantOnly = !showImportantOnly;
-                            //TODO make work
-                          }),
-                              //TODO find appointment
-                          ..._controller.getOptionButtons()
-                        ]))))));
+  void showSearch() {
+    setState(() {
+      switch (butState) {
+        case ButState.overView:
+          butState = ButState.search;
+          break;
+        default:
+          butState = ButState.overView;
+          break;
+      }
+    });
   }
 
-  void _resetScreen() {
-    _centerChildren.clear();
-    _centerChildren
-        .add(_containWidgetsPretty(_controller.getWidgetListEndBased()));
-    var notes = _controller.getWidgetListNote();
-    if (notes.isNotEmpty) _centerChildren.add(_containWidgetsPretty(notes));
+  BasicButtonController? getButton() =>
+      _observationController.getSelectedButton();
+
+  void _openEdit(BasicButtonController? it, bool _) async {
+    selectedButton = it;
+    setState(() {
+      butState = ButState.adding;
+    });
   }
 
-  Widget _containWidgetsPretty(List<Widget> list) {
+  Future<void> _doActionWithClickedButton(SearchAble p1) async {
+    selectedButton = p1 as BasicButtonController;
+    setState(() {
+      butState = ButState.adding;
+    });
+    while (butState == ButState.adding) {
+      Future.delayed(const Duration(milliseconds: 500));
+    }
+    //TODO test
+    return;
+  }
+
+  Future<BasicButtonController?> openSearchGetAwns() async{
+    setState(() {
+      butState = ButState.search;
+    });
+    while (butState == ButState.search) {
+      Future.delayed(const Duration(milliseconds: 500));
+    }
+    //TODO test
+    return selectedButton;
+  }
+
+  Future<void> _doActionWithClickedEntity(SearchAble p1) async {
+    selectedEntity = p1 as EntityController;
+    setState(() {
+      entityState = EntityState.adding;
+    });
+    while (entityState == EntityState.adding) {
+      Future.delayed(const Duration(milliseconds: 500));
+    }
+    //TODO test
+    return;
+  }
+
+  Widget pickCorrectCenter() {
+    switch (butState) {
+      case ButState.adding:
+        var currentAdding = MiniAddButtonScreen(
+            selectedButton ?? _observationController.getSelectedButton(),
+            widget._buttonNotifier,
+            true);
+        selectedButton = null;
+        return currentAdding.makeAddingButtonScreen();
+      case ButState.search:
+        return search(widget._buttonNotifier, searchButtonController);
+      case ButState.important:
+        return Column(
+            children: _countDownController.loadSortFillImportant(
+                widget._buttonNotifier.getEndBasedData,
+                containWidgetsPretty,
+                _doActionWithClickedButton,
+                widget._buttonNotifier
+                    .getData()
+                    .whereType<NoteController>()
+                    .toList));
+      default:
+        return generateDayView(
+            _observationController.getWidgetListEndBased,
+            _observationController.getWidgetListNote,
+            widget._buttonNotifier,
+            _observationController.observationScreenOptions.getNotifier);
+    }
+  }
+
+//TODO make pretty
+  Widget containWidgetsPretty(List<Widget> list) {
     return Container(
-        padding: const EdgeInsets.only(bottom: 5),
         width: double.infinity,
-        decoration: BoxDecoration(border: Border(bottom: border)),
-        child: Container(
-            padding: const EdgeInsets.only(bottom: 3),
-            width: double.infinity,
-            decoration: BoxDecoration(border: Border(bottom: border)),
-            child: Container(
-                padding: const EdgeInsets.only(bottom: 1),
-                width: double.infinity,
-                decoration: BoxDecoration(border: Border(bottom: border)),
-                child: Container(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    width: double.infinity,
-                    decoration: BoxDecoration(border: Border(bottom: border)),
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: list)))));
+        decoration: BoxDecoration(
+            color: Colors.black26,
+            border: Border(
+                // top: border,
+                // left: fakeBorder,
+                // right: fakeBorder,
+                bottom: border)),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center, children: list));
   }
 
-  BasicButtonController? getButton() => _controller.getSelectedButton();
+  Widget pickCorrectRight() {
+    Widget body;
+    switch (entityState) {
+      case EntityState.adding:
+        var currentAdding = MiniAddEntityScreen(
+            selectedEntity,
+            openSearchGetAwns,
+            (s) => _openEdit(s as BasicButtonController, s is NoteController),
+            widget._buttonNotifier,
+            widget._entityNotifier);
+        selectedEntity = null;
+        body = currentAdding.makeAddingEntityScreen();
+        break;
+      default:
+        body = search(widget._entityNotifier, searchEntityController);
+        break;
+    }
+    return Container(
+        constraints: const BoxConstraints(
+            minHeight: double.infinity, minWidth: double.infinity),
+        decoration: const BoxDecoration(
+            border: Border.fromBorderSide(
+                BorderSide(width: 2, color: Colors.green))),
+        child: body);
+  }
+}
 
-  List<Widget> updateButtonsButtons(
-          void Function() flipImportant, addDays, removeDays, showImportant) =>
-      [
-        BlagendaUniformButton(
-            usedColors[4], () => 'Important Flip', flipImportant),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          BlagendaUniformButton(usedColors[4], () => '↑ Day ↑', removeDays),
-          BlagendaUniformButton(usedColors[4], () => '↓ Day ↓', addDays),
-        ]),
-        BlagendaUniformButton(
-            usedColors[4],
-            () => showImportantOnly
-                ? 'Show Important Items'
-                : 'Show Normal Calendar',
-            showImportant)
-      ];
+enum ButState { overView, search, adding, important }
 
-  Future<dynamic> _openEdit(BasicButtonController? it, bool withNote) =>
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  AddingScreen(it, widget._buttonNotifier, withNote)));
+enum EntityState {
+  search,
+  adding,
 }

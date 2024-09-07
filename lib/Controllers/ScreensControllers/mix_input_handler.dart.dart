@@ -396,6 +396,9 @@ class InputObject<t, reset> {
       case const (bool):
         setValue(true as reset);
         break;
+      case const (List<String>):
+        setValue([''] as reset);
+        break;
       default:
         setValue(null as reset);
         break;

@@ -21,13 +21,18 @@ class ObservationScreenOptions with ButtonCreator {
   final List<Widget> _items = [];
 
   ///the buttons to select the color to only show
-  List<Widget> getOptionButtons(Function() resetCounters) {
+  List<Widget> getOptionButtons(Function() resetCounters, bool asRow) {
     if (_items.isEmpty) {
       _items.add(const Text('Display Options', style: bigTextStyle));
       _items.add(ColorButtons(displayState._actuallyCurrent,
           (dClick) => colorPressed(dClick, resetCounters)));
-      _items.addAll(addAsRow((i) => _createCounterButton(i, resetCounters),
+      if (asRow) {
+        _items.addAll(addAsRow((i) => _createCounterButton(i, resetCounters),
           possibleExtraDays.length));
+      } else {
+        _items.add(_createCounterButton(0, resetCounters));
+        _items.add(_createCounterButton(1, resetCounters));
+      }
       _items.add(_createDisplayAllEndBasedButtonsButton(resetCounters));
     }
     return _items;
