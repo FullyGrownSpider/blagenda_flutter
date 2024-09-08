@@ -104,6 +104,7 @@ final Map<Type, dynamic Function(String?)> dataImportGeneratorMap = {
     tempList.removeLast();
     list.addAll(tempList.map((newString) {
       var tagWithData = newString.split(storageListSep);
+      tagWithData.removeWhere((e) => e.isEmpty);
       return Tag(
           tagWithData.first,
           tagWithData.length == 2
