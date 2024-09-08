@@ -100,7 +100,7 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
                   widget._buttonNotifier,
                   _observationController.getSelectedButton,
                   _openEdit,
-                  _openEntityAdding,
+                  _toggleEntityAdding,
                   _observationController.getOptionButtons,
                   showImportant,
                   showSearch,
@@ -151,10 +151,6 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
     setState(() {
       butState = ButState.adding;
     });
-    while (butState == ButState.adding) {
-      Future.delayed(const Duration(milliseconds: 500));
-    }
-    //TODO test
     return;
   }
 
@@ -162,7 +158,6 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
     setState(() {
       butState = ButState.search;
     });
-    //TODO test
     return selectedButton;
   }
 
@@ -171,8 +166,25 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
     setState(() {
       entityState = EntityState.adding;
     });
-    //TODO test
     return;
+  }
+
+  void _toggleEntityAdding() {
+    if (entityState != EntityState.adding) {
+      setState(() {
+        entityState = EntityState.adding;
+      });
+    } else {
+      if (currentEntityAdding != null){
+        var entity = currentEntityAdding!.getEntity();
+        if (entity != null){
+          widget._entityNotifier.addOrUpdate(entity);
+        }
+      }
+      setState(() {
+        entityState = EntityState.search;
+      });
+    }
   }
 
   Widget pickCorrectCenter() {
@@ -246,23 +258,6 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
         child: body);
   }
 
-  void _openEntityAdding() {
-    if (entityState != EntityState.adding) {
-      setState(() {
-        entityState = EntityState.adding;
-      });
-    } else {
-      if (currentEntityAdding != null){
-        var entity = currentEntityAdding!.getEntity();
-        if (entity != null){
-          widget._entityNotifier.addOrUpdate(entity);
-        }
-      }
-      setState(() {
-      entityState = EntityState.search;
-    });
-    }
-  }
 }
 
 enum ButState { overView, search, adding, important }

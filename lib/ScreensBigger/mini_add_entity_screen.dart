@@ -31,6 +31,7 @@ class MiniAddEntityScreen {
                 child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                smallBlankSplit,
                 ..._screenController.createScreenWidgets(),
                 BlagendaUniformButton(usedColors.first, () => _entity == null ? 'Add' : 'Update', () {
                   EntityController? controller = _screenController.getEntity();

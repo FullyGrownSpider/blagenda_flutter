@@ -108,7 +108,10 @@ final Map<Type, dynamic Function(String?)> dataImportGeneratorMap = {
           tagWithData.first,
           tagWithData.length == 2
               ? tagWithData.last.replaceAll('\\n', '\n')
-              : TagObjectReference(tagWithData[1], int.parse(tagWithData[2])));
+              : tagWithData.length == 1
+                  ? ''
+                  : TagObjectReference(
+                      tagWithData[1], int.parse(tagWithData[2])));
     }));
     return list;
   },
@@ -117,9 +120,8 @@ final Map<Type, dynamic Function(String?)> dataImportGeneratorMap = {
 final Map<Type, void Function(dynamic, StringBuffer)> _dataExportMap = {
   MaterialColor: (value, buf) => _dataExportMap[Color]!(value, buf),
   MaterialAccentColor: (value, buf) => _dataExportMap[Color]!(value, buf),
-  String: (value, buf) => buf.write(value
-      .toString()
-      .replaceAll(SuperStorage.lineEnd, storageListSep)),
+  String: (value, buf) => buf
+      .write(value.toString().replaceAll(SuperStorage.lineEnd, storageListSep)),
   Color: (value, buf) {
     buf.write(value.red);
     buf.write(storageListSep);
@@ -143,9 +145,7 @@ final Map<Type, void Function(dynamic, StringBuffer)> _dataExportMap = {
         if (e.data is TagObjectReference) {
           _dataExportMap[TagObjectReference]!(e.data, buf);
         } else {
-          buf.write(e.data
-              .toString()
-              .replaceAll(SuperStorage.lineEnd, '\\n'));
+          buf.write(e.data.toString().replaceAll(SuperStorage.lineEnd, '\\n'));
         }
         buf.write(storageListSep + storageListSep);
       }),

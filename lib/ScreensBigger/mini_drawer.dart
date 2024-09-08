@@ -133,7 +133,7 @@ Widget generateMenu(
                                   title: Text(
                                       entityState == EntityState.search
                                           ? 'Add Entity'
-                                          : 'Finish Entity editing',
+                                          : 'Finish Entity',
                                       style: functionTextStyle),
                                   trailing: const Icon(Icons.add,
                                       color: Colors.white),
@@ -173,6 +173,17 @@ Widget generateMenu(
                           var but = getSelectedButton();
                           buttonNotifier.changeDays(but, -1);
                         }),
-                        ...getOptionButtons(false)
+                        ...bOptions(getOptionButtons(false)),
+                        smallBlankSplit
                       ]))))));
+}
+
+List<Widget> bOptions(List<Widget> options) {
+  var clone = [...options];
+  int oldLength = options.length;
+  //1, (1,1) 3, (2,2) 5, (3,3) 7
+  for (int i = 0; i < oldLength; i++) {
+    clone.insert(i * 2 + 1, smallBlankSplit);
+  }
+  return clone;
 }
