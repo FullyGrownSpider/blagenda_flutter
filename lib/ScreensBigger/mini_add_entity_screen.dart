@@ -34,9 +34,11 @@ class MiniAddEntityScreen {
                 ..._screenController.createScreenWidgets(),
                 BlagendaUniformButton(usedColors.first, () => _entity == null ? 'Add' : 'Update', () {
                   EntityController? controller = _screenController.getEntity();
-                  if (controller == null) return;
+                  if (controller == null) {
+                    if (_entity != null) _entityNotifier.delete(_entity);
+                    return;
+                  }
                   _entityNotifier.addOrUpdate(controller);
-                  Navigator.pop(context, false);
                 })
               ],
             )));
