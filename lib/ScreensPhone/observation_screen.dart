@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/observation_screen_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/countdown_drawer.dart';
-import 'package:blagenda_flutter_simple/Controllers/main_drawer.dart';
+import 'package:blagenda_flutter_simple/ScreensPhone/main_drawer.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:flutter/material.dart';
 

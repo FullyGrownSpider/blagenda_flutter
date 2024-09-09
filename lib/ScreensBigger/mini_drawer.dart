@@ -159,7 +159,7 @@ Widget generateMenu(
                         smallBlankSplit,
                         smallBlankSplit,
                         BlagendaUniformButton(usedColors[4],
-                            () => 'Search Important', showImportant),
+                            () => butState == ButState.important ? 'Do Nothing' : 'Show Important', showImportant),
                         smallBlankSplit,
                         smallBlankSplit,
                         smallBlankSplit,
