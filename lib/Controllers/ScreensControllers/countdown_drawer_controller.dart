@@ -45,7 +45,7 @@ class CountDownDrawerController {
       widgetList.add(style([
         BlagendaUniformButton(
             note.color,
-            () => note.displayGenericText(note.job, 25),
+            () => BasicButtonController.displayGenericText(note.job, 25),
             () => _createUnimportantButton(note, addOrUpdateButton))
       ]));
       widgetList.add(bigSplitterTextField);
@@ -60,7 +60,7 @@ class CountDownDrawerController {
       widgetList.add(style([
         BlagendaUniformButton(
             displayAble ? but.color : lerpIt(but.color),
-            () => but.displayGenericText(but.gettingTheStringShort(), 25),
+            () => BasicButtonController.displayGenericText(but.gettingTheStringShort(), 25),
             () => _createUnimportantButton(but, addOrUpdateButton)),
         if (displayAble) _createCountDownText(but)
       ]));

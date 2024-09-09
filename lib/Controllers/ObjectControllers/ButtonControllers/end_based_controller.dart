@@ -14,8 +14,8 @@ abstract class EndBasedController<t extends BasicButton>
       r"(?:(?<full>[0-2]?[0-9][-,.:][0-6][0-9](?: ?[apAP][mM])?)|(?<hour>[0-2]?[0-9] ?[apAP][mM]))(?:([^0-9]{0,5}(?:(?<full2>[0-2]?[0-9][-,.:][0-6][0-9] ?([apAP][mM])?)|(?<hour2>[0-2]?[0-9] ?[apAP][mM]))\b)|\b)");
   static final RegExp _regFix = RegExp(r'[-,.:]');
   static final RegExp _regNum = RegExp(r'[^0-9-,.:]');
-  static final RegExp _daysReg =
-      RegExp(r"([ \n\r\f]|^)(((?:lasts|duurt|D|d) ?\d+)|(\d+ ?(?:days|l[oa]ng|dagen|d|D)))([ \n\r\f]|$)");
+  static final RegExp _daysReg = RegExp(
+      r"([ \n\r\f]|^)(((?:lasts|duurt|D|d) ?\d+)|(\d+ ?(?:days|l[oa]ng|dagen|d|D)))([ \n\r\f]|$)");
 
   static const int showDayOfWeek = 6;
   static const int showDayTime = 4;
@@ -110,7 +110,8 @@ abstract class EndBasedController<t extends BasicButton>
 
   String _gettingTheStringShortWithTime([bool overrideTime = false]) =>
       (entitied != -1 ? BasicButtonController.entityIndicator : '') +
-      displayGenericText(overrideTime ? _displayWithTimeJob() : displayJob(),
+      BasicButtonController.displayGenericText(
+          overrideTime ? _displayWithTimeJob() : displayJob(),
           BasicButtonController.maxValueCheck);
 
   @override
@@ -173,8 +174,7 @@ abstract class EndBasedController<t extends BasicButton>
           for (var weekday in value.weekdays) {
             var superTempController = tempController
                 .add(Duration(days: weekday - MyDateController.today.weekday));
-            if (isHappeningOnDayFromNow(
-                superTempController.daysLeftUntil())) {
+            if (isHappeningOnDayFromNow(superTempController.daysLeftUntil())) {
               return 10;
             }
           }
@@ -198,8 +198,7 @@ abstract class EndBasedController<t extends BasicButton>
   }
 
   @override
-  String searchDisplay() =>
-      gettingTheStringSelected();
+  String searchDisplay() => gettingTheStringSelected();
 
   void addOrRemoveDays(int amount) {
     addOrRemoveDaysDo(amount);

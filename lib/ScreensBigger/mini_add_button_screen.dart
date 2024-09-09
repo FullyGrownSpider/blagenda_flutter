@@ -17,7 +17,7 @@ class MiniAddButtonScreen {
   late final AddingScreenController _screenController =
       AddingScreenController(button?.button, _notifier, _withNote);
 
-  Widget makeAddingButtonScreen() {
+  Widget makeAddingButtonScreen(Function() switchOnAdd) {
     return SingleChildScrollView(
         child: ListenableBuilder(
             listenable: _screenController.buttonType,
@@ -32,6 +32,7 @@ class MiniAddButtonScreen {
                     if (controller == null) return;
                     controller.touched = true;
                     _notifier.addOrUpdate(controller);
+                    switchOnAdd();
                   })
                 ],
               );

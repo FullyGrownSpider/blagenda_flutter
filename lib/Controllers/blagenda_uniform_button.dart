@@ -48,9 +48,10 @@ class BlagendaUniformButton extends StatefulWidget {
   // This is unrelated to the application.
 
   const BlagendaUniformButton(this.color, this.text, this.pressed,
-      {this.isSmall = false, this.isSelected, super.key});
+      {this.isSmall = false, this.isSelected, this.lineEdit, super.key});
 
   final String Function() text;
+  final void Function(int, bool)? lineEdit;
   final ValueNotifier<bool>? isSelected;
   final bool isSmall;
   final Color color;
@@ -106,18 +107,54 @@ class _BlagendaUniformButton extends State<BlagendaUniformButton> {
                   ? _getSelectedVersionOfColor(widget.color)
                   : widget.color),
           child: isDoubleLined
-              ? Column(children: [
-                  smallBlankSplit,
-                  Text(text.substring(0, text.indexOf('\n\n')),
-                      style: normalTextStyleBold, textAlign: TextAlign.center),
-                  medBlankSplit,
-                  Text(text.substring(text.indexOf('\n\n') + 2),
-                      style: normalTextStyle, textAlign: TextAlign.center),
-                  const Text(
-                    '-\n\n-',
-                    style: smallStyle,
-                  )
-                ])
+              ? textRefinement(text)
               : Text(text,
                   style: normalTextStyle, textAlign: TextAlign.center));
+
+  Widget textRefinement(String text) {
+    String checkIndicator = '';
+    List<Widget> textList = [];
+    if (widget.lineEdit != null) {
+      var secondText = text.substring(text.indexOf('\n\n') + 2).split('\n');
+      int counter = -1;
+      for (String line in secondText) {
+        counter++;
+        if (line.startsWith('■')) {
+          textList.add(_makeBox(true, line, counter));
+        } else if (line.startsWith('□')) {
+          textList.add(_makeBox(false, line, counter));
+        } else {
+          textList.add(
+              Text(line, style: normalTextStyle, textAlign: TextAlign.center));
+        }
+      }
+    }
+    return Column(children: [
+      smallBlankSplit,
+      Text(checkIndicator + text.substring(0, text.indexOf('\n\n')),
+          style: normalTextStyleBold, textAlign: TextAlign.center),
+      medBlankSplit,
+      ...(textList.isNotEmpty
+          ? textList
+          : [
+              Text(text.substring(text.indexOf('\n\n') + 2),
+                  style: normalTextStyle, textAlign: TextAlign.center)
+            ]),
+      const Text(
+        '-\n\n-',
+        style: smallStyle,
+      )
+    ]);
+  }
+
+  Widget _makeBox(bool selected, String line, int counter) {
+    return Row(children: [
+      Checkbox(
+          value: selected, onChanged: (b) =>
+        widget.lineEdit!(counter, b!)
+      ),
+      Text(line.substring(1),
+          style: normalTextStyle, textAlign: TextAlign.center)
+    ]);
+  }
 }

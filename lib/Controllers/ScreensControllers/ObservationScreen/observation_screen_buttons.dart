@@ -5,6 +5,7 @@ import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/Observati
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../../../Loading/button_notifier.dart';
 import '../../ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import '../../ObjectControllers/ButtonControllers/deadline_controller.dart';
 import '../../ObjectControllers/ButtonControllers/end_based_controller.dart';
@@ -20,7 +21,9 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
 
   final Function(BasicButtonController) _openButtonEdit;
 
-  ObservationScreenButtons(this._openButtonEdit);
+  final ButtonNotifier _buttonNotifier;
+
+  ObservationScreenButtons(this._openButtonEdit, this._buttonNotifier);
 
   void updateEndBasedToCurrentDay(
       List<BasicButtonController> allItems,
@@ -160,7 +163,7 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
           () =>
               '${e.touched ? '⊚' : ''}${(myBool.value) ? e.gettingTheStringSelected() : e.gettingTheStringShortWithDate()}',
           () => clickOnButton(e),
-          isSelected: myBool),
+          isSelected: myBool, lineEdit: (L, T) => lineEditTrigger(L, T, e)),
       smallBlankSplit
     ]);
   }
@@ -230,7 +233,8 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
             '${isNew ? '⊚' : ''}${isExtra ? (it.job.substring(0, min(4, it.job.length)).trim() + (it.job.length > 4 ? '...' : '')) : _buttonDisplay(it)}',
         () => clickOnButton(it),
         isSelected: myBool,
-        isSmall: isExtra);
+        isSmall: isExtra,
+        lineEdit: (L, T) => lineEditTrigger(L, T, it));
   }
 
   String _buttonDisplay(BasicButtonController it) {
@@ -274,6 +278,11 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
 
   void updateMoment() =>
       _lastUpdate = MyDateController.now().add(const Duration(minutes: 10));
+
+  void lineEditTrigger(int line, bool needsTrue, BasicButtonController controller){
+    controller.checkSwitchLine(line, needsTrue);
+    _buttonNotifier.addOrUpdate(controller, false);
+  }
 }
 
 class ButSelectorData extends ChangeNotifier {

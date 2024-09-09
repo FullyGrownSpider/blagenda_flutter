@@ -199,7 +199,7 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
             widget._buttonNotifier,
             true);
         selectedButton = null;
-        return currentAdding.makeAddingButtonScreen();
+        return currentAdding.makeAddingButtonScreen(showSearch);
       case ButState.search:
         return search(widget._buttonNotifier, searchButtonController);
       case ButState.important:

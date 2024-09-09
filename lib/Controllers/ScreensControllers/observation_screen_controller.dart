@@ -16,7 +16,8 @@ class ObservationScreenController {
   ///needs to load first use doneLoading to check if done
   ObservationScreenController(
       Function(BasicButtonController) openButtonEdit, this._notifier) {
-    observationScreenButtons = ObservationScreenButtons(openButtonEdit);
+    observationScreenButtons =
+        ObservationScreenButtons(openButtonEdit, _notifier);
     _notifier.addListener(() {
       observationScreenButtons.updateMoment();
       if (_notifier.hardPoint) deselect();

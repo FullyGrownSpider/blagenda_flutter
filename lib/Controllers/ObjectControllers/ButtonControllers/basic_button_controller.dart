@@ -16,6 +16,9 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
   static const int maxValueCheck = 38;
   t _button;
 
+  static String displayGenericText(String job, int max) =>
+      splitByLength(job, max);
+
   int theStringLongestLength = 1;
 
   BasicButtonController(this._button) {
@@ -39,17 +42,17 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
   ///is -1 if not connected to an entity else its entity ID
   int entitied = -1;
 
-  String displayGenericText(String job, int max) => splitByLength(job, max);
-
   Color get color => _button.color!;
 
   String gettingTheStringShort() =>
-      (entitied != -1 ? entityIndicator : '') + splitByLength(job, maxValueCheck);
+      _checkIndicator() +
+      (entitied != -1 ? entityIndicator : '') +
+      _gettingTheStringShortSplit();
 
   String gettingTheStringSelected() =>
-      '${gettingTheStringShortSplit()}\n\n${todosToString().trim()}';
+      '${_gettingTheStringShortSplit()}\n\n${todosToString().trim()}';
 
-  String gettingTheStringShortSplit() {
+  String _gettingTheStringShortSplit() {
     return splitByLength(job, maxValueCheck);
   }
 
@@ -81,7 +84,8 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
             maxLengthTodos -= 3;
             int size = 0;
             while (size + maxLengthTodos < data[i].length) {
-              buf.write('${data[i].substring(size, size + maxLengthTodos).trim()}...\n');
+              buf.write(
+                  '${data[i].substring(size, size + maxLengthTodos).trim()}...\n');
               size += maxLengthTodos;
             }
             buf.write('${data[i].substring(size, data[i].length)} ');
@@ -108,6 +112,12 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
       buf.write('\n');
     }
     return buf.toString().replaceAll(' \n', '\n').trim();
+  }
+
+  String _checkIndicator() {
+    bool unChecked = toDos.contains('[]');
+    bool checked = toDos.contains('[x]');
+    return '${checked ? (unChecked ? '◪' : '■') : (unChecked ? '□' : '')} ';
   }
 
   void calculateLength() {
@@ -141,7 +151,9 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
 
   String todosToString() {
     if (toDos.trim().isEmpty) return writeEmpty();
-    return splitByLength(toDos, maxValueCheck);
+    return splitByLength(toDos, maxValueCheck)
+        .replaceAll('[]', '□')
+        .replaceAll('[x]', '■');
   }
 
   @override
@@ -157,6 +169,13 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
   @override
   String toString() {
     return job;
+  }
+
+  void checkSwitchLine(int line, bool needTrue) {
+    var lines = toDos.split('\n');
+    lines[line] = lines[line]
+        .replaceFirst(needTrue ? '[]' : '[x]', needTrue ? '[x]' : '[]');
+    button.toDos = lines.join('\n');
   }
 }
 
