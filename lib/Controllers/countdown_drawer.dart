@@ -27,17 +27,14 @@ class _CountdownDrawerState extends State<CountdownDrawer> with MonthDayWidget {
   @override
   void initState() {
     super.initState();
-    countDownController
-        .loadSortFillImportant(
-            widget._notifier.getEndBasedData,
-            containWidgetsPretty,
-            widget._notifier.addOrUpdate,
-            widget._notifier.getData().whereType<NoteController>().toList)
-        .then((value) {
-      widgetList.clear();
-      widgetList.addAll(value);
-      setState(() {});
-    });
+    var value = countDownController.loadSortFillImportant(
+        widget._notifier.getEndBasedData,
+        containWidgetsPretty,
+        widget._notifier.addOrUpdate,
+        widget._notifier.getData().whereType<NoteController>().toList);
+    widgetList.clear();
+    widgetList.addAll(value);
+    setState(() {});
   }
 
   static const border = BorderSide(color: Colors.black38, width: 7);
@@ -75,17 +72,15 @@ class _CountdownDrawerState extends State<CountdownDrawer> with MonthDayWidget {
           var but = widget._getSelectedButton();
           widget._notifier.flipImportant(but);
           if (but == null) return;
-          countDownController
+          var value = countDownController
               .loadSortFillImportant(
                   widget._notifier.getEndBasedData,
                   containWidgetsPretty,
                   widget._notifier.addOrUpdate,
-                  widget._notifier.getData().whereType<NoteController>().toList)
-              .then((value) {
+                  widget._notifier.getData().whereType<NoteController>().toList);
             widgetList.clear();
             widgetList.addAll(value);
             setState(() {});
-          });
         }, () {
           var but = widget._getSelectedButton();
           widget._notifier.changeDays(but, 1);

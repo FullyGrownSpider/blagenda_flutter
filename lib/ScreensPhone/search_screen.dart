@@ -19,8 +19,7 @@ class SearchScreen<T extends SearchAble> extends StatefulWidget {
 
 class _SearchScreenState<T extends SearchAble> extends State<SearchScreen<T>> {
   late final SearchScreenController _controller = SearchScreenController<T>(
-      doPopLogic,
-      widget.notifier as StoreAbleNotifier<SearchAble>);
+      doPopLogic, widget.notifier as StoreAbleNotifier<SearchAble>);
 
   Future<dynamic> doPopLogic(T item) async {
     if (widget.doWithClicked != null) {
@@ -48,12 +47,13 @@ class _SearchScreenState<T extends SearchAble> extends State<SearchScreen<T>> {
         appBar: AppBar(title: const Text('Search')),
         body: ListenableBuilder(
             listenable: _controller,
-            builder: (BuildContext context, Widget? child) =>
-                SingleChildScrollView(
-                    // child: Center(
-                    child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: _controller.getScreenWidgets(),
-                ))));
+            builder: (BuildContext context, Widget? child) {
+              return SingleChildScrollView(
+                  // child: Center(
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _controller.getScreenWidgets(),
+              ));
+            }));
   }
 }

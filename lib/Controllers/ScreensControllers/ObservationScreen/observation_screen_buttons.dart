@@ -18,7 +18,7 @@ class ObservationScreenButtons with DayCreator, ButtonCreator {
   MyDateController _lastUpdate = MyDateController.now();
   final ButSelectorData _butSelectorData = ButSelectorData();
 
-  final Future Function(BasicButtonController) _openButtonEdit;
+  final Function(BasicButtonController) _openButtonEdit;
 
   ObservationScreenButtons(this._openButtonEdit);
 

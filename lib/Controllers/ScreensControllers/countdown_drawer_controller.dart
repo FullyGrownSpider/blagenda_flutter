@@ -9,11 +9,11 @@ import '../blagenda_uniform_button.dart';
 import 'ObservationScreen/observation_screen_options.dart';
 
 class CountDownDrawerController {
-  Future<List<Widget>> loadSortFillImportant(
+  List<Widget> loadSortFillImportant(
       List<EndBasedController> Function() getEndBasedButtons,
       Widget Function(List<Widget> list) style,
       void Function(BasicButtonController) addOrUpdateButton,
-      List<dynamic> Function() getData) async {
+      List<dynamic> Function() getNotes) {
     List<Widget> widgetList = [];
     List<EndBasedController> endButtons = [];
     List<BasicButtonController> notes = [];
@@ -38,7 +38,7 @@ class CountDownDrawerController {
 
     endButtons.sort();
     notes.addAll(
-        (getData()).where((e) => e.important).toList().cast<NoteController>());
+        (getNotes()).where((e) => e.important).toList().cast<NoteController>());
     widgetList.clear();
     for (var note in notes) {
       widgetList.add(style([
