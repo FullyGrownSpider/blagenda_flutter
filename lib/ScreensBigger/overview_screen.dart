@@ -217,7 +217,6 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
     }
   }
 
-//TODO make pretty
   Widget containWidgetsPretty(List<Widget> list) {
     return Container(
         width: double.infinity,
