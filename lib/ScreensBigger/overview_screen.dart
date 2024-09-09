@@ -148,6 +148,9 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
 
   Future<void> _doActionWithClickedButton(SearchAble p1) async {
     selectedButton = p1 as BasicButtonController;
+    if (currentEntityAdding != null && selectedButton != null){
+      currentEntityAdding?.tryToSetButton(selectedButton!);
+    }
     setState(() {
       butState = ButState.adding;
     });

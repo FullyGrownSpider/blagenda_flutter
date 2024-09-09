@@ -80,7 +80,7 @@ class AddingEntityScreenController extends ChangeNotifier
     notifyListeners();
   }
 
-  bool tryToAssing(dynamic item) {
+  bool tryToSetButton(dynamic item) {
     if (selected == -1) {
       return false;
 

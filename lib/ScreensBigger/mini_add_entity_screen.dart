@@ -1,3 +1,4 @@
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/entity_controller.dart';
 import 'package:blagenda_flutter_simple/Loading/button_notifier.dart';
@@ -46,4 +47,6 @@ class MiniAddEntityScreen {
   }
 
   EntityController? getEntity() =>  _screenController.getEntity();
+
+  bool tryToSetButton(BasicButtonController<BasicButton> selectedButton) => _screenController.tryToSetButton(selectedButton);
 }
