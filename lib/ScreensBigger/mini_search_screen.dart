@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 import '../Controllers/ScreensControllers/search_screen_controller.dart';
+import '../Controllers/blagenda_uniform_button.dart';
 
 Widget search(ChangeNotifier notifier, SearchScreenController controller) {
   return ListenableBuilder(
@@ -15,7 +16,8 @@ Widget search(ChangeNotifier notifier, SearchScreenController controller) {
                   // child: Center(
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: controller.getScreenWidgets()));
+                      children: controller.getScreenWidgets()
+                        ..insert(0, medBlankSplit)));
             });
       });
 }

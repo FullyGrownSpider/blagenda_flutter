@@ -13,7 +13,8 @@ class CountDownDrawerController {
       List<EndBasedController> Function() getEndBasedButtons,
       Widget Function(List<Widget> list) style,
       void Function(BasicButtonController) addOrUpdateButton,
-      List<dynamic> Function() getNotes) {
+      List<dynamic> Function() getNotes,
+      [bool extraLines = true]) {
     List<Widget> widgetList = [];
     List<EndBasedController> endButtons = [];
     List<BasicButtonController> notes = [];
@@ -67,9 +68,11 @@ class CountDownDrawerController {
       widgetList.add(splitterTextField);
       widgetList.add(splitterTextField);
     }
-    widgetList.add(bigSplitterTextField);
-    widgetList.add(bigSplitterTextField);
-    widgetList.add(bigSplitterTextField);
+    if (extraLines) {
+      widgetList.add(bigSplitterTextField);
+      widgetList.add(bigSplitterTextField);
+      widgetList.add(bigSplitterTextField);
+    }
     return widgetList;
   }
 

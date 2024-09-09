@@ -10,10 +10,10 @@ import 'package:flutter/material.dart';
 
 import '../Loading/button_notifier.dart';
 import '../Loading/entity_notifier.dart';
-import '../ScreensPhone/entity_adding_screen.dart';
+import 'entity_adding_screen.dart';
 import '../common_items.dart';
-import 'ObjectControllers/ButtonControllers/basic_button_controller.dart';
-import 'blagenda_uniform_button.dart';
+import '../Controllers/ObjectControllers/ButtonControllers/basic_button_controller.dart';
+import '../Controllers/blagenda_uniform_button.dart';
 
 class MainDrawer {
   static const TextStyle textStyle = TextStyle(

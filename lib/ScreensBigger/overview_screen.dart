@@ -4,6 +4,7 @@ import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonCont
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/mix_search_able.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/observation_screen_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/search_screen_controller.dart';
+import 'package:blagenda_flutter_simple/Controllers/blagenda_uniform_button.dart';
 import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:blagenda_flutter_simple/ScreensBigger/mini_add_button_screen.dart';
 import 'package:flutter/material.dart';
@@ -203,14 +204,14 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
         return search(widget._buttonNotifier, searchButtonController);
       case ButState.important:
         return Column(
-            children: _countDownController.loadSortFillImportant(
+            children: [medBlankSplit, ..._countDownController.loadSortFillImportant(
                 widget._buttonNotifier.getEndBasedData,
                 containWidgetsPretty,
                 _doActionWithClickedButton,
                 widget._buttonNotifier
                     .getData()
                     .whereType<NoteController>()
-                    .toList));
+                    .toList, false)]);
       default:
         return generateDayView(
             _observationController.getWidgetListEndBased,
@@ -226,12 +227,12 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
         decoration: BoxDecoration(
             color: Colors.black26,
             border: Border(
-                // top: border,
+                top: border,
                 // left: fakeBorder,
                 // right: fakeBorder,
                 bottom: border)),
         child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, children: list));
+            mainAxisAlignment: MainAxisAlignment.center, children: [medBlankSplit, ...list, medBlankSplit]));
   }
 
   Widget pickCorrectRight() {
