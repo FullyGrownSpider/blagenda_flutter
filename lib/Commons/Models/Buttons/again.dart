@@ -12,8 +12,10 @@ class AgainAmountDay extends SkippableButton {
       int? day,
       MyDateController? dateToSkip,
       MyDateController? endingDate,
+      Map<MyDateController, List<int>>? dates,
       bool important = false])
-      : super(job, toDos, id, color, day, dateToSkip, endingDate, startDate, important);
+      : super(job, toDos, id, color, day, dateToSkip, endingDate, startDate,
+            dates, important);
 }
 
 class AgainWeekDay extends SkippableButton {
@@ -26,6 +28,7 @@ class AgainWeekDay extends SkippableButton {
       super.dateToSkip,
       super.endingDate,
       super.startDate,
+      super.dates,
       super.important]);
 }
 
@@ -40,6 +43,7 @@ class AgainYearDay extends SkippableButton {
       super.dateToSkip,
       super.endingDate,
       super.startDate,
+      super.dates,
       super.important]);
 
   int? month;
@@ -55,5 +59,6 @@ class AgainMonthDay extends SkippableButton {
       super.dateToSkip,
       super.endingDate,
       super.startDate,
+      super.dates,
       super.important]);
 }

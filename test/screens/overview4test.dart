@@ -64,13 +64,13 @@ class FakeButtonNotifier extends ButtonNotifier {
     notifyListeners();
   }
 
-  @override
-  void addOrUpdate(BasicButtonController but) {
-    buttons.removeWhere((e) => e.runtimeType == but.runtimeType && e.id == but.id);
-    buttons.add(but);
-    hardPoint = true;
-    notifyListeners();
-  }
+  // @override TODO something changed it doesnt work now with testing
+  // void addOrUpdate(BasicButtonController but) {
+  //   buttons.removeWhere((e) => e.runtimeType == but.runtimeType && e.id == but.id);
+  //   buttons.add(but);
+  //   hardPoint = true;
+  //   notifyListeners();
+  // }
 
   ///only have button controllers of the same type in list
   @override

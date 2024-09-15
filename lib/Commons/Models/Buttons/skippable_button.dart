@@ -11,10 +11,12 @@ abstract class SkippableButton extends BasicButton {
       this.dateToSkip,
       this.endingDate,
       this.startDate,
+      this.dates,
       bool important = false]);
 
   int? day;
   MyDateController? dateToSkip;
   MyDateController? endingDate;
   MyDateController? startDate;
+  Map<MyDateController, List<int>>? dates;
 }

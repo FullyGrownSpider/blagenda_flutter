@@ -8,8 +8,8 @@ import 'package:blagenda_flutter_simple/Loading/conversion_base.dart';
 import 'package:flutter/material.dart';
 
 Deadline deadline() {
-  return Deadline(
-      '123', 'text!', 1, Colors.black, MyDateController.nowDate.addOrRemoveDays(1));
+  return Deadline('123', 'text!', 1, Colors.black,
+      MyDateController.nowDate.addOrRemoveDays(1));
 }
 
 AgainWeekDay week() {
@@ -20,7 +20,10 @@ AgainWeekDay week() {
       Colors.black,
       MyDateController.nowDate.weekday,
       MyDateController.nowDate.addOrRemoveDays(20),
-      MyDateController.nowDate.addOrRemoveDays(40));
+      MyDateController.nowDate.addOrRemoveDays(40),
+      null, {
+    MyDateController.nowDate.addOrRemoveDays(20): [0]
+  });
 }
 
 AgainYearDay year() {
@@ -32,7 +35,10 @@ AgainYearDay year() {
       MyDateController.nowDate.addOrRemoveDays(12).day,
       MyDateController.nowDate.addOrRemoveDays(12).month,
       MyDateController.nowDate.addOrRemoveDays(20),
-      MyDateController.nowDate.addOrRemoveDays(40));
+      MyDateController.nowDate.addOrRemoveDays(40),
+      null, {
+    MyDateController.nowDate.addOrRemoveDays(20): [0]
+  });
 }
 
 AgainMonthDay month() {
@@ -43,7 +49,10 @@ AgainMonthDay month() {
       Colors.black,
       23,
       MyDateController.nowDate.addOrRemoveDays(20),
-      MyDateController.nowDate.addOrRemoveDays(40));
+      MyDateController.nowDate.addOrRemoveDays(40),
+      null, {
+    MyDateController.nowDate.addOrRemoveDays(20): [0]
+  });
 }
 
 AgainWeird weird() {
@@ -54,7 +63,10 @@ AgainWeird weird() {
       Colors.black,
       1,
       MyDateController.nowDate.addOrRemoveDays(20),
-      MyDateController.nowDate.addOrRemoveDays(40));
+      MyDateController.nowDate.addOrRemoveDays(40),
+      null, {
+    MyDateController.nowDate.addOrRemoveDays(20): [0]
+  });
 }
 
 AgainAmountDay day() {
@@ -66,7 +78,9 @@ AgainAmountDay day() {
       MyDateController.nowDate.addOrRemoveDays(10),
       11,
       MyDateController.nowDate.addOrRemoveDays(20),
-      MyDateController.nowDate.addOrRemoveDays(40));
+      MyDateController.nowDate.addOrRemoveDays(40), {
+    MyDateController.nowDate.addOrRemoveDays(20): [0]
+  });
 }
 
 BasicButton note() {

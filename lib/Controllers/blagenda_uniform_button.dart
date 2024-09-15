@@ -1,3 +1,4 @@
+import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import 'package:flutter/material.dart';
 
 const TextStyle bigTextStyle = TextStyle(
@@ -119,9 +120,9 @@ class _BlagendaUniformButton extends State<BlagendaUniformButton> {
       int counter = -1;
       for (String line in secondText) {
         counter++;
-        if (line.startsWith('■')) {
+        if (line.startsWith(BasicButtonController.check)) {
           textList.add(_makeBox(true, line, counter));
-        } else if (line.startsWith('□')) {
+        } else if (line.startsWith(BasicButtonController.emptyCheck)) {
           textList.add(_makeBox(false, line, counter));
         } else {
           textList.add(

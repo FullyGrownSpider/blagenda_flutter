@@ -1,4 +1,6 @@
 import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
+import 'package:blagenda_flutter_simple/Commons/Models/Buttons/skippable_button.dart';
+import 'package:blagenda_flutter_simple/Controllers/my_date_controller.dart';
 import 'package:blagenda_flutter_simple/Loading/conversion_base.dart';
 import 'package:blagenda_flutter_simple/Loading/loading_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,22 +38,22 @@ void _note() {
 
 void _week() {
   var weekVar = week();
-  _compare(weekVar, 8);
+  _compare(weekVar, 9);
 }
 
 void _year() {
   var yearVar = year();
-  _compare(yearVar, 9);
+  _compare(yearVar, 10);
 }
 
 void _month() {
   var monthVar = month();
-  _compare(monthVar, 8);
+  _compare(monthVar, 9);
 }
 
 void _day() {
   var dayVar = day();
-  _compare(dayVar, 9);
+  _compare(dayVar, 10);
 }
 
 void _compare<t extends BasicButton>(t button, int expected) {
@@ -73,4 +75,7 @@ void _compare<t extends BasicButton>(t button, int expected) {
   expect(button.toDos, check.toDos);
   expect(button.id, check.id);
   expect(button.color, check.color);
+  if (button is SkippableButton){
+    expect(button.dates, {MyDateController.nowDate.addOrRemoveDays(20): [0]});
+  }
 }

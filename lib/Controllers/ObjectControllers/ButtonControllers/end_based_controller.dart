@@ -227,6 +227,9 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   void rebuild() {
+    //TODO ugly because of the loading… remove next line at some point
+    button.dates ??= {};
+
     var daysDif = daysLeft;
     create();
     _setTimeOfDay();
@@ -242,6 +245,15 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
         startDate!.addOrRemoveDays(3).isBefore(MyDateController.today)) {
       requiresChange = true;
       button.startDate = null;
+    }
+    var tempDates = button.dates!.keys
+        .where((e) => e.isBefore(MyDateController.yesterday))
+        .toList();
+    if (tempDates.isNotEmpty) {
+      for (int i = 0; i < tempDates.length; i++) {
+        button.dates!.remove(tempDates[i]);
+      }
+      requiresChange = true;
     }
 
     if (dateToSkip != null) {
@@ -350,6 +362,68 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   static bool buttonCheck(DateTime dateToSkip, DateTime today) {
     return dateToSkip.add(const Duration(days: 1)).isBefore(today);
+  }
+
+  @override
+  void checkSwitchLine(int line, bool needTrue) {
+    var altDate = MyDateController.fromDaysFromNow(altLeft);
+    var contains = button.dates!.containsKey(altDate);
+    if (needTrue) {
+      if (!contains) {
+        button.dates!.addAll({
+          altDate: [line]
+        });
+      } else {
+        if (!button.dates![altDate]!.contains(line)) {
+          button.dates![altDate]!.add(line);
+        }
+      }
+    } else {
+      if (contains) {
+        button.dates![altDate]!.removeWhere((e) => e == line);
+      }
+    }
+    if (contains) {
+      button.dates![altDate]!.sort();
+    }
+  }
+
+  @override
+  String todosToString() {
+    var result = super.todosToString();
+    if (button.dates!.isEmpty) return result;
+    var first = button.dates!.keys.firstWhere(
+        (e) => e.daysLeftUntil() == altLeft,
+        orElse: () => MyDateController.yesterday);
+    if (first == MyDateController.yesterday) return result;
+    var used = button.dates![first]!;
+    int counter = 0;
+    for (int i = 0; i < used.length; i++) {
+      while (used[i] < counter) {
+        result = result.replaceFirst(
+            BasicButtonController.emptyCheck, BasicButtonController.halfCheck);
+        counter++;
+      }
+      result = result.replaceFirst(
+          BasicButtonController.emptyCheck, BasicButtonController.check);
+      counter++;
+    }
+    result = result.replaceAll(
+        BasicButtonController.halfCheck, BasicButtonController.emptyCheck);
+    return result;
+  }
+
+  @override
+  String checkIndicator() {
+    var unCheckedAmount = toDos.split(BasicButtonController.unCheckedPattern);
+    if (unCheckedAmount.length == 1) return '';
+    var date = MyDateController.fromDaysFromNow(altLeft);
+    if (!button.dates!.containsKey(date)) return BasicButtonController.emptyCheck;
+    var allChecked = button.dates![date]!.length == unCheckedAmount.length - 1;
+    if (allChecked) return BasicButtonController.check;
+    return button.dates![date]!.isEmpty
+        ? BasicButtonController.emptyCheck
+        : BasicButtonController.halfCheck;
   }
 }
 

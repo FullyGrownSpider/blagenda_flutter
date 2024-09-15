@@ -12,9 +12,15 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
   ///if this was edited but is also used if it was deleted while coming from the edit screen
   bool touched = false;
 
+  static final RegExp unCheckedPattern = RegExp(r'(?:^|\n)\[\]');
+  static final RegExp checkedPattern = RegExp(r'(?:^|\n)\[x\]');
   static const String entityIndicator = '◟';
   static const int maxValueCheck = 38;
   t _button;
+
+  static const String halfCheck = '◪';
+  static const String check = '■';
+  static const String emptyCheck = '□';
 
   static String displayGenericText(String job, int max) =>
       splitByLength(job, max);
@@ -45,7 +51,7 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
   Color get color => _button.color!;
 
   String gettingTheStringShort() =>
-      _checkIndicator() +
+      checkIndicator() +
       (entitied != -1 ? entityIndicator : '') +
       _gettingTheStringShortSplit();
 
@@ -114,10 +120,11 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
     return buf.toString().replaceAll(' \n', '\n').trim();
   }
 
-  String _checkIndicator() {
-    bool unChecked = toDos.contains('[]');
-    bool checked = toDos.contains('[x]');
-    return '${checked ? (unChecked ? '◪' : '■') : (unChecked ? '□' : '')} ';
+  @protected
+  String checkIndicator() {
+    bool unCheckedFound = toDos.contains(unCheckedPattern);
+    bool checksFound = toDos.contains(checkedPattern);
+    return checksFound ? (unCheckedFound ? ('$halfCheck ') : ('$check ')) : (unCheckedFound ? ('$emptyCheck ') : '');
   }
 
   void calculateLength() {
@@ -152,8 +159,8 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
   String todosToString() {
     if (toDos.trim().isEmpty) return writeEmpty();
     return splitByLength(toDos, maxValueCheck)
-        .replaceAll('[]', '□')
-        .replaceAll('[x]', '■');
+        .replaceAll(unCheckedPattern, '\n$emptyCheck')
+        .replaceAll(checkedPattern, '\n$check');
   }
 
   @override
@@ -174,7 +181,7 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
   void checkSwitchLine(int line, bool needTrue) {
     var lines = toDos.split('\n');
     lines[line] = lines[line]
-        .replaceFirst(needTrue ? '[]' : '[x]', needTrue ? '[x]' : '[]');
+        .replaceFirst(needTrue ? unCheckedPattern : checkedPattern, needTrue ? '[x]' : '[]');
     button.toDos = lines.join('\n');
   }
 }
