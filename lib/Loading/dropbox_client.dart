@@ -9,7 +9,7 @@ class DropboxClient {
   const DropboxClient();
 
   static const String _authorization =
-      '_oLKcuUTDakAAAAAAAABrQAlMYVpE7etvPcrMd3lmKTxPdBRpuo1kP7xOoD7F_zF';
+      'F';
 
   static const String _folder = 'Blagenda Simple';
 
