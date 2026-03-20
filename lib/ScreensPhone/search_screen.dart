@@ -44,7 +44,7 @@ class _SearchScreenState<T extends SearchAble> extends State<SearchScreen<T>> {
     _currentContext = context;
     return Scaffold(
         backgroundColor: Colors.white24,
-        appBar: AppBar(title: const Text('Search')),
+        appBar: AppBar(backgroundColor: Colors.green, title: const Text('Search')),
         body: ListenableBuilder(
             listenable: _controller,
             builder: (BuildContext context, Widget? child) {

@@ -53,7 +53,8 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
                 onSecondary: Colors.black,
                 onSurface: Colors.black,
                 secondary: Colors.green,
-                surface: Colors.green,
+                onPrimaryContainer: Colors.green,
+                surface: Colors.black54,
                 brightness: Brightness.dark)));
   }
 }

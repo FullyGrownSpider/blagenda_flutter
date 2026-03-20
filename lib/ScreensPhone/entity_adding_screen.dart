@@ -37,7 +37,7 @@ class _AddingEntityScreenState extends State<AddingEntityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.white24,
-        appBar: AppBar(title: const Text('Adding'), actions: <Widget>[
+        appBar: AppBar(backgroundColor: Colors.green, title: const Text('Adding'), actions: <Widget>[
           widget.entity != null
               ? IconButton(
                   icon: const Icon(Icons.remove),

@@ -40,6 +40,7 @@ class MainDrawer {
 
   Drawer createDrawer(BuildContext context) {
     return Drawer(
+      backgroundColor: Colors.green,
         child: ListView(
       children: <Widget>[
         DrawerHeader(

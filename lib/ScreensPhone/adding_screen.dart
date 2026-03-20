@@ -24,7 +24,7 @@ class _AddingScreenState extends State<AddingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.white24,
-        appBar: AppBar(title: const Text('Adding'), actions: <Widget>[
+        appBar: AppBar(backgroundColor: Colors.green, title: const Text('Adding'), actions: <Widget>[
           widget.button != null
               ? IconButton(
                   icon: const Icon(Icons.remove),
