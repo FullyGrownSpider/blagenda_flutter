@@ -1,142 +1,57 @@
-import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/ButtonControllers/note_controller.dart';
-import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/entity_controller.dart';
+import 'package:blagenda_flutter_simple/Loading/button_notifier.dart';
 import 'package:flutter/material.dart';
 
 import '../ObjectControllers/ButtonControllers/basic_button_controller.dart';
-import '../ObjectControllers/ButtonControllers/end_based_controller.dart';
 import 'ObservationScreen/observation_screen_buttons.dart';
-import 'ObservationScreen/observation_screen_loading.dart';
 import 'ObservationScreen/observation_screen_options.dart';
 
 class ObservationScreenController {
-  @visibleForTesting
-  late ObservationScreenLoading observationScreenLoading;
-  @visibleForTesting
-  final ObservationScreenOptions observationScreenOptions = ObservationScreenOptions();
+  final ObservationScreenOptions observationScreenOptions =
+      ObservationScreenOptions();
   @visibleForTesting
   late final ObservationScreenButtons observationScreenButtons;
-
-  ///lists used to store all buttons and used to .select the ones to display
-  @visibleForTesting
-  final List<BasicButtonController> allLists = [];
-
-  @visibleForTesting
-  final List<EntityController> entityList = [];
+  final ButtonNotifier _notifier;
 
   ///needs to load first use doneLoading to check if done
-  ObservationScreenController(Future Function(BasicButtonController) openEntityScreen,
-      Future Function(BasicButtonController) openButtonEdit) {
-    observationScreenLoading = ObservationScreenLoading();
-    observationScreenButtons = ObservationScreenButtons(openEntityScreen, openButtonEdit);
-    observationScreenLoading.loadEntityListFromStorage().then((v) {
-      entityList.clear();
-      entityList.addAll(v);
-      observationScreenLoading.loadListsFromStorage(allLists, entityList);
+  ObservationScreenController(
+      Function(BasicButtonController) openButtonEdit, this._notifier) {
+    observationScreenButtons =
+        ObservationScreenButtons(openButtonEdit, _notifier);
+    _notifier.addListener(() {
+      observationScreenButtons.updateMoment();
+      if (_notifier.hardPoint) deselect();
     });
   }
 
-  List<Widget> getWidgetListNote(void Function() setStateMethod) =>
-      observationScreenButtons.getWidgetListNote(setStateMethod, observationScreenOptions,
-          allLists.whereType<NoteController>().toList());
+  void updateButtonsDay() =>
+      observationScreenButtons.updateEndBasedToCurrentDay(
+          _notifier.getData(), _notifier.deleteList, _notifier.updateList);
 
-  List<Widget> getWidgetListEndBased(void Function() setStateMethod) =>
-      observationScreenButtons.getWidgetListEndBased(setStateMethod,
-          ObservationScreenOptions.daysToShow, allLists, observationScreenOptions);
+  void deselect() => observationScreenButtons.resetCounters();
 
-  void resetSearch(void Function() setStateMethod) =>
-      observationScreenOptions.resetSearch(setStateMethod, _resetCounters);
+  List<Widget> getWidgetListNote() =>
+      observationScreenButtons.getWidgetListNote(observationScreenOptions,
+          _notifier.getData().whereType<NoteController>().toList());
 
-  Future<void> resetLists() async {
-    while (!observationScreenLoading.doneLoading()) {
-      await Future.delayed(const Duration(milliseconds: 10));
-    }
-    observationScreenButtons.updateEndbasedToCurrentDay(allLists,
-        observationScreenLoading.deleteList, observationScreenLoading.updateList);
-  }
+  List<Widget> getWidgetListEndBased() =>
+      observationScreenButtons.getWidgetListEndBased(
+          ObservationScreenOptions.daysToShow,
+          _notifier.getData(),
+          observationScreenOptions);
+
+  void resetSelects() => observationScreenOptions.resetSearch(_resetCounters);
 
   void _resetCounters() => observationScreenButtons.resetCounters();
 
-  BasicButtonController? getSelectedButton() {
-    if (observationScreenButtons.idSelected == -1) return null;
-    List correctList = allLists
-        .where((e) => e.runtimeType == observationScreenButtons.typeOfSelected!)
-        .toList();
-    return correctList
-        .firstWhere((e) => observationScreenButtons.idSelected == e.button.id);
-  }
+  BasicButtonController? getSelectedButton() =>
+      observationScreenButtons.getSelected(_notifier.getData());
 
-  bool justAddedCheck() => observationScreenButtons.justAddedCheck();
+  bool justAddedCheck() =>
+      observationScreenButtons.justAddedCheck(_notifier.getEndBasedData());
 
-  bool doneLoading() => observationScreenLoading.doneLoading();
+  int getNewId(Type t) => _notifier.getNewId(t);
 
-  void loadListsFromStorage() =>
-      observationScreenLoading.loadListsFromStorage(allLists, entityList);
-
-  int getNewId(Type t) => observationScreenLoading.getNewId(t, allLists);
-
-  void addOrUpdateButton(
-      BasicButtonController<BasicButton> c, void Function() resetScreen) {
-    if (c is EndBasedController) {
-      observationScreenButtons.addNew(c.id, c.runtimeType);
-    }
-    observationScreenLoading.addOrUpdateButton(c, resetScreen, allLists);
-  }
-
-  void deleteSelected(void Function() resetScreen) {
-    var selectedBut = getSelectedButton();
-    if (selectedBut != null) {
-      deleteButton(selectedBut, resetScreen);
-    }
-  }
-
-  void deleteButton(BasicButtonController<BasicButton> c, void Function() resetScreen) {
-    observationScreenButtons.removeNew(c.id, c.runtimeType);
-    observationScreenLoading.deleteSelected(resetScreen, c, allLists);
-  }
-
-  void skipButton(void Function() resetScreen) =>
-      observationScreenLoading.skipButton(resetScreen, getSelectedButton(), allLists);
-
-  void flipImportant(void Function() resetScreen) =>
-      observationScreenLoading.flipImportant(resetScreen, getSelectedButton(), allLists);
-
-  void addOrRemoveDay(void Function() resetScreen, int amount) => observationScreenLoading
-      .changeDays(resetScreen, getSelectedButton(), allLists, amount);
-
-  List<Widget> getOptionButtons(void Function() setStateMethod) =>
-      observationScreenOptions.getOptionButtons(setStateMethod, _resetCounters);
-
-  List<EndBasedController> getEndbasedData() =>
-      allLists.whereType<EndBasedController>().toList();
-
-  List<EntityController> getEntities() => entityList;
-
-  void addOrUpdateEntity(EntityController c) {
-    int index = entityList.indexWhere((element) => element.id == c.id);
-    if (index != -1) {
-      entityList.removeAt(index);
-      if (c.tags.isEmpty) {
-        observationScreenLoading.deleteEntity(c, getEntities());
-        return;
-      }
-      c.tagsAsReferences();
-      observationScreenLoading.updateData(c.myEntity);
-    } else {
-      if (c.tags.isEmpty) return;
-      c.tagsAsReferences();
-      observationScreenLoading.storeData(c.myEntity);
-    }
-    entityList.add(c);
-  }
-
-  int getNewEntityId() {
-    entityList.sort((a, b) => a.id.compareTo(b.id));
-    for (int i = 0; i < entityList.length; i++) {
-      if (entityList[i].id != i) {
-        return i;
-      }
-    }
-    return entityList.length;
-  }
+  List<Widget> getOptionButtons([bool asRow = true]) =>
+      observationScreenOptions.getOptionButtons(_resetCounters, asRow);
 }

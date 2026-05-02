@@ -8,13 +8,22 @@ import '../../ObjectControllers/mix_search_able.dart';
 import '../../ScreensControllers/mix_input_handler.dart.dart';
 
 abstract class BasicButtonController<t extends BasicButton> extends SearchAble
-    with searchField {
+    with SearchField {
   ///if this was edited but is also used if it was deleted while coming from the edit screen
   bool touched = false;
 
+  static final RegExp unCheckedPattern = RegExp(r'(?:^|\n)(\[\])|(O\b)');
+  static final RegExp checkedPattern = RegExp(r'(?:^|\n)(\[x\])|(X\b)');
   static const String entityIndicator = '◟';
   static const int maxValueCheck = 38;
   t _button;
+
+  static const String halfCheck = '◪';
+  static const String check = '■';
+  static const String emptyCheck = '□';
+
+  static String displayGenericText(String job, int max) =>
+      splitByLength(job, max);
 
   int theStringLongestLength = 1;
 
@@ -39,23 +48,23 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
   ///is -1 if not connected to an entity else its entity ID
   int entitied = -1;
 
-  String displayGenericText(String job, int max) => splitByLength(job, max);
-
   Color get color => _button.color!;
 
   String gettingTheStringShort() =>
-      (entitied != -1 ? entityIndicator : '') + splitByLength(job, maxValueCheck);
+      checkIndicator() +
+      (entitied != -1 ? entityIndicator : '') +
+      _gettingTheStringShortSplit();
 
   String gettingTheStringSelected() =>
-      '${gettingTheStringShortSplit()}\n\n${todosToString().trim()}';
+      '${_gettingTheStringShortSplit()}\n\n${todosToString().trim()}';
 
-  String gettingTheStringShortSplit() {
+  String _gettingTheStringShortSplit() {
     return splitByLength(job, maxValueCheck);
   }
 
   String writeEmpty() => emogjiList[job.hashCode % emogjiList.length];
 
-  bool colorCheck(Color c) => color.value == c.value;
+  bool colorCheck(Color c) => color.r == c.r && color.g == c.g && c.b == color.b;
 
   void flipImportant() {
     _button.important = !_button.important;
@@ -81,7 +90,8 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
             maxLengthTodos -= 3;
             int size = 0;
             while (size + maxLengthTodos < data[i].length) {
-              buf.write('${data[i].substring(size, size + maxLengthTodos)}...\n');
+              buf.write(
+                  '${data[i].substring(size, size + maxLengthTodos).trim()}...\n');
               size += maxLengthTodos;
             }
             buf.write('${data[i].substring(size, data[i].length)} ');
@@ -108,6 +118,13 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
       buf.write('\n');
     }
     return buf.toString().replaceAll(' \n', '\n').trim();
+  }
+
+  @protected
+  String checkIndicator() {
+    bool unCheckedFound = toDos.contains(unCheckedPattern);
+    bool checksFound = toDos.contains(checkedPattern);
+    return checksFound ? (unCheckedFound ? ('$halfCheck ') : ('$check ')) : (unCheckedFound ? ('$emptyCheck ') : '');
   }
 
   void calculateLength() {
@@ -141,7 +158,9 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
 
   String todosToString() {
     if (toDos.trim().isEmpty) return writeEmpty();
-    return splitByLength(toDos, maxValueCheck);
+    return splitByLength(toDos, maxValueCheck)
+        .replaceAll(unCheckedPattern, '\n$emptyCheck')
+        .replaceAll(checkedPattern, '\n$check');
   }
 
   @override
@@ -157,6 +176,13 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
   @override
   String toString() {
     return job;
+  }
+
+  void checkSwitchLine(int line, bool needTrue) {
+    var lines = toDos.split('\n');
+    lines[line] = lines[line]
+        .replaceFirst(needTrue ? unCheckedPattern : checkedPattern, needTrue ? '[x]' : '[]');
+    button.toDos = lines.join('\n');
   }
 }
 

@@ -1,73 +1,105 @@
-import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart';
 import 'package:blagenda_flutter_simple/Controllers/ObjectControllers/entity_controller.dart';
 import 'package:blagenda_flutter_simple/Controllers/ScreensControllers/mix_day_creator.dart';
+import 'package:blagenda_flutter_simple/Loading/button_notifier.dart';
 import 'package:blagenda_flutter_simple/common_items.dart';
 import 'package:flutter/material.dart';
 
 import '../../Commons/Models/entity.dart';
+import '../../Loading/entity_notifier.dart';
 import '../ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import '../blagenda_uniform_button.dart';
 import 'mix_button_creator.dart';
 import 'mix_input_handler.dart.dart';
 
-class AddingEntityScreenController with buttonCreator, dayCreator, inputHandler {
-  late InputObject _nextName;
-  late InputObject _nextAddButton;
+class AddingEntityScreenController extends ChangeNotifier
+    with ButtonCreator, DayCreator, InputHandler {
+  late final InputObject<String, String> _nextName;
+  late final InputObject<int, int> _nextAddButton;
 
-  final void Function() _setStateMethod;
-
-  EntityController? Function()? getEntity;
+  String nextName = '';
+  late final EntityController? Function() getEntity;
   late int _id;
-  final int Function() _getNewId;
   final List<TagCreateInfo> _info = [];
   final Map<String, dynamic> _storedValues = {};
 
+  static const String defaultStartText = 'Nickname';
   static const String _tagListText = 'Tag type', _newNameText = 'New tag name';
 
-  static void _doNothing() {}
-  final Future<dynamic> Function(Future<dynamic> Function(dynamic)) _openButtonSearch;
+  final Future<BasicButtonController?> Function()
+      _openButtonSearch;
 
-  final List<EntityController> _entities;
+  final ButtonNotifier _notifier;
+  final EntityNotifier _entityNotifier;
 
-  final List<BasicButtonController<BasicButton>> _buttons;
+  final Function _openButtonEdit;
+  int selected = -1;
 
-  final Future<dynamic> Function(dynamic) _openButtonEdit;
-
-  AddingEntityScreenController(
-      EntityController? entity,
-      this._getNewId,
-      this._setStateMethod,
-      this._entities,
-      this._buttons,
-      this._openButtonSearch,
-      this._openButtonEdit) {
+  AddingEntityScreenController(EntityController? entity, this._entityNotifier,
+      this._notifier, this._openButtonSearch, this._openButtonEdit) {
     if (entity == null) {
       _fillStoredValuesNoEntity();
     } else {
-      entity.tagsToObjects(_buttons);
+      entity.tagsToObjects(_notifier.getData());
       _fillStoredValues(entity);
       _id = entity.id;
     }
     Set<String> names = {};
-    for (entity in _entities) {
+    for (entity in _entityNotifier.getData()) {
       names.addAll(entity.tags.map((e) => e.name!));
     }
-    _nextName = itemForStringAutoComplete('', _newNameText, _storedValues, _doNothing,
-        'n', names.toList(growable: false), _setStateMethod);
-    _nextAddButton = itemForIntFromList(
-        types, _tagListText, 'o', _storedValues, _addNewTag, _doNothing);
+    _nextName = itemForStringAutoComplete(_newNameText, () => nextName,
+        (s) => nextName = s, names.toList(growable: false));
+
+    _nextAddButton = itemForIntFromList(types, _tagListText, () => -1, (s) {
+      if (s == null) return;
+      _addNewTag(s);
+    }, false);
+
+    getEntity = () {
+      var tagList = <Tag>[];
+      if (_info.length == 1){
+        var value = _info.first.destinedInput.getValue();
+        if (_info.first.name == defaultStartText && value is String && value.isEmpty){
+          return null;
+        }
+      }
+      for (var item in _info) {
+        var value = item.destinedInput.getValue();
+        if (value == null) {
+          //important value is not filled
+          return null;
+        }
+        tagList.add(Tag(item.name, value));
+      }
+      if (_id == -1) {
+        _id = _entityNotifier.getNewEntityId();
+      }
+      var myEntity = Entity(tagList, _id);
+      return EntityController(myEntity);
+    };
+    notifyListeners();
+  }
+
+  bool tryToSetButton(dynamic item) {
+    if (selected == -1) {
+      return false;
+
+    }
+    _storedValues[selected.toString()] = item;
+    _fillInputItem(item, selected);
+    return true;
   }
 
   void _fillStoredValuesNoEntity() {
     _storedValues['0'] = '';
-    _storedValues['n0'] = 'Nickname';
-    var inputObject =
-        itemForString(_storedValues['0'], 'Description', _storedValues, _doNothing, '0');
+    _storedValues['n0'] = defaultStartText;
+    var inputObject = itemForString(
+        'Description', () => _storedValues['0'], (s) => _storedValues['0'] = s);
     _info.add(TagCreateInfo(
         0, //only one item
         inputObject,
         BlagendaUniformButton(
-            false, usedColors.first, _storedValues['n0'], () => _setStateAndDelete(0)),
+            usedColors.first, () => _storedValues['n0'], () => _deleteTag(0)),
         _storedValues['n0'],
         0));
     _id = -1;
@@ -78,23 +110,27 @@ class AddingEntityScreenController with buttonCreator, dayCreator, inputHandler 
     for (int i = 0; i < entity.tags.length; i++) {
       int type;
       InputObject inputObject;
+      _storedValues[i.toString()] = entity.tags[i].data;
       if (entity.tags[i].data is String) {
         if (entity.tags[i].data.contains('\n')) {
           type = 1;
-          inputObject = itemForStringList(entity.tags[i].data, 'Description',
-              i.toString(), _doNothing, _storedValues);
+          inputObject = itemForStringList(
+              'Description',
+                  () => _storedValues[i.toString()],
+                  (s) => _storedValues[i.toString()] = s);
         } else {
           type = 0;
-          inputObject = itemForString(entity.tags[i].data, 'Description', _storedValues,
-              _doNothing, i.toString());
+          inputObject = itemForString(
+              'Description',
+                  () => _storedValues[i.toString()],
+                  (s) => _storedValues[i.toString()] = s);
         }
       } else if (entity.tags[i].data is BasicButtonController) {
-        _storedValues[i.toString()] = entity.tags[i].data;
         type = 2;
         inputObject = itemForReferenceAbleList(
-            i.toString(),
-            _storedValues,
-            () => _openButtonSearch((item) => _fillInputItem(item, i)),
+            () => _storedValues[i.toString()],
+            (s) => _storedValues[i.toString()] = s,
+            () => _openButtonSearch().then((item) => _fillInputItem(item, i)),
             EntityController.getNickname);
       } else {
         throw UnimplementedError('Unkown Type requested');
@@ -103,8 +139,8 @@ class AddingEntityScreenController with buttonCreator, dayCreator, inputHandler 
       _info.add(TagCreateInfo(
           i,
           inputObject,
-          BlagendaUniformButton(
-              false, usedColors.first, _storedValues['n$i'], () => _setStateAndDelete(i)),
+          BlagendaUniformButton(usedColors.first, () => _storedValues['n$i'],
+              () => _deleteTag(i)),
           _storedValues['n$i'],
           type));
     }
@@ -117,90 +153,82 @@ class AddingEntityScreenController with buttonCreator, dayCreator, inputHandler 
       widgetList.add(notQuiteFull(Container(
           width: double.infinity,
           decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: usedColors.first, width: 3))),
+              border: Border(
+                  bottom: BorderSide(color: usedColors.first, width: 3))),
           child: item.destinedInput.displayWidget)));
       widgetList.add(smallBlankSplit);
     }
     widgetList.add(splitterTextField);
     widgetList.add(_nextName.displayWidget);
     widgetList.add(_nextAddButton.displayWidget);
-    getEntity = () {
-      var tagList = <Tag>[];
-      for (var item in _info) {
-        var value = item.destinedInput.getValue();
-        if (value == null) {
-          //important value is not filled
-          return null;
-        }
-        tagList.add(Tag(item.name, value));
-      }
-      if (_id == -1) {
-        _id = _getNewId();
-      }
-      var myEntity = Entity(tagList, _id);
-      return EntityController(myEntity);
-    };
     return widgetList;
   }
 
-  Future<void> _addNewTag() async {
-    final int toMake = _nextAddButton.getValue();
+  void _addNewTag(int toMake) {
     final InputObject inputObject;
     final int i = _info.length;
     if (toMake == 3) {
       //a date
       _storedValues['$i'] = null;
       inputObject = itemForReferenceAbleList(
-          i.toString(),
-          _storedValues,
-          () => _openButtonSearch((item) => _fillInputItem(item, i)),
+          () => _storedValues[i.toString()],
+          (s) => _storedValues[i.toString()] = s,
+          () => _openButtonSearch().then((item) => _fillInputItem(item, i)),
           (b) => b.searchDisplay());
     } else if (toMake == 2) {
       //a long note
       _storedValues['$i'] = '';
       inputObject = itemForStringList(
-          _storedValues['$i'], 'Description', i.toString(), _doNothing, _storedValues);
+          'Description',
+          () => _storedValues[i.toString()],
+          (s) => _storedValues[i.toString()] = s);
     } else {
       //a note
       _storedValues['$i'] = '';
       inputObject = itemForString(
-          _storedValues['$i'], 'Description', _storedValues, _doNothing, i.toString());
+          'Description',
+          () => _storedValues[i.toString()],
+          (s) => _storedValues[i.toString()] = s);
     }
-    if ((_storedValues['n'] ?? '') == '') {
+    if (_nextName.getValue() == '') {
       _storedValues['n$i'] = 'No name';
     } else {
-      _storedValues['n$i'] = _storedValues['n'];
-      //no text clear that is easy to reach so just rebuild it, who cares
-      _nextName = itemForString('', _newNameText, _storedValues, _doNothing, 'n');
-      _storedValues['n'] = '';
+      _storedValues['n$i'] = _nextName.getValue();
+      _nextName.setValue('');
     }
     _info.add(TagCreateInfo(
         i,
         inputObject,
         BlagendaUniformButton(
-            false, usedColors.first, _storedValues['n$i'], () => _setStateAndDelete(i)),
+            usedColors.first, () => _storedValues['n$i'], () => _deleteTag(i)),
         _storedValues['n$i'],
         toMake));
-    _setStateMethod();
+    notifyListeners();
   }
 
-  Future<dynamic> _fillInputItem(BasicButtonController item, int i) async {
+  Future<dynamic> _fillInputItem(BasicButtonController? item, int i) async {
+    if (item == null) return;
     _storedValues['$i'] = item;
     var inputObject = itemForReferenceAbleList(
-        i.toString(),
-        _storedValues,
-        () => _openButtonSearch((item) => _fillInputItem(item, i)),
+        () => _storedValues[i.toString()],
+        (s) => _storedValues[i.toString()] = s,
+        () => _openButtonSearch().then((item) => _fillInputItem(item, i)),
         EntityController.getNickname);
     _info[i].destinedInput = inputObject;
-    _setStateMethod();
+    notifyListeners();
   }
 
-  void _setStateAndDelete(int fromWhere) {
-    if (_info[fromWhere].type == 3 && _storedValues[fromWhere.toString()] == null) {
-      _openButtonEdit((t) {
+  void _deleteTag(int fromWhere) {
+    if (_info[fromWhere].type == 3 &&
+        _storedValues[fromWhere.toString()] == null) {
+      if (_openButtonEdit is Future<dynamic> Function(dynamic)) {
+        _openButtonEdit((t) {
         _fillInputItem(t, fromWhere);
-        _setStateMethod();
       }).then((value) => null);
+      } else {
+        selected = fromWhere;
+        _openButtonEdit();
+      }
       return;
     }
     //delete the tag combo from the list of name+data things
@@ -217,12 +245,12 @@ class AddingEntityScreenController with buttonCreator, dayCreator, inputHandler 
       _info[i] = (TagCreateInfo(
           i,
           _info[i].destinedInput,
-          BlagendaUniformButton(
-              false, usedColors.first, _storedValues['n$i'], () => _setStateAndDelete(i)),
+          BlagendaUniformButton(usedColors.first, () => _storedValues['n$i'],
+              () => _deleteTag(i)),
           _storedValues['n$i'],
           _info[i].type));
     }
-    _setStateMethod();
+    notifyListeners();
   }
 
   static const List<String> types = ['A Note', 'A Long Note', 'A Date'];
@@ -236,6 +264,6 @@ class TagCreateInfo {
   InputObject destinedInput;
   final Widget nameDisplay;
 
-  TagCreateInfo(
-      this.indexInList, this.destinedInput, this.nameDisplay, this.name, this.type);
+  TagCreateInfo(this.indexInList, this.destinedInput, this.nameDisplay,
+      this.name, this.type);
 }

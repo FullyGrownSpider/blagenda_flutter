@@ -1,10 +1,19 @@
-import 'package:blagenda_flutter_simple/Screens/observation_screen.dart';
+import 'dart:io';
+
+import 'package:blagenda_flutter_simple/Loading/button_notifier.dart';
+import 'package:blagenda_flutter_simple/Loading/entity_notifier.dart';
+import 'package:blagenda_flutter_simple/ScreensPhone/observation_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 
-import 'Loading/mix_loading.dart';
+import 'ScreensBigger/overview_screen.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() async{
+  if (Platform.isWindows) {
+    WidgetsFlutterBinding.ensureInitialized();
+    await windowManager.ensureInitialized();
+    WindowManager.instance.setMinimumSize(const Size(1200, 400));
+  }
   runApp(const TabBarInsideAppBarPage());
 }
 
@@ -16,12 +25,15 @@ class TabBarInsideAppBarPage extends StatefulWidget {
 }
 
 class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
-    with SingleTickerProviderStateMixin, loading {
-  OverviewScreen overviewScreen = const OverviewScreen();
+    with SingleTickerProviderStateMixin {
+  final EntityNotifier entityNotifier = EntityNotifier();
+  late final ButtonNotifier buttonNotifier = ButtonNotifier(entityNotifier);
 
   @override
   void initState() {
     super.initState();
+    entityNotifier.init();
+    buttonNotifier.init();
   }
 
   bool done = true; //false for sync possiblity true for testing mode
@@ -30,7 +42,7 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: done ? overviewScreen : loadingScreen(),
+        home: isPhone() ? OverviewScreen(buttonNotifier, entityNotifier) : DesktopOverviewScreen(buttonNotifier, entityNotifier),
         title: 'Blagenda',
         theme: ThemeData(
             canvasColor: Colors.green[800],
@@ -41,20 +53,14 @@ class _TabBarInsideAppBarPageState extends State<TabBarInsideAppBarPage>
                 onSecondary: Colors.black,
                 onSurface: Colors.black,
                 secondary: Colors.green,
-                background: Colors.white24,
-                surface: Colors.green,
-                onBackground: Colors.white24,
+                onPrimaryContainer: Colors.green,
+                surface: Colors.black54,
                 brightness: Brightness.dark)));
   }
 }
 
-//working
-Widget loadingScreen() {
-  return Container(
-      color: Colors.white24,
-      child: Column(children: <Widget>[
-        const Spacer(),
-        Image.asset('icons/logo_full.png'),
-        const Spacer(),
-      ]));
+
+
+bool isPhone(){
+  return Platform.isAndroid || Platform.isIOS;
 }

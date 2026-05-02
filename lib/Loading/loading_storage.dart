@@ -30,33 +30,36 @@ class LoadingFromStorage {
       items.add(exportGenerator(butt));
       parts.add(uniquePart(butt));
     }
-    await SuperStorage(typeToFile(buts.first.runtimeType)).updateAll(items, parts);
+    await SuperStorage(typeToFile(buts.first.runtimeType))
+        .updateAll(items, parts);
   }
 
   Future<void> addItem(StoreAble but) async =>
-      await SuperStorage(typeToFile(but.runtimeType)).addItem(exportGenerator(but));
+      await SuperStorage(typeToFile(but.runtimeType))
+          .addItem(exportGenerator(but));
 
   Future<List<String>> getItems(Type t) async {
     var file = SuperStorage(typeToFile(t));
     return await file.readAllData();
   }
 
-  Future<bool> shouldKeepFirstFile(String fileOne, String fileTwo) async {
-    var one = SuperStorage(fileOne);
+  ///returns true when the first (original) file is the one to keep
+  Future<bool> checkIfOnlineFileIsOlder(String original, String downloaded) async {
+    var one = SuperStorage(original);
     if (!await one.exists()) {
-      var two = SuperStorage(fileTwo);
+      var two = SuperStorage(downloaded);
       if (!await two.exists()) return false;
       _copyAndDelete(one, two);
-      return false;
+      return true;
     }
-    var two = SuperStorage(fileTwo);
+    var two = SuperStorage(downloaded);
     if (!await two.exists()) return true;
     if ((await one.lastUpdate()).isBefore(await two.lastUpdate())) {
       _copyAndDelete(one, two);
-      return false;
+      return true;
     }
     (await two._localFile).delete();
-    return true;
+    return false;
   }
 
   Future<void> _copyAndDelete(SuperStorage one, SuperStorage two) async {
@@ -119,7 +122,7 @@ class SuperStorage {
       final file = await _localFile;
       if (!await file.exists()) return [];
       // Read the file
-      return (await file.readAsLines()).sublist(1);
+      return (await file.readAsLines()).sublist(1).where((line) => line.isNotEmpty).toList();
     } catch (e) {
       // If we encounter an error, return 0
       return [];
@@ -146,6 +149,7 @@ class SuperStorage {
   }
 
   Future<void> addItem(String string) async {
+    if (newLineCheck(string)) throw Exception('illegal character');
     await _doAction(() => _addItem(string));
   }
 
@@ -155,7 +159,21 @@ class SuperStorage {
     await _writeStrings(values);
   }
 
+  Future<void> addItems(List<String> string) async {
+    if (string.any(newLineCheck)) throw Exception('illegal character');
+    await _doAction(() => _addItems(string));
+  }
+
+  Future<void> _addItems(List<String> string) async {
+    var values = await _readAllData();
+    values.addAll(string);
+    await _writeStrings(values);
+  }
+
   Future<void> update(String newItem, String uniquePart) async {
+    if (newLineCheck(uniquePart) || newLineCheck(newItem)) {
+      throw Exception('illegal character');
+    }
     await _doAction(() => _update(newItem, uniquePart));
   }
 
@@ -179,14 +197,18 @@ class SuperStorage {
   }
 
   Future<void> updateAll(List<String> newItem, List<String> uniquePart) async {
+    if (uniquePart.any(newLineCheck) ||
+        newItem.any(newLineCheck)) {
+      throw Exception('illegal character');
+    }
     await _doAction(() => _updateAll(newItem, uniquePart));
   }
 
   Future<void> _updateAll(List<String> newItem, List<String> uniquePart) async {
-    var values = await _readAllData();
+    List<String> values = await _readAllData();
     for (int i = 0; i < newItem.length; i++) {
       var index = values.indexWhere((e) => e.contains(uniquePart[i]));
-      if (index == -1) {
+      if (index != -1) {
         values[index] = newItem[i];
       } else {
         values.add(newItem[i]);
@@ -196,10 +218,16 @@ class SuperStorage {
   }
 
   Future<void> delete(String uniquePart) async {
+    if (newLineCheck(uniquePart)) {
+      throw Exception('illegal character');
+    }
     await _doAction(() => _delete(uniquePart));
   }
 
   Future<void> deleteAll(List<String> uniquePart) async {
+    if (uniquePart.any((s) => newLineCheck(s))) {
+      throw Exception('illegal character');
+    }
     await _doAction(() => _deleteAll(uniquePart));
   }
 
@@ -219,7 +247,9 @@ class SuperStorage {
 
   Future<void> waitTurn() async {
     while (working) {
-      await Future.delayed(const Duration(milliseconds: 511));
+      await Future.delayed(const Duration(milliseconds: 213));
     }
   }
+  static final RegExp lineEnd = RegExp(r'[\r\n\f]');
+  static bool newLineCheck(String s) => (s.contains(lineEnd));
 }

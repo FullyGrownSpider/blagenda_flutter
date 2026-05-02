@@ -25,15 +25,8 @@ class AgainYearController extends SkippableEndBasedController<AgainYearDay> {
   @override
   bool isHappeningOnDayFromNow(int calculatedDay) {
     if (daysLeft == calculatedDay) return true;
-    int counter = -1;
-    int newLeft = -100;
-    while (newLeft < calculatedDay) {
-      counter++;
-      newLeft = MyDateController(
-              dateController.year + counter, dateController.month, dateController.day)
-          .daysLeftUntil();
-    }
-    return newLeft == calculatedDay;
+    var calcDay = MyDateController.fromDaysFromNow(calculatedDay);
+    return dateController.month == calcDay.month && dateController.day == calcDay.day;
   }
 
   @override
@@ -103,7 +96,8 @@ class AgainAmountController extends SkippableEndBasedController<AgainAmountDay> 
 
   @override
   void create() {
-    while (startDate!.isBefore(MyDateController.yesterday)) {
+
+    while (startDate!.isBefore(MyDateController.yesterday.addOrRemoveDays(-1))) {
       button.startDate = button.startDate!.addOrRemoveDays(day);
       requiresChange = true;
     }
@@ -156,13 +150,13 @@ class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
       //if this month does not have 31 days get the last one
       int daysInMonth = DateTimeRange(
               start: MyDateController(
-                  MyDateController.today.year, MyDateController.today.month),
+                  dateController.year, dateController.month),
               end: MyDateController(
-                  MyDateController.today.year, MyDateController.today.month + 1))
+                  dateController.year, dateController.month + 1))
           .duration
           .inDays;
       dateController = MyDateController(
-          MyDateController.today.year, MyDateController.today.month, daysInMonth);
+          dateController.year, dateController.month, daysInMonth);
     }
   }
 
@@ -175,17 +169,8 @@ class AgainMonthController extends SkippableEndBasedController<AgainMonthDay> {
   bool isHappeningOnDayFromNow(int calculatedDay) {
     var can = super.isHappeningOnDayFromNow(calculatedDay);
     if (!can) return false;
-    var counter = 0;
-    var date = MyDateController(
-        dateController.year, dateController.month + counter, dateController.day);
-    var newLeft = date.daysLeftUntil();
-    while (newLeft < calculatedDay) {
-      counter++;
-      date = MyDateController(
-          dateController.year, dateController.month + counter, dateController.day);
-      newLeft = date.daysLeftUntil();
-    }
-    return newLeft == calculatedDay;
+    var calcDay = MyDateController.fromDaysFromNow(calculatedDay);
+    return calcDay.day == day;
   }
 
   @override

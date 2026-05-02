@@ -2,19 +2,20 @@ import 'package:blagenda_flutter_simple/Commons/Models/Buttons/basic_button.dart
 import 'package:flutter/material.dart';
 
 import '../../../Commons/Models/Buttons/skippable_button.dart';
+import '../../ScreensControllers/mix_input_handler.dart.dart';
 import '../../my_date_controller.dart';
 import '../mix_search_able.dart';
 import 'basic_button_controller.dart';
 import 'deadline_controller.dart';
 
-abstract class EndBasedController<t extends BasicButton> extends BasicButtonController<t>
-    implements Comparable<EndBasedController> {
+abstract class EndBasedController<t extends BasicButton>
+    extends BasicButtonController<t> implements Comparable<EndBasedController> {
   static final RegExp _completeReg = RegExp(
       r"(?:(?<full>[0-2]?[0-9][-,.:][0-6][0-9](?: ?[apAP][mM])?)|(?<hour>[0-2]?[0-9] ?[apAP][mM]))(?:([^0-9]{0,5}(?:(?<full2>[0-2]?[0-9][-,.:][0-6][0-9] ?([apAP][mM])?)|(?<hour2>[0-2]?[0-9] ?[apAP][mM]))\b)|\b)");
   static final RegExp _regFix = RegExp(r'[-,.:]');
   static final RegExp _regNum = RegExp(r'[^0-9-,.:]');
-  static final RegExp _daysReg =
-      RegExp(r"((?:lasts|duurt|D|d) ?\d+)|\d+ ?(?:days|l[oa]ng|dagen|d\b|D\b)");
+  static final RegExp _daysReg = RegExp(
+      r"([ \n\r\f]|^)(((?:lasts|duurt|D|d) ?\d+)|(\d+ ?(?:days|l[oa]ng|dagen|d|D)))([ \n\r\f]|$)");
 
   static const int showDayOfWeek = 6;
   static const int showDayTime = 4;
@@ -63,6 +64,12 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
     }
   }
 
+  @override
+  void checkSwitchLine(int line, bool needTrue) {
+    int timeIndex = toDos.indexOf(_completeReg);
+    super.checkSwitchLine(line >= timeIndex? line + 1 : line, needTrue);
+  }
+
   bool extraGoingOn(int currentDay) {
     if (extraDays == 1) return false;
     int fromNow = dateController.daysLeftUntil();
@@ -80,12 +87,14 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
     if (text == null) return -1;
     var split = text.replaceAll(_regNum, '').split(_regFix);
     return _timeSet(
-        int.parse(split.first) * 60 + (split.length > 1 ? int.parse(split.last) : 0),
+        int.parse(split.first) * 60 +
+            (split.length > 1 ? int.parse(split.last) : 0),
         text);
   }
 
   int _timeSet(int result, String text) {
-    if ((text.contains('p') && result < 721) || (!text.contains('a') && result < 420)) {
+    if ((text.contains('p') && result < 721) ||
+        (!text.contains('a') && result < 420)) {
       result += 720;
     }
     if (result > 1440) return -1;
@@ -93,9 +102,10 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
   }
 
   @visibleForTesting
-  String displayJob() =>
-      (daysLeft < showDayTime ? _displayWithTimeJob() : super.gettingTheStringShort())
-          .trim();
+  String displayJob() => (daysLeft < showDayTime
+          ? _displayWithTimeJob()
+          : super.gettingTheStringShort())
+      .trim();
 
   String _displayWithTimeJob() {
     return (timeOfDay != -1
@@ -106,7 +116,8 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
 
   String _gettingTheStringShortWithTime([bool overrideTime = false]) =>
       (entitied != -1 ? BasicButtonController.entityIndicator : '') +
-      displayGenericText(overrideTime ? _displayWithTimeJob() : displayJob(),
+      BasicButtonController.displayGenericText(
+          overrideTime ? _displayWithTimeJob() : displayJob(),
           BasicButtonController.maxValueCheck);
 
   @override
@@ -123,7 +134,10 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
   String todosToString() {
     var result = super.todosToString();
     if (timeOfDay != -1) {
-      result = result.replaceFirst(_completeReg, '').replaceFirst('\n\n', '\n').trim();
+      result = result
+          .replaceFirst(_completeReg, '')
+          .replaceFirst('\n\n', '\n')
+          .trim();
       if (result.trim().isEmpty) result = writeEmpty();
     }
     return result;
@@ -159,6 +173,20 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
           (toDos.toLowerCase().contains(value) ? 1 : 0);
     }
     if (searchType == SearchTypes.date) {
+      if ((value as DateRange).weekdays.isNotEmpty) {
+        for (int date = 0; date <= value.range; date++) {
+          var tempController =
+              MyDateController.today.add(Duration(days: date * 7));
+          for (var weekday in value.weekdays) {
+            var superTempController = tempController
+                .add(Duration(days: weekday - MyDateController.today.weekday));
+            if (isHappeningOnDayFromNow(superTempController.daysLeftUntil())) {
+              return 10;
+            }
+          }
+        }
+        return 0;
+      }
       for (int date = value.myDateFromNow;
           date <= value.myDateFromNow + value.range;
           date++) {
@@ -176,8 +204,7 @@ abstract class EndBasedController<t extends BasicButton> extends BasicButtonCont
   }
 
   @override
-  String searchDisplay() =>
-      '${dateController.stringFullDisplayWithCal(true)}\n--\n${gettingTheStringSelected()}';
+  String searchDisplay() => gettingTheStringSelected();
 
   void addOrRemoveDays(int amount) {
     addOrRemoveDaysDo(amount);
@@ -206,6 +233,9 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   void rebuild() {
+    //TODO ugly because of the loading… remove next line at some point
+    button.dates ??= {};
+
     var daysDif = daysLeft;
     create();
     _setTimeOfDay();
@@ -221,6 +251,15 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
         startDate!.addOrRemoveDays(3).isBefore(MyDateController.today)) {
       requiresChange = true;
       button.startDate = null;
+    }
+    var tempDates = button.dates!.keys
+        .where((e) => e.isBefore(MyDateController.yesterday))
+        .toList();
+    if (tempDates.isNotEmpty) {
+      for (int i = 0; i < tempDates.length; i++) {
+        button.dates!.remove(tempDates[i]);
+      }
+      requiresChange = true;
     }
 
     if (dateToSkip != null) {
@@ -248,10 +287,12 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
   }
 
   @override
-  String writeEmpty() => emogjiList[
-      (job + MyDateController.fromDaysFromNow(altLeft).microsecondsSinceEpoch.toString())
-              .hashCode %
-          emogjiList.length];
+  String writeEmpty() => emogjiList[(job +
+              MyDateController.fromDaysFromNow(altLeft)
+                  .microsecondsSinceEpoch
+                  .toString())
+          .hashCode %
+      emogjiList.length];
 
   SkippableEndBasedController callConstructor(button);
 
@@ -274,7 +315,8 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   @override
   bool isHappeningOnDayFromNow(int calculatedDay) {
-    return (dateToSkip == null || dateToSkip!.daysLeftUntil() != calculatedDay) &&
+    return (dateToSkip == null ||
+            dateToSkip!.daysLeftUntil() != calculatedDay) &&
         (endingDate == null || endingDate!.daysLeftUntil() >= calculatedDay) &&
         (startDate == null || startDate!.daysLeftUntil() <= calculatedDay);
   }
@@ -299,14 +341,15 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
     return xtr + super.displayJob();
   }
 
-//returns true if you should skip
+  //returns true if you should skip
   static bool skipCheck(SkippableButton button, DateTime date) =>
       MyDateController.aboutEqual(button.dateToSkip!, date);
 
-//returns true if you should skip the copy
-  bool skipCheckNotSure(int calc, int left) =>
+  //check if you are checking the "today" is the copy's today too then check if the skipDate is the actually same date as the skipDate
+  ///returns true if you should skip the copy
+  bool skipCheckNotSure(int calc) =>
       button.dateToSkip != null &&
-      calc == left &&
+      calc == altLeft &&
       skipCheck(button, DateTime.now().add(Duration(days: calc)));
 
   @override
@@ -325,6 +368,68 @@ abstract class SkippableEndBasedController<t extends SkippableButton>
 
   static bool buttonCheck(DateTime dateToSkip, DateTime today) {
     return dateToSkip.add(const Duration(days: 1)).isBefore(today);
+  }
+
+  @override
+  void checkSwitchLine(int line, bool needTrue) {
+    var altDate = MyDateController.fromDaysFromNow(altLeft);
+    var contains = button.dates!.containsKey(altDate);
+    if (needTrue) {
+      if (!contains) {
+        button.dates!.addAll({
+          altDate: [line]
+        });
+      } else {
+        if (!button.dates![altDate]!.contains(line)) {
+          button.dates![altDate]!.add(line);
+        }
+      }
+    } else {
+      if (contains) {
+        button.dates![altDate]!.removeWhere((e) => e == line);
+      }
+    }
+    if (contains) {
+      button.dates![altDate]!.sort();
+    }
+  }
+
+  @override
+  String todosToString() {
+    var result = super.todosToString();
+    if (button.dates!.isEmpty) return result;
+    var first = button.dates!.keys.firstWhere(
+        (e) => e.daysLeftUntil() == altLeft,
+        orElse: () => MyDateController.yesterday);
+    if (first == MyDateController.yesterday) return result;
+    var used = button.dates![first]!;
+    int counter = 0;
+    for (int i = 0; i < used.length; i++) {
+      while (used[i] < counter) {
+        result = result.replaceFirst(
+            BasicButtonController.emptyCheck, BasicButtonController.halfCheck);
+        counter++;
+      }
+      result = result.replaceFirst(
+          BasicButtonController.emptyCheck, BasicButtonController.check);
+      counter++;
+    }
+    result = result.replaceAll(
+        BasicButtonController.halfCheck, BasicButtonController.emptyCheck);
+    return result;
+  }
+
+  @override
+  String checkIndicator() {
+    var unCheckedAmount = toDos.split(BasicButtonController.unCheckedPattern);
+    if (unCheckedAmount.length == 1) return '';
+    var date = MyDateController.fromDaysFromNow(altLeft);
+    if (!button.dates!.containsKey(date)) return BasicButtonController.emptyCheck;
+    var allChecked = button.dates![date]!.length == unCheckedAmount.length - 1;
+    if (allChecked) return BasicButtonController.check;
+    return button.dates![date]!.isEmpty
+        ? BasicButtonController.emptyCheck
+        : BasicButtonController.halfCheck;
   }
 }
 
