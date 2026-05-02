@@ -6,9 +6,16 @@ import 'package:blagenda_flutter_simple/Loading/button_notifier.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 
+import '../Commons/Models/Buttons/again.dart';
+import '../Commons/Models/Buttons/basic_button.dart';
+import '../Commons/Models/Buttons/deadline.dart';
+import '../Commons/Models/Buttons/weird_again.dart';
 import '../Controllers/ObjectControllers/ButtonControllers/end_based_controller.dart';
 import '../Controllers/ScreensControllers/countdown_drawer_controller.dart';
 import '../Controllers/blagenda_uniform_button.dart';
+import '../Loading/conversion_base.dart';
+import '../Loading/data_exporter.dart';
+import '../Loading/loading.dart';
 import '../common_items.dart';
 import 'overview_screen.dart';
 
@@ -140,12 +147,15 @@ Widget generateMenu(
                                   onTap: () {
                                     openEntityEdit();
                                   }),
+
                               ListTile(
-                                  title: const Text('Sync Online Data',
-                                      style: functionTextStyle),
-                                  trailing: const Icon(Icons.sync,
-                                      color: Colors.white),
-                                  onTap: () => buttonNotifier.dataSync())
+                                  title: const Text('Export all data'),
+                                  trailing: const Icon(Icons.upload, color: Colors.black),
+                                  onTap: () => export()),
+                              ListTile(
+                                  title: const Text('Import data'),
+                                  trailing: const Icon(Icons.download, color: Colors.black),
+                                  onTap: () => import())
                             ])),
                         smallBlankSplit,
                         BlagendaUniformButton(usedColors[7], () {
@@ -178,6 +188,69 @@ Widget generateMenu(
                       ]))))));
 }
 
+final String listSepList = '---';
+
+Future<void> export() async {
+  Loading l = Loading();
+  List<String> buttons = [];
+  await l.getData<BasicButton>()
+      .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+  buttons.add(listSepList);
+  await l.getData<Deadline>()
+      .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+  buttons.add(listSepList);
+  await l.getData<AgainAmountDay>()
+      .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+  buttons.add(listSepList);
+  await l.getData<AgainWeekDay>()
+      .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+  buttons.add(listSepList);
+  await l.getData<AgainMonthDay>()
+      .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+  buttons.add(listSepList);
+  await l.getData<AgainYearDay>()
+      .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+  buttons.add(listSepList);
+  await l.getData<AgainWeird>()
+      .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+  await saveInStorage(buttons);
+}
+
+List<BasicButton Function(dynamic x)> makers = [
+      (x) => importGenerator<BasicButton>(x),
+      (x) => importGenerator<Deadline>(x),
+      (x) => importGenerator<AgainAmountDay>(x),
+      (x) => importGenerator<AgainWeekDay>(x),
+      (x) => importGenerator<AgainMonthDay>(x),
+      (x) => importGenerator<AgainYearDay>(x),
+      (x) => importGenerator<AgainWeird>(x)
+];
+
+Future<void> import() async {
+  var string = await loadFromInStorage();
+  if (string.isEmpty) return;
+  List<List<String>> separated = string
+      .split(listSepList)
+      .map((e) => e.split('\n').where((ee) => ee.isNotEmpty).toList())
+      .toList();
+
+  var results = [];
+  for (int i = 0; i < makers.length; i++) {
+    List<BasicButtonController<BasicButton>> list = separated[i].map((x) {
+      BasicButton but = makers[i](x);
+      BasicButtonController controller = dataToController(but);
+      return controller;
+    }).toList();
+    Loading l = Loading();
+    results.add(l.updateButtons(list));
+  }
+  for (var result in results) {
+    await result;
+  }
+}
+
+
+
 List<Widget> bOptions(List<Widget> options) {
   var clone = [...options];
   int oldLength = options.length;
@@ -187,3 +260,4 @@ List<Widget> bOptions(List<Widget> options) {
   }
   return clone;
 }
+

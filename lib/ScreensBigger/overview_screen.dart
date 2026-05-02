@@ -73,11 +73,9 @@ class _DesktopOverviewScreenState extends State<DesktopOverviewScreen> {
       widget._buttonNotifier
           .awaitLoading()
           .then((_) => _observationController.updateButtonsDay());
-      widget._buttonNotifier.dataSyncLowKey();
       if (awns) setState(() {});
     } else if (MyDateController.didHourPass(lastHour)) {
       lastHour = MyDateController.lookTime.hour;
-      widget._buttonNotifier.dataSyncLowKey();
     } else if (_observationController.justAddedCheck()) {
       setState(() {});
     }

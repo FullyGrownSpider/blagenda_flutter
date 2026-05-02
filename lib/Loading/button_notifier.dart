@@ -128,23 +128,6 @@ class ButtonNotifier
     notifyListeners();
   }
 
-  Future<void> dataSyncLowKey() =>
-      _loading.downloadDatabaseFilesCarefully().then((x) {
-        if (x) {
-          init().then((x) {
-            hardPoint = true;
-            notifyListeners();
-          });
-        }
-      });
-
-  Future<void> dataSync() => _loading.downloadDatabaseFiles().then((x) {
-        init().then((x) {
-          hardPoint = true;
-          notifyListeners();
-        });
-      });
-
   int getNewId(Type t) {
     var correctList = buttons.where((e) => e.runtimeType == t).toList();
     if (correctList.isNotEmpty) {

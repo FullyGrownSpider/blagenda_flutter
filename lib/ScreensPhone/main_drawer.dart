@@ -8,14 +8,21 @@ import 'package:blagenda_flutter_simple/ScreensPhone/search_screen.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 
+import '../Commons/Models/Buttons/again.dart';
+import '../Commons/Models/Buttons/basic_button.dart';
+import '../Commons/Models/Buttons/deadline.dart';
+import '../Commons/Models/Buttons/weird_again.dart';
 import '../Loading/button_notifier.dart';
+import '../Loading/conversion_base.dart';
+import '../Loading/data_exporter.dart';
 import '../Loading/entity_notifier.dart';
+import '../Loading/loading.dart';
 import 'entity_adding_screen.dart';
 import '../common_items.dart';
 import '../Controllers/ObjectControllers/ButtonControllers/basic_button_controller.dart';
 import '../Controllers/blagenda_uniform_button.dart';
 
-class MainDrawer {
+class MainDrawer{
   static const TextStyle textStyle = TextStyle(
       fontSize: 35.0,
       height: 1.7,
@@ -138,13 +145,79 @@ class MainDrawer {
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
+
                   ListTile(
-                      title: _dumbJoke('Sync Online Data'),
-                      trailing: const Icon(Icons.sync, color: Colors.black),
-                      onTap: () => _buttonNotifier.dataSync())
+                      title: _dumbJoke('Export all data'),
+                      trailing: const Icon(Icons.upload, color: Colors.black),
+                      onTap: () => export()),
+                  ListTile(
+                      title: _dumbJoke('Import data'),
+                      trailing: const Icon(Icons.download, color: Colors.black),
+                      onTap: () => import())
                 ])),
       ],
     ));
+  }
+
+  static final String listSepList = '---';
+
+  Future<void> export() async {
+    Loading l = Loading();
+    List<String> buttons = [];
+    await l.getData<BasicButton>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    buttons.add(listSepList);
+    await l.getData<Deadline>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    buttons.add(listSepList);
+    await l.getData<AgainAmountDay>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    buttons.add(listSepList);
+    await l.getData<AgainWeekDay>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    buttons.add(listSepList);
+    await l.getData<AgainMonthDay>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    buttons.add(listSepList);
+    await l.getData<AgainYearDay>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    buttons.add(listSepList);
+    await l.getData<AgainWeird>()
+        .then((value) => buttons.addAll(value.map((e) => exportGenerator(e.button))));
+    await saveInStorage(buttons);
+  }
+
+  static List<BasicButton Function(dynamic x)> makers = [
+        (x) => importGenerator<BasicButton>(x),
+        (x) => importGenerator<Deadline>(x),
+        (x) => importGenerator<AgainAmountDay>(x),
+        (x) => importGenerator<AgainWeekDay>(x),
+        (x) => importGenerator<AgainMonthDay>(x),
+        (x) => importGenerator<AgainYearDay>(x),
+        (x) => importGenerator<AgainWeird>(x)
+  ];
+
+  Future<void> import() async {
+    var string = await loadFromInStorage();
+    if (string.isEmpty) return;
+    List<List<String>> separated = string
+        .split(listSepList)
+        .map((e) => e.split('\n').where((ee) => ee.isNotEmpty).toList())
+        .toList();
+
+    var results = [];
+    for (int i = 0; i < makers.length; i++) {
+      List<BasicButtonController<BasicButton>> list = separated[i].map((x) {
+        BasicButton but = makers[i](x);
+        BasicButtonController controller = dataToController(but);
+        return controller;
+      }).toList();
+      Loading l = Loading();
+      results.add(l.updateButtons(list));
+    }
+    for (var result in results) {
+      await result;
+    }
   }
 
   Future<dynamic> _openEntitySearch(BuildContext context) {

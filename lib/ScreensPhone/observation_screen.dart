@@ -44,10 +44,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
       widget._buttonNotifier
           .awaitLoading()
           .then((_) => _controller.updateButtonsDay());
-      widget._buttonNotifier.dataSyncLowKey();
     } else if (MyDateController.didHourPass(lastHour)) {
       lastHour = MyDateController.lookTime.hour;
-      widget._buttonNotifier.dataSyncLowKey();
     } else if (_controller.justAddedCheck()) {
       setState(() {});
     }
@@ -85,7 +83,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                 builder: (BuildContext context, Widget? child) {
                   _resetScreen();
                   return PopScope(
-                      onPopInvoked: _onWillPop,
+                      onPopInvokedWithResult: (x, _) => _onWillPop(x),
                       canPop: _wentBack,
                       child: SingleChildScrollView(
                         child: Column(
