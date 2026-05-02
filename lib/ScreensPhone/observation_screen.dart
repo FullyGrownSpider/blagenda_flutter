@@ -85,7 +85,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                 builder: (BuildContext context, Widget? child) {
                   _resetScreen();
                   return PopScope(
-                      onPopInvoked: _onWillPop,
+                      onPopInvokedWithResult: (x, _) => _onWillPop(x),
                       canPop: _wentBack,
                       child: SingleChildScrollView(
                         child: Column(
