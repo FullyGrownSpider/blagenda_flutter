@@ -122,7 +122,7 @@ class SuperStorage {
       final file = await _localFile;
       if (!await file.exists()) return [];
       // Read the file
-      return (await file.readAsLines()).sublist(1);
+      return (await file.readAsLines()).sublist(1).where((line) => line.isNotEmpty).toList();
     } catch (e) {
       // If we encounter an error, return 0
       return [];
@@ -205,10 +205,14 @@ class SuperStorage {
   }
 
   Future<void> _updateAll(List<String> newItem, List<String> uniquePart) async {
-    var values = await _readAllData();
+    List<String> values = await _readAllData();
     for (int i = 0; i < newItem.length; i++) {
       var index = values.indexWhere((e) => e.contains(uniquePart[i]));
-      values[index] = newItem[i];
+      if (index != -1) {
+        values[index] = newItem[i];
+      } else {
+        values.add(newItem[i]);
+      }
     }
     await _writeStrings(values);
   }

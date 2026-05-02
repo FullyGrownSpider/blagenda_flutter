@@ -12,8 +12,8 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
   ///if this was edited but is also used if it was deleted while coming from the edit screen
   bool touched = false;
 
-  static final RegExp unCheckedPattern = RegExp(r'(?:^|\n)\[\]');
-  static final RegExp checkedPattern = RegExp(r'(?:^|\n)\[x\]');
+  static final RegExp unCheckedPattern = RegExp(r'(?:^|\n)(\[\])|(O\b)');
+  static final RegExp checkedPattern = RegExp(r'(?:^|\n)(\[x\])|(X\b)');
   static const String entityIndicator = '◟';
   static const int maxValueCheck = 38;
   t _button;
@@ -64,7 +64,7 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
 
   String writeEmpty() => emogjiList[job.hashCode % emogjiList.length];
 
-  bool colorCheck(Color c) => color.value == c.value;
+  bool colorCheck(Color c) => color.r == c.r && color.g == c.g && c.b == color.b;
 
   void flipImportant() {
     _button.important = !_button.important;
