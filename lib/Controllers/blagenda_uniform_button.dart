@@ -119,10 +119,11 @@ class _BlagendaUniformButton extends State<BlagendaUniformButton> {
       var secondText = text.substring(text.indexOf('\n\n') + 2).split('\n');
       int counter = -1;
       for (String line in secondText) {
-        counter++;
         if (line.startsWith(BasicButtonController.check)) {
+          counter++;
           textList.add(_makeBox(true, line, counter));
         } else if (line.startsWith(BasicButtonController.emptyCheck)) {
+          counter++;
           textList.add(_makeBox(false, line, counter));
         } else {
           textList.add(

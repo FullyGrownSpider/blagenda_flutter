@@ -64,12 +64,6 @@ abstract class EndBasedController<t extends BasicButton>
     }
   }
 
-  @override
-  void checkSwitchLine(int line, bool needTrue) {
-    int timeIndex = toDos.indexOf(_completeReg);
-    super.checkSwitchLine(line >= timeIndex? line + 1 : line, needTrue);
-  }
-
   bool extraGoingOn(int currentDay) {
     if (extraDays == 1) return false;
     int fromNow = dateController.daysLeftUntil();

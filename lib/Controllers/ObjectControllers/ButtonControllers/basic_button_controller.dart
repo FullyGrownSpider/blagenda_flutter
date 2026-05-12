@@ -179,10 +179,11 @@ abstract class BasicButtonController<t extends BasicButton> extends SearchAble
   }
 
   void checkSwitchLine(int line, bool needTrue) {
-    var lines = toDos.split('\n');
-    lines[line] = lines[line]
+    var lines = toDos.split('\n').where((e) => e.startsWith(checkedPattern) || e.startsWith(unCheckedPattern)).toList();
+    var old = lines[line];
+    var newOne = lines[line]
         .replaceFirst(needTrue ? unCheckedPattern : checkedPattern, needTrue ? '[x]' : '[]');
-    button.toDos = lines.join('\n');
+    button.toDos = toDos.replaceFirst(old, newOne);
   }
 }
 
