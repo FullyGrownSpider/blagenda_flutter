@@ -150,7 +150,7 @@ mixin InputHandler on ButtonCreator {
     var stringController = TextEditingController(text: get());
     Widget displayWidget = notQuiteFull(_defaultTextField(
         stringController, set, hint,
-        maxLines: 5, keyboardType: TextInputType.multiline));
+        maxLines: 5));
     return InputObject<String, String>(displayWidget, get, (s) {
       var data = '${s.trim()}\n';
       set(data);
